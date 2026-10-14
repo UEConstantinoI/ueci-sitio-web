@@ -13,7 +13,7 @@
     "titulo": "Ejemplo: acto cívico de aniversario",
     "resumen": "Texto breve del comunicado, con foto opcional.",
     "imagen": "",
-    "publicar": false
+    "publicar": true
   },
   {
     "id": "n20260828-00002",
