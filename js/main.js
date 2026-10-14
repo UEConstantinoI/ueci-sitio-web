@@ -108,3 +108,18 @@
       cont.appendChild(v);
     });
 })();
+
+/* ---------- Testimonios en video (se carga YouTube solo al hacer clic) ---------- */
+(function () {
+  document.querySelectorAll('.video-thumb').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var f = document.createElement('iframe');
+      f.src = 'https://www.youtube-nocookie.com/embed/' + b.dataset.yt + '?autoplay=1';
+      f.title = 'Testimonio de estudiante';
+      f.allow = 'autoplay; encrypted-media; picture-in-picture';
+      f.allowFullscreen = true;
+      b.textContent = '';
+      b.appendChild(f);
+    }, { once: true });
+  });
+})();

@@ -140,9 +140,7 @@ ul.links a:hover{color:#fff;}
 .car-arrow:hover{background:rgba(10,28,16,.8);}
 
 /* PILARES */
-.pilares-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:18px;}
-@media (max-width:900px){ .pilares-grid{grid-template-columns:repeat(2,1fr);} }
-@media (max-width:520px){ .pilares-grid{grid-template-columns:1fr;} }
+.pilares-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:18px;}
 .pilar-card{background:var(--paper-2); border:1px solid var(--line); border-radius:var(--radius); padding:24px; box-shadow:var(--card-shadow);}
 .pilar-ico{width:42px; height:42px; border-radius:11px; background:linear-gradient(135deg, var(--sun), var(--sun-deep)); display:flex; align-items:center; justify-content:center; margin-bottom:14px; color:#1a1200; font-size:19px;}
 .pilar-card h3{font-size:16.5px; font-weight:600;}
@@ -218,3 +216,18 @@ footer{padding:36px 0 50px; color:var(--ink-soft); font-size:13px; border-top:1p
 .foot-row{display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; align-items:center;}
 .foot-social{display:flex; gap:14px;}
 .foot-social a{color:var(--ink-soft); text-decoration:none; font-weight:600; font-size:12.5px;}
+
+/* KEYWORDS (pestañas Visión/Misión/Objetivo) */
+.keywords{display:flex; flex-wrap:wrap; gap:10px; align-content:center;}
+.keywords span{background:var(--verde); color:#fff; padding:12px 20px; border-radius:999px; font-family:'Fraunces',serif; font-size:17px;}
+
+/* VIDEOS DE TESTIMONIOS */
+.video-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+@media (max-width:900px){ .video-grid{grid-template-columns:repeat(2,1fr);} }
+@media (max-width:560px){ .video-grid{grid-template-columns:1fr;} }
+.video-thumb{position:relative; aspect-ratio:16/9; border:0; padding:0; border-radius:var(--radius); overflow:hidden; cursor:pointer; background:#000; box-shadow:var(--card-shadow);}
+.video-thumb img{width:100%; height:100%; object-fit:cover; display:block; opacity:.85;}
+.video-thumb .play{position:absolute; inset:0; margin:auto; width:56px; height:56px; border-radius:50%; background:var(--sun); color:#1a1200; display:flex; align-items:center; justify-content:center; font-size:20px;}
+.video-thumb iframe{position:absolute; inset:0; width:100%; height:100%; border:0;}
+
+.form-btn{margin-top:20px; margin-left:8px; display:inline-flex; background:transparent; color:#fff; border:1.5px solid rgba(255,255,255,.4); font-weight:600; padding:10px 18px; border-radius:10px; text-decoration:none; font-size:14px;}
