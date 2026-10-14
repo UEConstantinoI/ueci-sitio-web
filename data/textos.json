@@ -1,0 +1,108 @@
+{
+  "hero": {
+    "etiqueta": "Tiquipaya · Cochabamba",
+    "titulo": "Formamos *bachilleres bilingües* con talento y valores.",
+    "descripcion": "Unidad Educativa Constantino I: formación científica, inglés como segunda lengua, hábito por la lectura y desarrollo de los talentos de cada estudiante, desde Inicial hasta el último año de Secundaria.",
+    "datos": [
+      {
+        "valor": "Inicial–Secundaria",
+        "texto": "Todos los niveles en un solo colegio"
+      },
+      {
+        "valor": "Bilingües",
+        "texto": "Español e inglés"
+      },
+      {
+        "valor": "+300 obras",
+        "texto": "escritas por nuestros estudiantes"
+      },
+      {
+        "valor": "Puerta a puerta",
+        "texto": "Bus escolar privado, choferes con +20 años"
+      }
+    ]
+  },
+  "nosotros": {
+    "vision": {
+      "titulo": "Consolidar nuestro liderazgo en gestión educativa",
+      "texto": "Ser un colegio de alta calidad, reconocido localmente por su gestión eficiente y por un rendimiento estudiantil por encima del promedio nacional, y liderar a instituciones similares con procesos de gestión innovadores.",
+      "puntos": [
+        "Egresados que dominan el español y el inglés",
+        "Sólidos valores éticos y formación tecnológica con visión empresarial",
+        "Preparados para el mundo laboral y la educación superior",
+        "Personal competente y motivado, en un clima institucional positivo"
+      ],
+      "claves": [
+        "Liderazgo",
+        "Calidad",
+        "Innovación"
+      ]
+    },
+    "mision": {
+      "titulo": "Garantizamos un servicio educativo de alta calidad",
+      "texto": "En todos los niveles y modalidades del sistema educativo, con una educación integral que construye la identidad y la autoestima de los estudiantes para que se integren a la sociedad.",
+      "puntos": [
+        "Formar líderes con hábito de aprendizaje permanente",
+        "Pensamiento crítico y analítico",
+        "Capacidades para el cambio científico y tecnológico y un mundo globalizado",
+        "Gestión responsable de recursos, personal, infraestructura y tecnología educativa"
+      ],
+      "claves": [
+        "Educación integral",
+        "Liderazgo",
+        "Pensamiento crítico"
+      ]
+    },
+    "objetivo": {
+      "titulo": "Bachilleres bilingües con elevado conocimiento científico",
+      "texto": "La Unidad Educativa Constantino I busca formar bachilleres bilingües con elevado conocimiento científico y cultivar el talento innato de cada uno durante su formación, además de lograr solidaridad con ética y moral, como factor de cambio en la sociedad.",
+      "puntos": [],
+      "claves": [
+        "Bilingües",
+        "Conocimiento científico",
+        "Talento",
+        "Ética y solidaridad"
+      ]
+    }
+  },
+  "pilares": [
+    {
+      "icono": "📚",
+      "titulo": "Hábito por la lectura",
+      "texto": "Lectura y escritura como eje: más de 300 obras escritas por estudiantes, desde Inicial hasta Secundaria. «Hagamos de Bolivia un país de lectores»."
+    },
+    {
+      "icono": "🔬",
+      "titulo": "Materias exactas",
+      "texto": "Razonamiento concreto, hipotético y abstracto, con preparación para olimpiadas nacionales de ciencias y matemática."
+    },
+    {
+      "icono": "🌐",
+      "titulo": "Inglés",
+      "texto": "Segunda lengua: quienes cursan seis años del colegio deben comprender, hablar, leer y escribir inglés. Hay libros de cuentos en inglés escritos por estudiantes."
+    },
+    {
+      "icono": "🎭",
+      "titulo": "Desarrollo de talentos",
+      "texto": "Ciencias sociales, música, danza, teatro, dibujo, artes visuales, deportes, ajedrez y computación, para formar futuros líderes con ética."
+    },
+    {
+      "icono": "🤝",
+      "titulo": "Valores",
+      "texto": "Responsabilidad, respeto, honestidad, humildad y gratitud, con comunicación constante con los padres: los valores nacen en casa y se refuerzan en el colegio."
+    }
+  ],
+  "transporte": {
+    "titulo": "Servicio de bus escolar, de puerta a puerta",
+    "texto": "Servicio privado. Los choferes fueron rigurosamente seleccionados y llevan más de 20 años trabajando con la institución.",
+    "publico_titulo": "Transporte público",
+    "publico_texto": "Taxi Trufi 101 · Bus 3V · Minibús 290"
+  },
+  "contacto": {
+    "titulo": "Hablemos sobre la inscripción de tu hijo/a",
+    "direccion": "Calle Mejillones, entre Av. Circunvalación y Calle Cochabamba, Tiquipaya, Cochabamba",
+    "telefono": "(+591-4) 4289388",
+    "celular": "(+591) 71798840",
+    "whatsapp": "59171798840"
+  }
+}

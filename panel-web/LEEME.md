@@ -30,6 +30,7 @@ Implementar > Administrar implementaciones > lápiz > **Nueva versión** (así l
 Una dirección corta como `panel.ueconstantino.com` con una regla de redirección en Cloudflare, igual que `sistema`.
 
 ## Seguridad
+- "Textos del sitio" solo aparece (y solo funciona) para usuarios con rol **ADMIN**; un EDITOR no lo ve ni puede guardar textos aunque lo intente.
 - Todo lo que se publica es **público**. Las noticias ocultas también están en el código del repo (que es público); no escribir nada privado.
 - La clave solo la ve quien edita la planilla: por eso la planilla no se comparte. El resto entra solo a la URL del panel.
 - Si hay dudas: revocar el token en GitHub, crear otro y repetir el paso 4.2.

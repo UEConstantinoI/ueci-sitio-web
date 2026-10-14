@@ -175,3 +175,102 @@
     '&tabs=timeline&width=' + w + '&height=480&small_header=true&hide_cover=false&show_facepile=false';
   cuerpo.replaceChild(f, viejo);
 })();
+
+/* ---------- Textos editables desde data/textos.json ----------
+   El HTML ya trae los textos actuales; si el archivo no carga, la página queda igual. */
+(function () {
+  function $(s) { return document.querySelector(s); }
+  function txt(el, v) { if (el && typeof v === 'string') el.textContent = v; }
+
+  function titulo(el, v) {                 // *palabra* = resaltado
+    if (!el || typeof v !== 'string') return;
+    el.textContent = '';
+    v.split('*').forEach(function (parte, i) {
+      if (!parte) return;
+      if (i % 2 === 1) { var em = document.createElement('em'); em.textContent = parte; el.appendChild(em); }
+      else el.appendChild(document.createTextNode(parte));
+    });
+  }
+
+  function hero(h) {
+    if (!h) return;
+    txt($('.hero .eyebrow'), h.etiqueta);
+    titulo($('.hero h1'), h.titulo);
+    txt($('.hero .lede'), h.descripcion);
+    var cajas = document.querySelectorAll('.stat-strip > div');
+    (h.datos || []).forEach(function (d, i) {
+      if (!cajas[i]) return;
+      txt(cajas[i].querySelector('strong'), d.valor);
+      txt(cajas[i].querySelector('span'), d.texto);
+    });
+  }
+
+  function nosotros(n) {
+    if (!n) return;
+    ['vision', 'mision', 'objetivo'].forEach(function (k) {
+      var d = n[k], panel = $('.nivel-panel[data-nivel="' + k + '"]');
+      if (!d || !panel) return;
+      txt(panel.querySelector('h3'), d.titulo);
+      txt(panel.querySelector('p'), d.texto);
+      var ul = panel.querySelector('ul');
+      if (Array.isArray(d.puntos)) {
+        if (ul) ul.remove();
+        if (d.puntos.length) {
+          ul = document.createElement('ul');
+          d.puntos.forEach(function (p) { var li = document.createElement('li'); li.textContent = p; ul.appendChild(li); });
+          panel.querySelector('p').parentNode.appendChild(ul);
+        }
+      }
+      var kw = panel.querySelector('.keywords');
+      if (kw && Array.isArray(d.claves)) {
+        kw.textContent = '';
+        d.claves.forEach(function (c) { var s = document.createElement('span'); s.textContent = c; kw.appendChild(s); });
+      }
+    });
+  }
+
+  function pilares(lista) {
+    var g = $('.pilares-grid');
+    if (!g || !Array.isArray(lista) || !lista.length) return;
+    g.textContent = '';
+    lista.forEach(function (p) {
+      var c = document.createElement('div'); c.className = 'pilar-card';
+      var i = document.createElement('div'); i.className = 'pilar-ico'; i.setAttribute('aria-hidden', 'true'); i.textContent = p.icono || '';
+      var h = document.createElement('h3'); h.textContent = p.titulo || '';
+      var t = document.createElement('p'); t.textContent = p.texto || '';
+      c.appendChild(i); c.appendChild(h); c.appendChild(t); g.appendChild(c);
+    });
+  }
+
+  function transporte(t) {
+    if (!t) return;
+    txt($('#transporte .section-head h2'), t.titulo);
+    txt($('#transporte .section-head p'), t.texto);
+    txt($('#transporte .acceso-card b'), t.publico_titulo);
+    txt($('#transporte .acceso-card small'), t.publico_texto);
+  }
+
+  function fila(id, icono, rotulo, valor) {
+    var el = document.getElementById(id);
+    if (!el || typeof valor !== 'string') return;
+    el.textContent = icono;
+    var b = document.createElement('b'); b.textContent = rotulo;
+    el.appendChild(b); el.appendChild(document.createTextNode(valor));
+  }
+
+  function contacto(c) {
+    if (!c) return;
+    txt(document.getElementById('ctTitulo'), c.titulo);
+    fila('ctDir', '📍', 'Dirección', c.direccion);
+    fila('ctTel', '☎️', 'Teléfono fijo', c.telefono);
+    fila('ctCel', '📱', 'Celular / WhatsApp', c.celular);
+    if (/^\d{8,15}$/.test(String(c.whatsapp || ''))) {
+      document.querySelectorAll('a[href^="https://wa.me/"]').forEach(function (a) { a.href = 'https://wa.me/' + c.whatsapp; });
+    }
+  }
+
+  fetch('data/textos.json', { cache: 'no-cache' })
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (t) { hero(t.hero); nosotros(t.nosotros); pilares(t.pilares); transporte(t.transporte); contacto(t.contacto); })
+    .catch(function () { /* se queda el texto que ya trae la página */ });
+})();

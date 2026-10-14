@@ -6,7 +6,7 @@
  * - Qué guarda: archivos JSON y fotos en el repositorio de GitHub; el sitio los lee solo.
  * - La clave de GitHub se guarda en las Propiedades del script (menú "Panel web").
  *
- * Módulos: Noticias y Fotos del carrusel. Los demás (textos del sitio, accesos, videos) se agregan después.
+ * Módulos: Noticias, Fotos del carrusel y Textos del sitio (solo ADMIN). Accesos y videos se agregan después.
  */
 
 const CONFIG = {
@@ -17,6 +17,7 @@ const CONFIG = {
   PAGINA_SITIO: 'sitio.html',            // cuando sea el sitio oficial: cambiar a '' (ver LEEME)
   ARCHIVO_NOTICIAS: 'data/noticias.json',
   CARPETA_IMG: 'assets/noticias',
+  ARCHIVO_TEXTOS: 'data/textos.json',
   ARCHIVO_GALERIA: 'data/galeria.json',
   CARPETA_GAL: 'assets/galeria',
   MAX_GALERIA: 20,
@@ -85,6 +86,7 @@ function panelCargar() {
     usuario: u,
     noticias: leerNoticias_().lista,
     galeria: galeriaLeer_().lista,
+    textos: textosParaPanel_(u),   // los textos solo los ve y edita un ADMIN
     imgBase: 'https://raw.githubusercontent.com/' + CONFIG.OWNER + '/' + CONFIG.REPO + '/' + CONFIG.BRANCH + '/',
     sitioUrl: CONFIG.SITIO_URL + CONFIG.PAGINA_SITIO,
     visibles: CONFIG.VISIBLES_EN_SITIO,
@@ -364,6 +366,103 @@ function galeriaMover(id, dir) {
     galeriaGuardarArchivo_(act.lista, act.sha, 'Carrusel: se cambia el orden de las fotos (' + u.email + ')');
     registrar_(u, 'Foto movida', (t.titulo || t.etiqueta || t.id) + (dir < 0 ? ' ← antes' : ' → después'));
     return act.lista;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/* ───────────────────────── TEXTOS DEL SITIO (solo ADMIN) ───────────────────────── */
+
+function exigirAdmin_() {
+  const u = exigir_();
+  if (u.rol !== 'ADMIN') throw new Error('Solo un administrador puede cambiar los textos del sitio.');
+  return u;
+}
+
+// Para el panel: solo ADMIN; si el archivo falla, no se cae todo el panel (Noticias y Fotos siguen andando)
+function textosParaPanel_(u) {
+  if (u.rol !== 'ADMIN') return null;
+  try { return { datos: textosLeer_().textos }; } catch (e) { return { error: String(e.message || e) }; }
+}
+
+function textosLeer_() {
+  const r = ghLeer_(CONFIG.ARCHIVO_TEXTOS);
+  if (!r) throw new Error('No existe ' + CONFIG.ARCHIVO_TEXTOS + ' en el repositorio.');
+  let t;
+  try { t = JSON.parse(r.texto); } catch (e) { throw new Error('El archivo de textos está dañado: ' + e.message); }
+  return { textos: t, sha: r.sha };
+}
+
+// Una sola línea, sin caracteres de control; devuelve el texto limpio o lanza un error entendible
+function cad_(v, max, nombre, opcional) {
+  if (v === undefined || v === null) v = '';
+  if (typeof v !== 'string') throw new Error('“' + nombre + '” no es texto.');
+  const t = v.replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!t && !opcional) throw new Error('Falta completar “' + nombre + '”.');
+  if (t.length > max) throw new Error('“' + nombre + '” es muy largo (máximo ' + max + ' letras, tiene ' + t.length + ').');
+  return t;
+}
+
+function lista_(v, min, max, nombre) {
+  if (!Array.isArray(v)) throw new Error('“' + nombre + '” no tiene el formato esperado.');
+  if (v.length < min) throw new Error('“' + nombre + '” necesita al menos ' + min + '.');
+  if (v.length > max) throw new Error('“' + nombre + '” admite como máximo ' + max + '.');
+  return v;
+}
+
+function validarTextos_(d) {
+  if (!d || typeof d !== 'object') throw new Error('Datos vacíos.');
+  const h = d.hero || {}, n = d.nosotros || {}, tr = d.transporte || {}, c = d.contacto || {};
+
+  const titulo = cad_(h.titulo, 120, 'Portada · título');
+  if ((titulo.split('*').length - 1) % 2 !== 0) throw new Error('En el título de la portada, las palabras resaltadas van entre dos asteriscos: *así*.');
+  const datos = lista_(h.datos, 4, 4, 'Portada · datos destacados').map(function (x, i) {
+    x = x || {};
+    return { valor: cad_(x.valor, 24, 'Dato ' + (i + 1) + ' · titular'), texto: cad_(x.texto, 60, 'Dato ' + (i + 1) + ' · detalle') };
+  });
+  const hero = { etiqueta: cad_(h.etiqueta, 40, 'Portada · etiqueta'), titulo: titulo, descripcion: cad_(h.descripcion, 400, 'Portada · descripción'), datos: datos };
+
+  const nosotros = {};
+  [['vision', 'Visión'], ['mision', 'Misión'], ['objetivo', 'Objetivo']].forEach(function (k) {
+    const x = n[k[0]] || {};
+    nosotros[k[0]] = {
+      titulo: cad_(x.titulo, 90, k[1] + ' · título'),
+      texto: cad_(x.texto, 500, k[1] + ' · texto'),
+      puntos: lista_(x.puntos || [], 0, 6, k[1] + ' · puntos').map(function (p, i) { return cad_(p, 140, k[1] + ' · punto ' + (i + 1)); }),
+      claves: lista_(x.claves || [], 0, 6, k[1] + ' · palabras clave').map(function (p, i) { return cad_(p, 30, k[1] + ' · palabra clave ' + (i + 1)); })
+    };
+  });
+
+  const pilares = lista_(d.pilares, 1, 8, 'Pilares').map(function (p, i) {
+    p = p || {};
+    return { icono: cad_(p.icono, 8, 'Pilar ' + (i + 1) + ' · ícono', true), titulo: cad_(p.titulo, 40, 'Pilar ' + (i + 1) + ' · título'), texto: cad_(p.texto, 320, 'Pilar ' + (i + 1) + ' · texto') };
+  });
+
+  const transporte = {
+    titulo: cad_(tr.titulo, 90, 'Transporte · título'), texto: cad_(tr.texto, 300, 'Transporte · texto'),
+    publico_titulo: cad_(tr.publico_titulo, 40, 'Transporte público · título'), publico_texto: cad_(tr.publico_texto, 100, 'Transporte público · detalle')
+  };
+
+  const wa = String(c.whatsapp || '').replace(/[\s+()-]/g, '');
+  if (!/^\d{8,15}$/.test(wa)) throw new Error('El número de WhatsApp debe tener solo dígitos con el código de país, por ejemplo 59171798840.');
+  const contacto = {
+    titulo: cad_(c.titulo, 90, 'Contacto · título'), direccion: cad_(c.direccion, 160, 'Contacto · dirección'),
+    telefono: cad_(c.telefono, 40, 'Contacto · teléfono fijo'), celular: cad_(c.celular, 40, 'Contacto · celular'), whatsapp: wa
+  };
+  return { hero: hero, nosotros: nosotros, pilares: pilares, transporte: transporte, contacto: contacto };
+}
+
+/** Recibe el documento completo de textos; devuelve el documento ya limpio y guardado. */
+function textosGuardar(datos) {
+  const u = exigirAdmin_();
+  const t = validarTextos_(datos);
+  const lock = LockService.getScriptLock();
+  lock.waitLock(25000);
+  try {
+    const act = textosLeer_();
+    ghPonerTexto_(CONFIG.ARCHIVO_TEXTOS, JSON.stringify(t, null, 2) + '\n', 'Textos del sitio actualizados (' + u.email + ')', act.sha);
+    registrar_(u, 'Textos del sitio', 'Se guardaron cambios en los textos');
+    return t;
   } finally {
     lock.releaseLock();
   }

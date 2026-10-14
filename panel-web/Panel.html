@@ -121,7 +121,28 @@
 
   /* ---- fotos del carrusel ---- */
   .nav-item{cursor:pointer}
+
+  /* ---- textos del sitio ---- */
+  .sec{background:#fff;border:1px solid var(--line);border-radius:14px;margin-bottom:14px;box-shadow:var(--shadow)}
+  .sec>summary{cursor:pointer;padding:15px 18px;font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:17px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+  .sec>summary::-webkit-details-marker{display:none}
+  .sec>summary::after{content:'▾';color:var(--soft);transition:transform .2s}
+  .sec[open]>summary::after{transform:rotate(180deg)}
+  .sec-body{padding:4px 18px 8px;border-top:1px solid var(--line)}
+  .sub{margin:16px 0 6px;font-weight:700;color:var(--verde)}
+  .grupo{border:1px dashed var(--line);border-radius:12px;padding:12px 14px;margin:10px 0 14px;background:var(--paper)}
+  .cols2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+  @media (max-width:700px){.cols2{grid-template-columns:1fr}}
+  .pilar-ed{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:10px 0;background:var(--paper)}
+  .pilar-ed .acc{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+  .pilar-ed .acc button,.btn-mini{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 12px;font-weight:600}
+  .pilar-ed .acc button:disabled{opacity:.4;cursor:default}
+  .pilar-ed .acc .quitar{color:var(--rojo)}
+  .barra-guardar{position:sticky;bottom:0;background:linear-gradient(0deg,var(--paper) 70%,transparent);padding:14px 0 6px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .barra-guardar .estado{color:var(--soft)}
+  .barra-guardar .estado.sucio{color:var(--sun-deep);font-weight:700}
   .vista[hidden]{display:none}
+  [hidden]{display:none !important}
   .num{position:absolute;left:10px;top:10px;background:rgba(14,30,20,.78);color:#fff;font-weight:700;border-radius:99px;min-width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;padding:0 8px}
   .card .foto{position:relative}
   .orden{display:flex;gap:8px;padding:10px 18px 0}
@@ -147,7 +168,7 @@
     </div>
     <button class="nav-item act" data-vista="Noticias">📰&nbsp; Noticias</button>
     <button class="nav-item" data-vista="Fotos">🖼️&nbsp; Fotos del carrusel</button>
-    <button class="nav-item" disabled>✏️&nbsp; Textos del sitio <span class="pronto">pronto</span></button>
+    <button class="nav-item" data-vista="Textos" id="navTextos" hidden>✏️&nbsp; Textos del sitio</button>
     <button class="nav-item" disabled>🔗&nbsp; Accesos y videos <span class="pronto">pronto</span></button>
     <div class="spacer"></div>
     <div class="user" id="user"></div>
@@ -180,6 +201,22 @@
       </div>
       <div class="aviso" id="avisoFotos"></div>
       <div class="grid" id="gridFotos"><div class="carga">Cargando fotos…</div></div>
+    </div>
+
+    <div class="vista" id="vTextos" hidden>
+      <div class="head">
+        <div>
+          <h1>Textos del sitio</h1>
+          <p>Cambia lo que dice el sitio: portada, misión y visión, pilares, transporte y contacto. Solo lo ve un administrador.</p>
+        </div>
+      </div>
+      <div class="aviso">Los cambios se publican <b>todos juntos</b> al presionar “Guardar y publicar”, y el sitio se actualiza en 1 o 2 minutos. Todo lo que escribas es <b>público en internet</b>.</div>
+      <div id="formTextos"><div class="carga">Cargando textos…</div></div>
+      <div class="barra-guardar" id="barraTextos" hidden>
+        <button class="btn btn-verde" id="btnGuardarTextos">Guardar y publicar</button>
+        <button class="btn btn-ghost" id="btnDescartarTextos">Descartar cambios</button>
+        <span class="estado" id="estadoTextos">Sin cambios</span>
+      </div>
     </div>
   </main>
 </div>
@@ -260,7 +297,7 @@
 
 <script>
 (function(){
-  var S = { noticias:[], galeria:[], imgBase:'', visibles:6, hoy:'', filtro:'todas', q:'', editId:null, img:{accion:'mantener'}, imgPrevia:'', fEditId:null, fImg:{accion:'mantener'}, fPrevia:'' };
+  var S = { noticias:[], galeria:[], textos:null, t:null, sucio:false, imgBase:'', visibles:6, hoy:'', filtro:'todas', q:'', editId:null, img:{accion:'mantener'}, imgPrevia:'', fEditId:null, fImg:{accion:'mantener'}, fPrevia:'' };
   var MESES=['ene.','feb.','mar.','abr.','may.','jun.','jul.','ago.','sep.','oct.','nov.','dic.'];
   var $=function(id){return document.getElementById(id)};
 
@@ -457,7 +494,7 @@
 
   /* ---------- navegación entre vistas ---------- */
   function irA(v){
-    ['Noticias','Fotos'].forEach(function(n){ $('v'+n).hidden=(n!==v); });
+    ['Noticias','Fotos','Textos'].forEach(function(n){ $('v'+n).hidden=(n!==v); });
     document.querySelectorAll('.nav-item[data-vista]').forEach(function(b){ b.classList.toggle('act',b.getAttribute('data-vista')===v); });
     window.scrollTo(0,0);
   }
@@ -563,6 +600,134 @@
   $('fBtnCancelar').onclick=cerrarFoto; $('fbtnX').onclick=cerrarFoto;
   $('btnNuevaFoto').onclick=function(){ abrirFoto(null); };
 
+
+  /* ---------- TEXTOS DEL SITIO (solo ADMIN) ---------- */
+  function clonar(o){ return JSON.parse(JSON.stringify(o)); }
+  function getP(o,p){ return p.split('.').reduce(function(a,k){ return a==null?a:a[k]; },o); }
+  function setP(o,p,v){ var ks=p.split('.'), u=ks.pop(); getP(o,ks.join('.')||'')[u]=v; }
+  function marcar(){ S.sucio=true; var e=$('estadoTextos'); e.textContent='Hay cambios sin publicar'; e.classList.add('sucio'); }
+  function limpiarMarca(){ S.sucio=false; var e=$('estadoTextos'); e.textContent='Sin cambios'; e.classList.remove('sucio'); }
+  window.addEventListener('beforeunload',function(ev){ if(S.sucio){ ev.preventDefault(); ev.returnValue=''; } });
+
+  // tipo: 'line' | 'area' | 'lines' (una por renglón) | 'tags' (separadas por coma)
+  function campoT(rot,ruta,max,tipo,ayuda,maxItems){
+    var id='t_'+ruta.replace(/\./g,'_');
+    var v=getP(S.t,ruta);
+    var texto = (tipo==='lines') ? (v||[]).join('\n') : (tipo==='tags') ? (v||[]).join(', ') : (v||'');
+    var inp = (tipo==='line'||tipo==='tags') ? el('input',{type:'text',id:id}) : el('textarea',{id:id,style:'min-height:'+(tipo==='lines'?'96px':'80px')});
+    inp.value=texto;
+    var cuenta=el('span',{class:'cuenta'});
+    function medir(){
+      var val=inp.value, mal=false, txt;
+      if(tipo==='lines'||tipo==='tags'){
+        var partes=(tipo==='lines'?val.split('\n'):val.split(',')).map(function(x){return x.trim();}).filter(Boolean);
+        var mayor=partes.reduce(function(m,x){return Math.max(m,x.length);},0);
+        mal = mayor>max || partes.length>(maxItems||99);
+        txt=partes.length+'/'+maxItems+' · máx. '+max+' letras c/u';
+      } else { mal = val.length>max; txt=val.length+'/'+max; }
+      cuenta.textContent=txt; cuenta.classList.toggle('mal',mal);
+    }
+    inp.addEventListener('input',function(){
+      var val=inp.value;
+      if(tipo==='lines') setP(S.t,ruta,val.split('\n').map(function(x){return x.trim();}).filter(Boolean));
+      else if(tipo==='tags') setP(S.t,ruta,val.split(',').map(function(x){return x.trim();}).filter(Boolean));
+      else setP(S.t,ruta,val);
+      medir(); marcar();
+    });
+    medir();
+    return el('div',{class:'campo'},[ el('label',{class:'l',for:id},[document.createTextNode(rot+' '),cuenta]), inp, ayuda?el('small',{text:ayuda}):null ]);
+  }
+
+  function seccion(titulo,hijos,abierta){
+    var d=el('details',{class:'sec'},[ el('summary',{text:titulo}), el('div',{class:'sec-body'},hijos) ]);
+    if(abierta) d.open=true; return d;
+  }
+
+  function pilaresEd(){
+    var caja=el('div');
+    function dibujar(){
+      caja.textContent='';
+      var n=S.t.pilares.length;
+      S.t.pilares.forEach(function(p,i){
+        var ruta='pilares.'+i;
+        var acc=el('div',{class:'acc'},[
+          el('button',{type:'button',text:'↑ Subir',onclick:function(){ mover(i,-1); }}),
+          el('button',{type:'button',text:'↓ Bajar',onclick:function(){ mover(i,1); }}),
+          el('button',{type:'button',class:'quitar',text:'Quitar este pilar',onclick:function(){ quitar(i); }})
+        ]);
+        if(i===0) acc.children[0].setAttribute('disabled','disabled'); else acc.children[0].removeAttribute('disabled');
+        if(i===n-1) acc.children[1].setAttribute('disabled','disabled'); else acc.children[1].removeAttribute('disabled');
+        if(n<=1) acc.children[2].setAttribute('disabled','disabled'); else acc.children[2].removeAttribute('disabled');
+        caja.appendChild(el('div',{class:'pilar-ed'},[
+          el('div',{class:'sub',text:'Pilar '+(i+1)}),
+          el('div',{class:'cols2'},[ campoT('Ícono (un emoji)',ruta+'.icono',8,'line'), campoT('Título',ruta+'.titulo',40,'line') ]),
+          campoT('Texto',ruta+'.texto',320,'area'),
+          acc
+        ]));
+      });
+      var add=el('button',{type:'button',class:'btn-mini',text:'+ Agregar un pilar',onclick:function(){
+        S.t.pilares.push({icono:'⭐',titulo:'',texto:''}); marcar(); dibujar();
+      }});
+      if(n>=8){ add.disabled=true; add.title='Máximo 8 pilares'; }
+      caja.appendChild(add);
+    }
+    function mover(i,d){ var j=i+d, a=S.t.pilares; var t=a[i]; a[i]=a[j]; a[j]=t; marcar(); dibujar(); }
+    function quitar(i){ confirmar('¿Quitar este pilar?','“'+(S.t.pilares[i].titulo||'Pilar '+(i+1))+'” saldrá del sitio cuando guardes y publiques.',function(){ S.t.pilares.splice(i,1); marcar(); dibujar(); }); }
+    dibujar(); return caja;
+  }
+
+  function renderTextos(){
+    var f=$('formTextos');
+    var abiertas=[].map.call(f.querySelectorAll(':scope > details'),function(d){ return d.open; });   // recordar qué secciones estaban abiertas
+    f.textContent='';
+    if(!S.t){ return; }
+    var datos=[0,1,2,3].map(function(i){
+      return el('div',{class:'grupo'},[ el('div',{class:'sub',text:'Dato destacado '+(i+1)}),
+        el('div',{class:'cols2'},[ campoT('Titular','hero.datos.'+i+'.valor',24,'line'), campoT('Detalle','hero.datos.'+i+'.texto',60,'line') ]) ]);
+    });
+    f.appendChild(seccion('Portada',[
+      campoT('Etiqueta superior','hero.etiqueta',40,'line'),
+      campoT('Título principal','hero.titulo',120,'line','Las palabras entre asteriscos salen resaltadas. Ejemplo: Formamos *bachilleres bilingües* con talento.'),
+      campoT('Descripción','hero.descripcion',400,'area'),
+      el('div',{class:'sub',text:'Los 4 datos de la franja inferior'})
+    ].concat(datos),true));
+    var nos=[];
+    [['vision','Visión'],['mision','Misión'],['objetivo','Objetivo']].forEach(function(k){
+      var r='nosotros.'+k[0];
+      nos.push(el('div',{class:'grupo'},[ el('div',{class:'sub',text:k[1]}),
+        campoT('Título',r+'.titulo',90,'line'), campoT('Texto',r+'.texto',500,'area'),
+        campoT('Puntos (uno por renglón, opcional)',r+'.puntos',140,'lines','Aparecen como lista debajo del texto.',6),
+        campoT('Palabras clave (separadas por coma)',r+'.claves',30,'tags',null,6) ]));
+    });
+    f.appendChild(seccion('Acerca de nosotros: visión, misión y objetivo',nos));
+    f.appendChild(seccion('Pilares institucionales',[pilaresEd()]));
+    f.appendChild(seccion('Transporte',[
+      campoT('Título','transporte.titulo',90,'line'), campoT('Texto','transporte.texto',300,'area'),
+      el('div',{class:'cols2'},[ campoT('Transporte público · título','transporte.publico_titulo',40,'line'), campoT('Transporte público · detalle','transporte.publico_texto',100,'line') ])
+    ]));
+    f.appendChild(seccion('Contacto',[
+      campoT('Título','contacto.titulo',90,'line'), campoT('Dirección','contacto.direccion',160,'line'),
+      el('div',{class:'cols2'},[ campoT('Teléfono fijo','contacto.telefono',40,'line'), campoT('Celular','contacto.celular',40,'line') ]),
+      campoT('Número de WhatsApp (solo dígitos, con código de país)','contacto.whatsapp',15,'line','Ejemplo: 59171798840. Cambia todos los botones de WhatsApp del sitio.')
+    ]));
+    [].forEach.call(f.querySelectorAll(':scope > details'),function(d,i){ if(abiertas[i]!==undefined) d.open=abiertas[i]; });
+    $('barraTextos').hidden=false;
+  }
+  $('btnGuardarTextos').onclick=function(){
+    ocupado(true,'Guardando y publicando…');
+    servidor('textosGuardar',[S.t],function(t){ S.textos=t; S.t=clonar(t); ocupado(false); limpiarMarca(); renderTextos(); toast('Guardado ✔  El sitio se actualiza en 1 o 2 minutos.'); });
+  };
+  $('btnDescartarTextos').onclick=function(){
+    if(!S.sucio) return;
+    confirmar('¿Descartar los cambios?','Se perderá lo que escribiste desde la última vez que guardaste.',function(){ S.t=clonar(S.textos); limpiarMarca(); renderTextos(); });
+  };
+  function iniciarTextos(rol,tx){
+    if(rol!=='ADMIN') return;
+    $('navTextos').hidden=false;
+    if(tx&&tx.datos){ S.textos=tx.datos; S.t=clonar(tx.datos); renderTextos(); }
+    else { var f=$('formTextos'); f.textContent=''; f.appendChild(el('div',{class:'vacio',text:'No se pudieron cargar los textos: '+((tx&&tx.error)||'sin datos')})); }
+  }
+
   /* ---------- arranque ---------- */
   servidor('panelCargar',[],function(d){
     S.noticias=d.noticias; S.galeria=d.galeria||[]; S.imgBase=d.imgBase; S.visibles=d.visibles; S.hoy=d.hoy;
@@ -572,7 +737,7 @@
     u.appendChild(document.createTextNode(d.usuario.email));
     u.appendChild(document.createElement('br'));
     u.appendChild(el('span',{class:'rol',text:d.usuario.rol}));
-    render(); renderFotos();
+    render(); renderFotos(); iniciarTextos(d.usuario.rol,d.textos);
   },function(e){ $('grid').textContent=''; $('grid').appendChild(el('div',{class:'vacio',text:'No se pudo cargar el panel: '+mensajeError(e)})); });
 })();
 </script>
