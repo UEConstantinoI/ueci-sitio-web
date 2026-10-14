@@ -1,12 +1,14 @@
 [
   {
-    "fecha": "2026-09-12",
+    "id": "n20260912-00000",
+    "fecha": "2026-10-14",
     "titulo": "Ejemplo: inicio de inscripciones 2027",
-    "resumen": "Texto breve del comunicado. Más adelante se carga desde la planilla de Google, sin tocar código.",
-    "imagen": "",
+    "resumen": "ESTAMOS REALIZANDO LAS PRUEBAS DEL NUEVO SITIO WEB",
+    "imagen": "assets/noticias/n20260912-00000-mv8ja2lv.jpg",
     "publicar": true
   },
   {
+    "id": "n20260905-00001",
     "fecha": "2026-09-05",
     "titulo": "Ejemplo: acto cívico de aniversario",
     "resumen": "Texto breve del comunicado, con foto opcional.",
@@ -14,6 +16,7 @@
     "publicar": true
   },
   {
+    "id": "n20260828-00002",
     "fecha": "2026-08-28",
     "titulo": "Ejemplo: convocatoria a padres de familia",
     "resumen": "Texto breve del comunicado. Los más antiguos dejan de mostrarse solos (se ven los 6 más recientes).",
