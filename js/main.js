@@ -268,7 +268,7 @@
     txt(document.getElementById('ctTitulo'), c.titulo);
     fila('ctDir', '📍', 'Dirección', c.direccion);
     fila('ctTel', '☎️', 'Teléfono fijo y WhatsApp', c.telefono);
-    fila('ctCel', '📱', 'Celular', c.celular);
+    fila('ctCel', '📱', 'Celular / WhatsApp', c.celular);
     if (/^\d{8,15}$/.test(String(c.whatsapp || ''))) {
       document.querySelectorAll('a[href^="https://wa.me/"]').forEach(function (a) { a.href = 'https://wa.me/' + c.whatsapp; });
     }
@@ -278,4 +278,107 @@
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(function (t) { hero(t.hero); nosotros(t.nosotros); pilares(t.pilares); transporte(t.transporte); contacto(t.contacto); })
     .catch(function () { /* se queda el texto que ya trae la página */ });
+})();
+
+/* ---------- Videos y accesos directos desde data/videos.json y data/accesos.json ---------- */
+(function () {
+  var NOMBRES = { youtube: 'YouTube', tiktok: 'TikTok', instagram: 'Instagram', facebook: 'Facebook' };
+  var CODIGO_OK = {
+    youtube: /^[\w-]{11}$/, tiktok: /^\d{15,25}$/,
+    instagram: /^(reel|p)\/[\w-]{5,20}$/, facebook: /^(reel\/\d{6,}|watch\/\?v=\d{6,})$/
+  };
+  var URL_OK = /^https:\/\/([\w-]+\.)*(youtube\.com|youtu\.be|tiktok\.com|instagram\.com|facebook\.com)\/\S*$/;
+
+  // La dirección del reproductor se arma aquí a partir de plataforma + código (nunca de un texto libre).
+  function embed(p, c) {
+    if (p === 'youtube') return 'https://www.youtube-nocookie.com/embed/' + c + '?autoplay=1&rel=0';
+    if (p === 'tiktok') return 'https://www.tiktok.com/embed/v2/' + c;
+    if (p === 'instagram') return 'https://www.instagram.com/' + c + '/embed';
+    return 'https://www.facebook.com/plugins/video.php?href=' + encodeURIComponent('https://www.facebook.com/' + c) + '&show_text=false&autoplay=true';
+  }
+
+  function tarjeta(v) {
+    var p = v.plataforma, c = v.codigo;
+    if (!NOMBRES[p] || !CODIGO_OK[p].test(String(c))) return null;
+    var vert = p !== 'youtube';
+    var item = document.createElement('div');
+    item.className = 'vitem' + (vert ? ' vert' : '');
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'vcard p-' + p;
+    b.setAttribute('aria-label', 'Reproducir: ' + (v.titulo || NOMBRES[p]));
+    if (p === 'youtube') {
+      var img = document.createElement('img');
+      img.loading = 'lazy'; img.alt = ''; img.src = 'https://i.ytimg.com/vi/' + c + '/hqdefault.jpg';
+      b.appendChild(img);
+    } else {
+      var f = document.createElement('div'); f.className = 'vfondo'; f.textContent = NOMBRES[p]; b.appendChild(f);
+    }
+    var play = document.createElement('span'); play.className = 'play'; play.textContent = '▶'; b.appendChild(play);
+    b.addEventListener('click', function () {
+      var fr = document.createElement('iframe');
+      fr.src = embed(p, c);
+      fr.title = v.titulo || ('Video de ' + NOMBRES[p]);
+      fr.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+      fr.allowFullscreen = true;
+      b.textContent = ''; b.appendChild(fr);
+    }, { once: true });
+    item.appendChild(b);
+    var meta = document.createElement('div'); meta.className = 'vmeta';
+    if (v.titulo) { var t = document.createElement('b'); t.textContent = v.titulo; meta.appendChild(t); }
+    if (typeof v.url === 'string' && URL_OK.test(v.url)) {
+      var a = document.createElement('a'); a.href = v.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = 'Abrir en ' + NOMBRES[p] + ' ↗';
+      meta.appendChild(a);
+    }
+    item.appendChild(meta);
+    return item;
+  }
+
+  function llenar(cont, lista) {
+    cont.textContent = '';
+    var n = 0;
+    lista.forEach(function (v) { var t = tarjeta(v); if (t) { cont.appendChild(t); n++; } });
+    return n;
+  }
+
+  function cargar(url) {
+    return fetch(url, { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); });
+  }
+
+  cargar('data/videos.json').then(function (todos) {
+    if (!Array.isArray(todos)) return;
+    var vis = todos.filter(function (v) { return v && v.publicar !== false; });
+    var tes = document.getElementById('gridTestimonios');
+    if (tes) {
+      tes.className = 'vgrid';
+      var n = llenar(tes, vis.filter(function (v) { return v.categoria === 'testimonios'; }));
+      if (!n) document.getElementById('testimonios').hidden = true;
+    }
+    var vid = document.getElementById('gridVideos');
+    if (vid) {
+      var m = llenar(vid, vis.filter(function (v) { return v.categoria === 'vida'; }));
+      document.getElementById('videos').hidden = !m;
+    }
+  }).catch(function () { /* se queda lo que ya trae la página */ });
+
+  var COLORES = {
+    rojo: 'linear-gradient(135deg,#ea4335,#c5221f)', verde: 'linear-gradient(135deg,#1e8e3e,#188038)',
+    sol: 'linear-gradient(135deg,var(--sun),var(--sun-deep))', azul: 'linear-gradient(135deg,#4c5fd7,#2f3ea8)',
+    royal: 'linear-gradient(135deg,var(--royal),#142a5c)', gris: 'linear-gradient(135deg,#5f6b7c,#3a4453)'
+  };
+  cargar('data/accesos.json').then(function (lista) {
+    var g = document.getElementById('gridAccesos');
+    if (!g || !Array.isArray(lista)) return;
+    lista = lista.filter(function (x) { return x && x.publicar !== false && typeof x.url === 'string' && /^https:\/\/\S+$/.test(x.url); });
+    g.textContent = '';
+    lista.forEach(function (x) {
+      var a = document.createElement('a'); a.className = 'acceso-card'; a.href = x.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      var ico = document.createElement('div'); ico.className = 'acceso-ico'; ico.setAttribute('aria-hidden', 'true');
+      ico.style.background = COLORES[x.color] || COLORES.gris; ico.textContent = x.icono || '';
+      var b = document.createElement('b'); b.textContent = x.titulo || '';
+      a.appendChild(ico); a.appendChild(b);
+      if (x.detalle) { var s = document.createElement('small'); s.textContent = x.detalle; a.appendChild(s); }
+      g.appendChild(a);
+    });
+    document.getElementById('accesos').hidden = !lista.length;
+  }).catch(function () { /* se queda lo que ya trae la página */ });
 })();

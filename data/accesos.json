@@ -1,0 +1,47 @@
+[
+  {
+    "id": "a20261014-00001",
+    "icono": "✉️",
+    "titulo": "Correo institucional",
+    "detalle": "Gmail @ueconstantino.com",
+    "url": "https://mail.google.com/a/ueconstantino.com",
+    "color": "rojo",
+    "publicar": true
+  },
+  {
+    "id": "a20261014-00002",
+    "icono": "🎓",
+    "titulo": "Classroom",
+    "detalle": "Aulas virtuales",
+    "url": "https://classroom.google.com",
+    "color": "verde",
+    "publicar": true
+  },
+  {
+    "id": "a20261014-00003",
+    "icono": "🗂️",
+    "titulo": "Sistema de gestión",
+    "detalle": "Pagos e incidencias",
+    "url": "https://sistema.ueconstantino.com",
+    "color": "sol",
+    "publicar": true
+  },
+  {
+    "id": "a20261014-00004",
+    "icono": "📝",
+    "titulo": "Permisos",
+    "detalle": "Aviso de inasistencia",
+    "url": "https://permisos.ueconstantino.com",
+    "color": "azul",
+    "publicar": true
+  },
+  {
+    "id": "a20261014-00005",
+    "icono": "🔒",
+    "titulo": "Cambiar contraseña",
+    "detalle": "Cuenta de Google",
+    "url": "https://myaccount.google.com/security",
+    "color": "gris",
+    "publicar": true
+  }
+]

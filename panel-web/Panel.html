@@ -141,6 +141,24 @@
   .barra-guardar{position:sticky;bottom:0;background:linear-gradient(0deg,var(--paper) 70%,transparent);padding:14px 0 6px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
   .barra-guardar .estado{color:var(--soft)}
   .barra-guardar .estado.sucio{color:var(--sun-deep);font-weight:700}
+
+  /* ---- videos y accesos ---- */
+  .vtop{height:78px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;color:#fff;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:13px}
+  .vtop.p-youtube{background:linear-gradient(135deg,#e62117,#a30f08)}
+  .vtop.p-tiktok{background:linear-gradient(135deg,#111,#2b2b2b 60%,#fe2c55)}
+  .vtop.p-instagram{background:linear-gradient(135deg,#f58529,#dd2a7b 55%,#8134af)}
+  .vtop.p-facebook{background:linear-gradient(135deg,#1877f2,#0b4aa8)}
+  .vtop small{font-weight:600;letter-spacing:0;text-transform:none;opacity:.85}
+  .atop{height:78px;display:flex;align-items:center;gap:14px;padding:0 18px;color:#fff}
+  .atop .ico{width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:24px}
+  .c-rojo{background:linear-gradient(135deg,#ea4335,#c5221f)} .c-verde{background:linear-gradient(135deg,#1e8e3e,#188038)}
+  .c-sol{background:linear-gradient(135deg,#f0981a,#b4690b)} .c-azul{background:linear-gradient(135deg,#4c5fd7,#2f3ea8)}
+  .c-royal{background:linear-gradient(135deg,#1d3a7a,#142a5c)} .c-gris{background:linear-gradient(135deg,#5f6b7c,#3a4453)}
+  .url-corta{word-break:break-all;color:var(--soft);font-size:12.5px}
+  .detecta{margin-top:5px;font-size:13px;font-weight:600}
+  .detecta.ok{color:var(--verde)} .detecta.mal{color:var(--rojo)}
+  select{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;background:#fff}
+  .card.oculta .vtop,.card.oculta .atop{opacity:.55}
   .vista[hidden]{display:none}
   [hidden]{display:none !important}
   .num{position:absolute;left:10px;top:10px;background:rgba(14,30,20,.78);color:#fff;font-weight:700;border-radius:99px;min-width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;padding:0 8px}
@@ -169,7 +187,8 @@
     <button class="nav-item act" data-vista="Noticias">📰&nbsp; Noticias</button>
     <button class="nav-item" data-vista="Fotos">🖼️&nbsp; Fotos del carrusel</button>
     <button class="nav-item" data-vista="Textos" id="navTextos" hidden>✏️&nbsp; Textos del sitio</button>
-    <button class="nav-item" disabled>🔗&nbsp; Accesos y videos <span class="pronto">pronto</span></button>
+    <button class="nav-item" data-vista="Videos">🎬&nbsp; Videos</button>
+    <button class="nav-item" data-vista="Accesos" id="navAccesos" hidden>🔗&nbsp; Accesos directos</button>
     <div class="spacer"></div>
     <div class="user" id="user"></div>
     <a class="ver-sitio" id="verSitio" href="#" target="_blank" rel="noopener">Ver el sitio ↗</a>
@@ -201,6 +220,31 @@
       </div>
       <div class="aviso" id="avisoFotos"></div>
       <div class="grid" id="gridFotos"><div class="carga">Cargando fotos…</div></div>
+    </div>
+
+
+    <div class="vista" id="vVideos" hidden>
+      <div class="head">
+        <div>
+          <h1>Videos</h1>
+          <p>Pega el enlace de un video de TikTok, Instagram, Facebook o YouTube y aparece en el sitio. No hay que subir el archivo.</p>
+        </div>
+        <button class="btn btn-sun" id="btnNuevoVideo">+ Nuevo video</button>
+      </div>
+      <div class="aviso" id="avisoVideos"></div>
+      <div class="grid" id="gridVideos"><div class="carga">Cargando videos…</div></div>
+    </div>
+
+    <div class="vista" id="vAccesos" hidden>
+      <div class="head">
+        <div>
+          <h1>Accesos directos</h1>
+          <p>Los botones de la sección “Accesos directos” del sitio, en este orden. Solo un administrador puede cambiarlos.</p>
+        </div>
+        <button class="btn btn-sun" id="btnNuevoAcceso">+ Nuevo acceso</button>
+      </div>
+      <div class="aviso" id="avisoAccesos"></div>
+      <div class="grid" id="gridAccesos"><div class="carga">Cargando accesos…</div></div>
     </div>
 
     <div class="vista" id="vTextos" hidden>
@@ -286,6 +330,13 @@
 </div></div>
 
 <!-- Confirmar -->
+
+<div class="velo" id="veloG"><div class="modal" style="max-width:560px" role="dialog" aria-modal="true" aria-labelledby="gmTitulo">
+  <div class="m-head"><h2 id="gmTitulo">Editar</h2><button class="x" id="gbtnX" aria-label="Cerrar">×</button></div>
+  <div class="m-body uno" id="gmCampos"></div>
+  <div class="error" id="gError"></div>
+  <div class="m-foot"><button class="btn btn-ghost" id="gBtnCancelar">Cancelar</button><button class="btn btn-verde" id="gBtnGuardar">Guardar</button></div>
+</div></div>
 <div class="velo" id="veloC"><div class="modal chico" role="alertdialog" aria-modal="true">
   <div class="m-head"><h2 id="cTit">¿Eliminar?</h2></div>
   <div class="m-body uno"><p id="cTxt" style="margin:0"></p></div>
@@ -297,7 +348,7 @@
 
 <script>
 (function(){
-  var S = { noticias:[], galeria:[], textos:null, t:null, timg:{accion:'mantener'}, sucio:false, imgBase:'', visibles:6, hoy:'', filtro:'todas', q:'', editId:null, img:{accion:'mantener'}, imgPrevia:'', fEditId:null, fImg:{accion:'mantener'}, fPrevia:'' };
+  var S = { noticias:[], galeria:[], videos:[], accesos:[], textos:null, t:null, timg:{accion:'mantener'}, sucio:false, imgBase:'', visibles:6, hoy:'', filtro:'todas', q:'', editId:null, img:{accion:'mantener'}, imgPrevia:'', fEditId:null, fImg:{accion:'mantener'}, fPrevia:'' };
   var MESES=['ene.','feb.','mar.','abr.','may.','jun.','jul.','ago.','sep.','oct.','nov.','dic.'];
   var $=function(id){return document.getElementById(id)};
 
@@ -489,12 +540,12 @@
   $('btnCancelar').onclick=cerrarEditor; $('btnX').onclick=cerrarEditor;
   $('btnNueva').onclick=function(){ abrirEditor(null); };
   $('buscar').addEventListener('input',function(){ S.q=this.value; render(); });
-  document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ cerrarEditor(); cerrarFoto(); $('veloC').classList.remove('on'); } });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ cerrarEditor(); cerrarFoto(); cerrarG(); $('veloC').classList.remove('on'); } });
 
 
   /* ---------- navegación entre vistas ---------- */
   function irA(v){
-    ['Noticias','Fotos','Textos'].forEach(function(n){ $('v'+n).hidden=(n!==v); });
+    ['Noticias','Fotos','Videos','Accesos','Textos'].forEach(function(n){ $('v'+n).hidden=(n!==v); });
     document.querySelectorAll('.nav-item[data-vista]').forEach(function(b){ b.classList.toggle('act',b.getAttribute('data-vista')===v); });
     window.scrollTo(0,0);
   }
@@ -737,7 +788,7 @@
     ]));
     f.appendChild(seccion('Contacto',[
       campoT('Título','contacto.titulo',90,'line'), campoT('Dirección','contacto.direccion',160,'line'),
-      el('div',{class:'cols2'},[ campoT('Teléfono fijo (también WhatsApp)','contacto.telefono',40,'line'), campoT('Celular','contacto.celular',40,'line') ]),
+      el('div',{class:'cols2'},[ campoT('Teléfono fijo (también WhatsApp)','contacto.telefono',40,'line'), campoT('Celular (también WhatsApp)','contacto.celular',40,'line') ]),
       campoT('Número de WhatsApp (solo dígitos, con código de país)','contacto.whatsapp',15,'line','Es el número al que escriben los botones de WhatsApp del sitio. Ejemplo: 59144289388 (591 = Bolivia, 4 = Cochabamba).')
     ]));
     [].forEach.call(f.querySelectorAll(':scope > details'),function(d,i){ if(abiertas[i]!==undefined) d.open=abiertas[i]; });
@@ -758,16 +809,198 @@
     else { var f=$('formTextos'); f.textContent=''; f.appendChild(el('div',{class:'vacio',text:'No se pudieron cargar los textos: '+((tx&&tx.error)||'sin datos')})); }
   }
 
+
+  /* ---------- VIDEOS Y ACCESOS (lista con editor genérico) ---------- */
+// Reconoce el enlace de un video y devuelve { plataforma, codigo }. Solo YouTube, TikTok, Instagram y Facebook.
+function parsearVideo_(entrada) {
+  var u = String(entrada || '').trim();
+  if (!u) throw new Error('Pega el enlace del video.');
+  if (u.length > 300) throw new Error('El enlace es demasiado largo.');
+  if (/\s/.test(u)) throw new Error('El enlace no debe tener espacios.');
+  if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+  var m = u.match(/^https?:\/\/([^\/?#:]+)(?::\d+)?([^?#]*)(\?[^#]*)?/i);
+  if (!m) throw new Error('El enlace no es válido.');
+  var host = m[1].toLowerCase().replace(/^(www|m|web|mobile)\./, '');
+  var path = m[2] || '', qs = m[3] || '';
+  function q(k) { var r = qs.match(new RegExp('[?&]' + k + '=([^&]+)')); return r ? r[1] : ''; }
+  var r;
+  if (host === 'youtu.be') {
+    r = path.match(/^\/([\w-]{11})(?:\/|$)/);
+    if (r) return { plataforma: 'youtube', codigo: r[1] };
+  } else if (host === 'youtube.com') {
+    var id = path === '/watch' ? q('v') : ((path.match(/^\/(?:shorts|embed|live)\/([\w-]{11})(?:\/|$)/) || [])[1] || '');
+    if (/^[\w-]{11}$/.test(id)) return { plataforma: 'youtube', codigo: id };
+  } else if (host === 'vm.tiktok.com' || host === 'vt.tiktok.com') {
+    throw new Error('Ese es un enlace corto de TikTok. Ábrelo en el navegador y copia la dirección larga (la que tiene /video/ y números).');
+  } else if (host === 'tiktok.com') {
+    r = path.match(/^\/@[\w.\-]+\/video\/(\d{15,25})(?:\/|$)/);
+    if (r) return { plataforma: 'tiktok', codigo: r[1] };
+  } else if (host === 'instagram.com') {
+    r = path.match(/^\/(?:[\w.]+\/)?(reel|reels|p)\/([\w-]{5,20})(?:\/|$)/);
+    if (r) return { plataforma: 'instagram', codigo: (r[1] === 'p' ? 'p' : 'reel') + '/' + r[2] };
+  } else if (host === 'fb.watch') {
+    throw new Error('Ese es un enlace corto de Facebook. Ábrelo en el navegador y copia la dirección larga.');
+  } else if (host === 'facebook.com') {
+    r = path.match(/^\/reel\/(\d{6,})(?:\/|$)/);
+    if (r) return { plataforma: 'facebook', codigo: 'reel/' + r[1] };
+    if (/^\/(?:watch|video\.php)\/?$/.test(path) && /^\d{6,}$/.test(q('v'))) return { plataforma: 'facebook', codigo: 'watch/?v=' + q('v') };
+    r = path.match(/\/videos\/(?:[^\/]+\/)?(\d{6,})(?:\/|$)/);
+    if (r) return { plataforma: 'facebook', codigo: 'watch/?v=' + r[1] };
+  } else {
+    throw new Error('Solo se aceptan enlaces de YouTube, TikTok, Instagram o Facebook.');
+  }
+  throw new Error('No reconozco ese enlace como un video. Copia el enlace desde el botón “Compartir” del video.');
+}
+
+  var NOMBRES_P={youtube:'YouTube',tiktok:'TikTok',instagram:'Instagram',facebook:'Facebook'};
+  var gCfg=null, gItem=null;
+
+  function cerrarG(){ $('veloG').classList.remove('on'); gCfg=null; gItem=null; }
+  function errorG(m){ var e=$('gError'); e.textContent=m; e.classList.add('on'); }
+  $('gbtnX').onclick=cerrarG; $('gBtnCancelar').onclick=cerrarG;
+
+  function abrirG(cfg,item){
+    gCfg=cfg; gItem=item||null;
+    var v=item||cfg.defecto();
+    $('gmTitulo').textContent=(item?'Editar ':'Nuevo ')+cfg.nombre;
+    $('gError').classList.remove('on');
+    var cont=$('gmCampos'); cont.textContent='';
+    cfg.campos.forEach(function(c){
+      var id='g_'+c.k, w;
+      if(c.t==='check'){
+        w=el('div',{class:'sw'},[ el('input',{type:'checkbox',id:id}), el('label',{for:id,style:'cursor:pointer'},[ el('b',{text:c.rot}), el('span',{text:c.ayuda||''}) ]) ]);
+        w.querySelector('input').checked=!!v[c.k];
+        cont.appendChild(w); return;
+      }
+      var cuenta=el('span',{class:'cuenta'}), inp, extra=null;
+      if(c.t==='select'){
+        inp=el('select',{id:id}); c.opciones.forEach(function(o){ var op=el('option',{value:o[0],text:o[1]}); inp.appendChild(op); }); inp.value=v[c.k]||c.opciones[0][0];
+      } else {
+        inp=el('input',{type:'text',id:id}); inp.value=v[c.k]||'';
+        function medir(){ cuenta.textContent=inp.value.length+'/'+c.max; cuenta.classList.toggle('mal',inp.value.length>c.max); }
+        inp.addEventListener('input',medir); medir();
+      }
+      if(c.detecta){
+        extra=el('div',{class:'detecta'});
+        var pintar=function(){ var r=c.detecta(inp.value); extra.textContent=r.texto; extra.className='detecta '+(r.ok?'ok':(inp.value.trim()?'mal':'')); };
+        inp.addEventListener('input',pintar); pintar();
+      }
+      cont.appendChild(el('div',{class:'campo'},[ el('label',{class:'l',for:id},[document.createTextNode(c.rot+' '),cuenta]), inp, extra, c.ayuda?el('small',{text:c.ayuda}):null ]));
+    });
+    $('veloG').classList.add('on');
+    var primero=cont.querySelector('input,select'); if(primero) primero.focus();
+  }
+
+  $('gBtnGuardar').onclick=function(){
+    if(!gCfg) return;
+    var cfg=gCfg, d={};
+    if(gItem) d.id=gItem.id;
+    cfg.campos.forEach(function(c){
+      var e=$('g_'+c.k);
+      if(c.t==='check') d[c.k]=e.checked; else d[c.k]=e.value;
+      if(c.max && c.t!=='check' && c.t!=='select' && d[c.k].length>c.max){ d.__mal=c.rot+' es muy largo (máximo '+c.max+' letras).'; }
+    });
+    if(d.__mal) return errorG(d.__mal);
+    if(cfg.validar){ var m=cfg.validar(d); if(m) return errorG(m); }
+    $('gError').classList.remove('on'); ocupado(true,'Guardando y publicando…');
+    servidor(cfg.srv.guardar,[d],function(l){
+      cfg.set(l); ocupado(false); cerrarG(); renderLista(cfg); toast('Guardado ✔  El sitio se actualiza en 1 o 2 minutos.');
+    },function(e){ ocupado(false); errorG(mensajeError(e)); });
+  };
+
+  function renderLista(cfg){
+    var g=$(cfg.grid); g.textContent=''; var l=cfg.get();
+    var vis=l.filter(function(x){return x.publicar;}).length;
+    $(cfg.aviso).textContent=cfg.avisoTxt(l.length,vis);
+    if(!l.length){ g.appendChild(el('div',{class:'vacio',text:cfg.vacio})); return; }
+    l.forEach(function(it,i){
+      var orden=el('div',{class:'orden'},[
+        el('button',{type:'button',text:'◀ Antes',onclick:function(){ moverLista(cfg,it,-1); }}),
+        el('button',{type:'button',text:'Después ▶',onclick:function(){ moverLista(cfg,it,1); }})
+      ]);
+      if(i===0) orden.children[0].setAttribute('disabled','disabled');
+      if(i===l.length-1) orden.children[1].setAttribute('disabled','disabled');
+      var badges=[ it.publicar?el('span',{class:'badge',text:'● Visible en el sitio'}):el('span',{class:'badge gris',text:'Oculto'}) ].concat(cfg.badges?cfg.badges(it):[]);
+      var cuerpo=el('div',{class:'cuerpo'},cfg.cuerpo(it).concat([el('div',{class:'estado'},badges)]));
+      var acc=el('div',{class:'acciones'},[
+        el('button',{type:'button',text:'Editar',onclick:function(){ abrirG(cfg,it); }}),
+        el('button',{type:'button',text:it.publicar?'Ocultar':'Mostrar',onclick:function(){ alternarLista(cfg,it); }}),
+        el('button',{type:'button',class:'del',text:'Eliminar','aria-label':'Eliminar '+cfg.nombre,onclick:function(){ pedirEliminar2(cfg,it); }})
+      ]);
+      g.appendChild(el('div',{class:'card'+(it.publicar?'':' oculta')},[cfg.tope(it),cuerpo,orden,acc]));
+    });
+  }
+  function moverLista(cfg,it,dir){
+    ocupado(true,'Cambiando el orden…');
+    servidor(cfg.srv.mover,[it.id,dir],function(l){ cfg.set(l); ocupado(false); renderLista(cfg); toast('Orden guardado.'); });
+  }
+  function alternarLista(cfg,it){
+    var d=Object.assign({},it,{publicar:!it.publicar});
+    ocupado(true,it.publicar?'Ocultando…':'Mostrando…');
+    servidor(cfg.srv.guardar,[d],function(l){ cfg.set(l); ocupado(false); renderLista(cfg); toast(it.publicar?'Oculto. El sitio se actualiza en 1 o 2 minutos.':'Visible. El sitio se actualiza en 1 o 2 minutos.'); });
+  }
+  function pedirEliminar2(cfg,it){
+    confirmar('¿Eliminar este '+cfg.nombre+'?','“'+(it.titulo||cfg.nombre)+'” se quitará del sitio y no se puede deshacer. Si solo quieres que no se vea, usa “Ocultar”.',function(){
+      ocupado(true,'Eliminando…');
+      servidor(cfg.srv.eliminar,[it.id],function(l){ cfg.set(l); ocupado(false); renderLista(cfg); toast('Eliminado.'); });
+    });
+  }
+
+  var CFG_VIDEOS={
+    nombre:'video', grid:'gridVideos', aviso:'avisoVideos', get:function(){return S.videos;}, set:function(l){S.videos=l;},
+    srv:{guardar:'videoGuardar',eliminar:'videoEliminar',mover:'videoMover'},
+    vacio:'Todavía no hay videos. Agrega el primero con “+ Nuevo video”.',
+    avisoTxt:function(n,v){ return n?('Hay '+n+' video(s); '+v+' visible(s). El orden de esta lista es el orden en el sitio. Máximo 24. Los videos de TikTok, Instagram y Facebook deben ser públicos para verse.'):'Todavía no hay videos.'; },
+    defecto:function(){ return {titulo:'',url:'',categoria:'vida',publicar:true}; },
+    campos:[
+      {k:'url',rot:'Enlace del video',max:300,detecta:function(v){ if(!v.trim()) return {ok:false,texto:'Pega aquí el enlace (botón “Compartir” → “Copiar enlace”).'}; try{ var r=parsearVideo_(v); return {ok:true,texto:'✔ '+NOMBRES_P[r.plataforma]+' reconocido'}; }catch(e){ return {ok:false,texto:mensajeError(e)}; } }},
+      {k:'titulo',rot:'Título',max:80,ayuda:'Se muestra debajo del video.'},
+      {k:'categoria',rot:'Dónde se muestra',t:'select',opciones:[['vida','Videos del colegio (actividades, actos…)'],['testimonios','Testimonios']]},
+      {k:'publicar',rot:'Mostrar en el sitio',t:'check',ayuda:'Si lo desmarcas, queda guardado pero oculto.'}
+    ],
+    validar:function(d){ if(!d.titulo.trim()) return 'Escribe un título.'; try{ parsearVideo_(d.url); }catch(e){ return mensajeError(e); } return ''; },
+    tope:function(it){ return el('div',{class:'vtop p-'+it.plataforma},[ el('span',{text:NOMBRES_P[it.plataforma]||it.plataforma}), el('small',{text:it.categoria==='testimonios'?'Testimonios':'Videos del colegio'}) ]); },
+    cuerpo:function(it){ return [ el('h3',{text:it.titulo||'(sin título)'}), el('div',{class:'url-corta',text:it.url}) ]; }
+  };
+
+  var COLORES_UI=[['rojo','Rojo'],['verde','Verde'],['sol','Naranja'],['azul','Azul'],['royal','Azul oscuro'],['gris','Gris']];
+  var CFG_ACCESOS={
+    nombre:'acceso', grid:'gridAccesos', aviso:'avisoAccesos', get:function(){return S.accesos;}, set:function(l){S.accesos=l;},
+    srv:{guardar:'accesoGuardar',eliminar:'accesoEliminar',mover:'accesoMover'},
+    vacio:'No hay accesos. Agrega el primero con “+ Nuevo acceso”.',
+    avisoTxt:function(n,v){ return n?('Hay '+n+' acceso(s); '+v+' visible(s). Máximo 12. Solo se aceptan enlaces que empiecen con https://.'):'Todavía no hay accesos. Si no hay ninguno visible, el sitio oculta la sección.'; },
+    defecto:function(){ return {icono:'🔗',titulo:'',detalle:'',url:'https://',color:'azul',publicar:true}; },
+    campos:[
+      {k:'titulo',rot:'Título',max:30},
+      {k:'detalle',rot:'Detalle (opcional)',max:50,ayuda:'Una línea corta debajo del título.'},
+      {k:'url',rot:'Enlace',max:300,ayuda:'Debe empezar con https://'},
+      {k:'icono',rot:'Ícono (un emoji)',max:8},
+      {k:'color',rot:'Color del ícono',t:'select',opciones:COLORES_UI},
+      {k:'publicar',rot:'Mostrar en el sitio',t:'check',ayuda:'Si lo desmarcas, queda guardado pero oculto.'}
+    ],
+    validar:function(d){ if(!d.titulo.trim()) return 'Escribe un título.'; if(!/^https:\/\/\S+\.\S+$/.test(d.url.trim())) return 'El enlace debe empezar con https:// y ser una dirección web completa.'; return ''; },
+    tope:function(it){ return el('div',{class:'atop c-'+it.color},[ el('div',{class:'ico',text:it.icono||'🔗'}), el('b',{text:it.titulo}) ]); },
+    cuerpo:function(it){ return [ el('h3',{text:it.titulo||'(sin título)'}), it.detalle?el('p',{text:it.detalle}):null, el('div',{class:'url-corta',text:it.url}) ]; }
+  };
+  $('btnNuevoVideo').onclick=function(){ abrirG(CFG_VIDEOS,null); };
+  $('btnNuevoAcceso').onclick=function(){ abrirG(CFG_ACCESOS,null); };
+  function iniciarAccesos(rol,ac){
+    if(rol!=='ADMIN') return;
+    $('navAccesos').hidden=false;
+    if(ac&&ac.datos){ S.accesos=ac.datos; renderLista(CFG_ACCESOS); }
+    else { var g=$('gridAccesos'); g.textContent=''; g.appendChild(el('div',{class:'vacio',text:'No se pudieron cargar los accesos: '+((ac&&ac.error)||'sin datos')})); }
+  }
+
   /* ---------- arranque ---------- */
   servidor('panelCargar',[],function(d){
-    S.noticias=d.noticias; S.galeria=d.galeria||[]; S.imgBase=d.imgBase; S.visibles=d.visibles; S.hoy=d.hoy;
+    S.noticias=d.noticias; S.galeria=d.galeria||[]; S.videos=d.videos||[]; S.imgBase=d.imgBase; S.visibles=d.visibles; S.hoy=d.hoy;
     $('nVis').textContent=d.visibles; $('verSitio').href=d.sitioUrl;
     var u=$('user'); u.textContent='';
     u.appendChild(el('b',{text:d.usuario.nombre||d.usuario.email}));
     u.appendChild(document.createTextNode(d.usuario.email));
     u.appendChild(document.createElement('br'));
     u.appendChild(el('span',{class:'rol',text:d.usuario.rol}));
-    render(); renderFotos(); iniciarTextos(d.usuario.rol,d.textos);
+    render(); renderFotos(); renderLista(CFG_VIDEOS); iniciarTextos(d.usuario.rol,d.textos); iniciarAccesos(d.usuario.rol,d.accesos);
   },function(e){ $('grid').textContent=''; $('grid').appendChild(el('div',{class:'vacio',text:'No se pudo cargar el panel: '+mensajeError(e)})); });
 })();
 </script>

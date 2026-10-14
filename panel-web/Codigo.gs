@@ -6,7 +6,7 @@
  * - Qué guarda: archivos JSON y fotos en el repositorio de GitHub; el sitio los lee solo.
  * - La clave de GitHub se guarda en las Propiedades del script (menú "Panel web").
  *
- * Módulos: Noticias, Fotos del carrusel y Textos del sitio (solo ADMIN). Accesos y videos se agregan después.
+ * Módulos: Noticias, Fotos del carrusel, Videos, y (solo ADMIN) Textos del sitio y Accesos directos.
  */
 
 const CONFIG = {
@@ -18,6 +18,10 @@ const CONFIG = {
   ARCHIVO_NOTICIAS: 'data/noticias.json',
   CARPETA_IMG: 'assets/noticias',
   ARCHIVO_TEXTOS: 'data/textos.json',
+  ARCHIVO_VIDEOS: 'data/videos.json',
+  ARCHIVO_ACCESOS: 'data/accesos.json',
+  MAX_VIDEOS: 24,
+  MAX_ACCESOS: 12,
   ARCHIVO_GALERIA: 'data/galeria.json',
   CARPETA_GAL: 'assets/galeria',
   CARPETA_SITIO: 'assets/sitio',         // fotos de los textos del sitio (ej. transporte)
@@ -87,6 +91,8 @@ function panelCargar() {
     usuario: u,
     noticias: leerNoticias_().lista,
     galeria: galeriaLeer_().lista,
+    videos: listaLeer_(listaVideos_()).lista,
+    accesos: u.rol === 'ADMIN' ? accesosParaPanel_() : null,
     textos: textosParaPanel_(u),   // los textos solo los ve y edita un ADMIN
     imgBase: 'https://raw.githubusercontent.com/' + CONFIG.OWNER + '/' + CONFIG.REPO + '/' + CONFIG.BRANCH + '/',
     sitioUrl: CONFIG.SITIO_URL + CONFIG.PAGINA_SITIO,
@@ -486,6 +492,199 @@ function textosGuardar(datos, imagenes) {
     lock.releaseLock();
   }
 }
+
+/* ───────────────────────── LISTAS GENÉRICAS (videos y accesos) ───────────────────────── */
+
+const ID_V_RE = /^v\d{8}-[0-9a-f]{5}$/;
+const ID_A_RE = /^a\d{8}-[0-9a-f]{5}$/;
+const CATEGORIAS_VIDEO = ['testimonios', 'vida'];
+const COLORES_ACCESO = ['rojo', 'verde', 'sol', 'azul', 'royal', 'gris'];
+
+function listaVideos_() {
+  return {
+    archivo: CONFIG.ARCHIVO_VIDEOS, idRe: ID_V_RE, pref: 'v', max: CONFIG.MAX_VIDEOS, nombre: 'video', plural: 'videos',
+    leer: function (x) {
+      return { titulo: String(x.titulo || ''), url: String(x.url || ''), plataforma: String(x.plataforma || ''), codigo: String(x.codigo || ''),
+               categoria: CATEGORIAS_VIDEO.indexOf(x.categoria) >= 0 ? x.categoria : 'vida', publicar: x.publicar !== false };
+    },
+    rotulo: function (x) { return x.titulo; }
+  };
+}
+
+function listaAccesos_() {
+  return {
+    archivo: CONFIG.ARCHIVO_ACCESOS, idRe: ID_A_RE, pref: 'a', max: CONFIG.MAX_ACCESOS, nombre: 'acceso', plural: 'accesos',
+    leer: function (x) {
+      return { icono: String(x.icono || ''), titulo: String(x.titulo || ''), detalle: String(x.detalle || ''), url: String(x.url || ''),
+               color: COLORES_ACCESO.indexOf(x.color) >= 0 ? x.color : 'gris', publicar: x.publicar !== false };
+    },
+    rotulo: function (x) { return x.titulo; }
+  };
+}
+
+function nuevoIdLista_(pref) {
+  return pref + Utilities.formatDate(new Date(), 'America/La_Paz', 'yyyyMMdd') + '-' + Utilities.getUuid().replace(/-/g, '').slice(0, 5);
+}
+
+function listaLeer_(cfg) {
+  const r = ghLeer_(cfg.archivo);
+  let crudo = [];
+  if (r) {
+    try { crudo = JSON.parse(r.texto); } catch (e) { throw new Error('El archivo de ' + cfg.plural + ' está dañado: ' + e.message); }
+    if (!Array.isArray(crudo)) throw new Error('El archivo de ' + cfg.plural + ' no tiene el formato esperado.');
+  }
+  const hoy = Utilities.formatDate(new Date(), 'America/La_Paz', 'yyyyMMdd');
+  const lista = crudo.map(function (x, i) {
+    x = x || {};
+    const n = cfg.leer(x);
+    n.id = cfg.idRe.test(String(x.id || '')) ? x.id : cfg.pref + hoy + '-' + ('00000' + i.toString(16)).slice(-5);
+    return n;
+  });
+  return { lista: lista, sha: r ? r.sha : null };
+}
+
+function listaEscribir_(cfg, lista, sha, mensaje) {
+  ghPonerTexto_(cfg.archivo, JSON.stringify(lista, null, 2) + '\n', mensaje, sha);
+}
+
+// datos.id (opcional) = editar; item = datos ya validados (sin id)
+function listaGuardarItem_(cfg, u, datos, item) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(25000);
+  try {
+    const act = listaLeer_(cfg);
+    let idx = -1;
+    if (datos.id) {
+      if (!cfg.idRe.test(String(datos.id))) throw new Error('Identificador inválido.');
+      idx = act.lista.findIndex(function (x) { return x.id === datos.id; });
+      if (idx < 0) throw new Error('Ese ' + cfg.nombre + ' ya no existe (alguien más lo eliminó). Recarga el panel.');
+    }
+    const nuevo = idx < 0;
+    if (nuevo && act.lista.length >= cfg.max) throw new Error('Ya hay ' + cfg.max + ' ' + cfg.plural + '. Elimina alguno antes de agregar otro.');
+    item.id = nuevo ? nuevoIdLista_(cfg.pref) : act.lista[idx].id;
+    if (nuevo) act.lista.push(item); else act.lista[idx] = item;
+    listaEscribir_(cfg, act.lista, act.sha, cfg.nombre[0].toUpperCase() + cfg.nombre.slice(1) + ': ' + (nuevo ? 'nuevo' : 'editado') + ' "' + cfg.rotulo(item) + '" (' + u.email + ')');
+    registrar_(u, cfg.nombre[0].toUpperCase() + cfg.nombre.slice(1) + (nuevo ? ' agregado' : ' editado'), cfg.rotulo(item) + (item.publicar ? ' [visible]' : ' [oculto]'));
+    return act.lista;
+  } finally { lock.releaseLock(); }
+}
+
+function listaEliminarItem_(cfg, u, id) {
+  if (!cfg.idRe.test(String(id))) throw new Error('Identificador inválido.');
+  const lock = LockService.getScriptLock();
+  lock.waitLock(25000);
+  try {
+    const act = listaLeer_(cfg);
+    const idx = act.lista.findIndex(function (x) { return x.id === id; });
+    if (idx < 0) throw new Error('Ese ' + cfg.nombre + ' ya no existe. Recarga el panel.');
+    const q = act.lista.splice(idx, 1)[0];
+    listaEscribir_(cfg, act.lista, act.sha, cfg.nombre[0].toUpperCase() + cfg.nombre.slice(1) + ': eliminado "' + cfg.rotulo(q) + '" (' + u.email + ')');
+    registrar_(u, cfg.nombre[0].toUpperCase() + cfg.nombre.slice(1) + ' eliminado', cfg.rotulo(q));
+    return act.lista;
+  } finally { lock.releaseLock(); }
+}
+
+function listaMoverItem_(cfg, u, id, dir) {
+  if (!cfg.idRe.test(String(id))) throw new Error('Identificador inválido.');
+  if (dir !== -1 && dir !== 1) throw new Error('Dirección inválida.');
+  const lock = LockService.getScriptLock();
+  lock.waitLock(25000);
+  try {
+    const act = listaLeer_(cfg);
+    const i = act.lista.findIndex(function (x) { return x.id === id; });
+    if (i < 0) throw new Error('Ese ' + cfg.nombre + ' ya no existe. Recarga el panel.');
+    const j = i + dir;
+    if (j < 0 || j >= act.lista.length) return act.lista;
+    const t = act.lista[i]; act.lista[i] = act.lista[j]; act.lista[j] = t;
+    listaEscribir_(cfg, act.lista, act.sha, cfg.nombre[0].toUpperCase() + cfg.nombre.slice(1) + ': orden cambiado (' + u.email + ')');
+    registrar_(u, cfg.nombre[0].toUpperCase() + cfg.nombre.slice(1) + ' movido', cfg.rotulo(t) + (dir < 0 ? ' ← antes' : ' → después'));
+    return act.lista;
+  } finally { lock.releaseLock(); }
+}
+
+/* ───────────────────────── VIDEOS (TikTok, Instagram, YouTube, Facebook) ───────────────────────── */
+
+// Reconoce el enlace de un video y devuelve { plataforma, codigo }. Solo YouTube, TikTok, Instagram y Facebook.
+function parsearVideo_(entrada) {
+  var u = String(entrada || '').trim();
+  if (!u) throw new Error('Pega el enlace del video.');
+  if (u.length > 300) throw new Error('El enlace es demasiado largo.');
+  if (/\s/.test(u)) throw new Error('El enlace no debe tener espacios.');
+  if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+  var m = u.match(/^https?:\/\/([^\/?#:]+)(?::\d+)?([^?#]*)(\?[^#]*)?/i);
+  if (!m) throw new Error('El enlace no es válido.');
+  var host = m[1].toLowerCase().replace(/^(www|m|web|mobile)\./, '');
+  var path = m[2] || '', qs = m[3] || '';
+  function q(k) { var r = qs.match(new RegExp('[?&]' + k + '=([^&]+)')); return r ? r[1] : ''; }
+  var r;
+  if (host === 'youtu.be') {
+    r = path.match(/^\/([\w-]{11})(?:\/|$)/);
+    if (r) return { plataforma: 'youtube', codigo: r[1] };
+  } else if (host === 'youtube.com') {
+    var id = path === '/watch' ? q('v') : ((path.match(/^\/(?:shorts|embed|live)\/([\w-]{11})(?:\/|$)/) || [])[1] || '');
+    if (/^[\w-]{11}$/.test(id)) return { plataforma: 'youtube', codigo: id };
+  } else if (host === 'vm.tiktok.com' || host === 'vt.tiktok.com') {
+    throw new Error('Ese es un enlace corto de TikTok. Ábrelo en el navegador y copia la dirección larga (la que tiene /video/ y números).');
+  } else if (host === 'tiktok.com') {
+    r = path.match(/^\/@[\w.\-]+\/video\/(\d{15,25})(?:\/|$)/);
+    if (r) return { plataforma: 'tiktok', codigo: r[1] };
+  } else if (host === 'instagram.com') {
+    r = path.match(/^\/(?:[\w.]+\/)?(reel|reels|p)\/([\w-]{5,20})(?:\/|$)/);
+    if (r) return { plataforma: 'instagram', codigo: (r[1] === 'p' ? 'p' : 'reel') + '/' + r[2] };
+  } else if (host === 'fb.watch') {
+    throw new Error('Ese es un enlace corto de Facebook. Ábrelo en el navegador y copia la dirección larga.');
+  } else if (host === 'facebook.com') {
+    r = path.match(/^\/reel\/(\d{6,})(?:\/|$)/);
+    if (r) return { plataforma: 'facebook', codigo: 'reel/' + r[1] };
+    if (/^\/(?:watch|video\.php)\/?$/.test(path) && /^\d{6,}$/.test(q('v'))) return { plataforma: 'facebook', codigo: 'watch/?v=' + q('v') };
+    r = path.match(/\/videos\/(?:[^\/]+\/)?(\d{6,})(?:\/|$)/);
+    if (r) return { plataforma: 'facebook', codigo: 'watch/?v=' + r[1] };
+  } else {
+    throw new Error('Solo se aceptan enlaces de YouTube, TikTok, Instagram o Facebook.');
+  }
+  throw new Error('No reconozco ese enlace como un video. Copia el enlace desde el botón “Compartir” del video.');
+}
+
+/** datos = { id?, titulo, url, categoria:'testimonios'|'vida', publicar:bool } */
+function videoGuardar(datos) {
+  const u = exigir_();
+  if (!datos || typeof datos !== 'object') throw new Error('Datos vacíos.');
+  const titulo = cad_(datos.titulo, 80, 'Título');
+  const v = parsearVideo_(datos.url);
+  if (CATEGORIAS_VIDEO.indexOf(datos.categoria) < 0) throw new Error('Elige dónde se mostrará el video.');
+  let url = String(datos.url).trim(); if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  return listaGuardarItem_(listaVideos_(), u, datos, { titulo: titulo, url: url, plataforma: v.plataforma, codigo: v.codigo, categoria: datos.categoria, publicar: datos.publicar === true });
+}
+function videoEliminar(id) { return listaEliminarItem_(listaVideos_(), exigir_(), id); }
+function videoMover(id, dir) { return listaMoverItem_(listaVideos_(), exigir_(), id, dir); }
+
+/* ───────────────────────── ACCESOS DIRECTOS (solo ADMIN) ───────────────────────── */
+
+function accesosParaPanel_() {
+  try { return { datos: listaLeer_(listaAccesos_()).lista }; } catch (e) { return { error: String(e.message || e) }; }
+}
+
+function validarUrlAcceso_(v) {
+  const t = String(v || '').trim();
+  if (!t) throw new Error('Falta completar “Enlace”.');
+  if (t.length > 300) throw new Error('El enlace es demasiado largo.');
+  if (/\s/.test(t)) throw new Error('El enlace no debe tener espacios.');
+  if (!/^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)+(:\d+)?([\/?#]\S*)?$/i.test(t)) throw new Error('El enlace debe empezar con https:// y ser una dirección web completa.');
+  return t;
+}
+
+/** datos = { id?, icono, titulo, detalle, url, color, publicar:bool } */
+function accesoGuardar(datos) {
+  const u = exigirAdmin_();
+  if (!datos || typeof datos !== 'object') throw new Error('Datos vacíos.');
+  if (COLORES_ACCESO.indexOf(datos.color) < 0) throw new Error('Elige un color.');
+  return listaGuardarItem_(listaAccesos_(), u, datos, {
+    icono: cad_(datos.icono, 8, 'Ícono', true), titulo: cad_(datos.titulo, 30, 'Título'), detalle: cad_(datos.detalle, 50, 'Detalle', true),
+    url: validarUrlAcceso_(datos.url), color: datos.color, publicar: datos.publicar === true
+  });
+}
+function accesoEliminar(id) { return listaEliminarItem_(listaAccesos_(), exigirAdmin_(), id); }
+function accesoMover(id, dir) { return listaMoverItem_(listaAccesos_(), exigirAdmin_(), id, dir); }
 
 /* ───────────────────────── GITHUB ───────────────────────── */
 
