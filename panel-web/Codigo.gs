@@ -651,7 +651,7 @@ function videoGuardar(datos) {
   if (!datos || typeof datos !== 'object') throw new Error('Datos vacíos.');
   const titulo = cad_(datos.titulo, 80, 'Título');
   const v = parsearVideo_(datos.url);
-  if (CATEGORIAS_VIDEO.indexOf(datos.categoria) < 0) throw new Error('Elige dónde se mostrará el video.');
+  if (CATEGORIAS_VIDEO.indexOf(datos.categoria) < 0) throw new Error('Elige la etiqueta del video.');
   let url = String(datos.url).trim(); if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
   return listaGuardarItem_(listaVideos_(), u, datos, { titulo: titulo, url: url, plataforma: v.plataforma, codigo: v.codigo, categoria: datos.categoria, publicar: datos.publicar === true });
 }

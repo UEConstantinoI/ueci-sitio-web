@@ -955,11 +955,11 @@ function parsearVideo_(entrada) {
     campos:[
       {k:'url',rot:'Enlace del video',max:300,detecta:function(v){ if(!v.trim()) return {ok:false,texto:'Pega aquí el enlace (botón “Compartir” → “Copiar enlace”).'}; try{ var r=parsearVideo_(v); return {ok:true,texto:'✔ '+NOMBRES_P[r.plataforma]+' reconocido'}; }catch(e){ return {ok:false,texto:mensajeError(e)}; } }},
       {k:'titulo',rot:'Título',max:80,ayuda:'Se muestra debajo del video.'},
-      {k:'categoria',rot:'Dónde se muestra',t:'select',opciones:[['vida','Videos del colegio (actividades, actos…)'],['testimonios','Testimonios']]},
+      {k:'categoria',rot:'Etiqueta del video',t:'select',opciones:[['vida','Vida escolar (actividades, actos, TikTok…)'],['testimonios','Testimonio']]},
       {k:'publicar',rot:'Mostrar en el sitio',t:'check',ayuda:'Si lo desmarcas, queda guardado pero oculto.'}
     ],
     validar:function(d){ if(!d.titulo.trim()) return 'Escribe un título.'; try{ parsearVideo_(d.url); }catch(e){ return mensajeError(e); } return ''; },
-    tope:function(it){ return el('div',{class:'vtop p-'+it.plataforma},[ el('span',{text:NOMBRES_P[it.plataforma]||it.plataforma}), el('small',{text:it.categoria==='testimonios'?'Testimonios':'Videos del colegio'}) ]); },
+    tope:function(it){ return el('div',{class:'vtop p-'+it.plataforma},[ el('span',{text:NOMBRES_P[it.plataforma]||it.plataforma}), el('small',{text:it.categoria==='testimonios'?'Testimonio':'Vida escolar'}) ]); },
     cuerpo:function(it){ return [ el('h3',{text:it.titulo||'(sin título)'}), el('div',{class:'url-corta',text:it.url}) ]; }
   };
 

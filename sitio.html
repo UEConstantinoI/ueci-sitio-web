@@ -17,7 +17,7 @@
 <header>
   <div class="nav">
     <a class="brand" href="#top">
-      <img src="assets/escudo.png" alt="Escudo Constantino I" width="34" height="34">
+      <img src="assets/escudo.png" alt="Escudo Constantino I" width="36" height="50">
       <span>Constantino I<small>Formador de Talentos</small></span>
     </a>
     <nav aria-label="Principal">
@@ -27,7 +27,7 @@
           <div class="dropdown">
             <a href="#nosotros">Visión, misión y objetivo</a>
             <a href="#pilares">Pilares</a>
-            <a href="#testimonios">Testimonios</a>
+            <a href="#videos">Videos</a>
           </div>
         </li>
         <li><a href="#pilares">Pilares</a></li>
@@ -59,6 +59,19 @@
       <div><strong>Bilingües</strong><span>Español e inglés</span></div>
       <div><strong>+300 obras</strong><span>escritas por nuestros estudiantes</span></div>
       <div><strong>Puerta a puerta</strong><span>Bus escolar privado, choferes con +20 años</span></div>
+    </div>
+  </section>
+
+  <section id="galeria" hidden>
+    <div class="section-head">
+      <span class="eyebrow">Un vistazo al día a día</span>
+      <h2>Nuestra comunidad, en imágenes</h2>
+    </div>
+    <div class="carousel">
+      <div class="car-track" id="carTrack"></div>
+      <button class="car-arrow prev" aria-label="Anterior">‹</button>
+      <button class="car-arrow next" aria-label="Siguiente">›</button>
+      <div class="car-dots" id="carDots"></div>
     </div>
   </section>
 
@@ -138,25 +151,13 @@
     </div>
   </section>
 
-  <section id="galeria" hidden>
+  <section id="videos" class="band-stone">
     <div class="section-head">
-      <span class="eyebrow">Un vistazo al día a día</span>
-      <h2>Nuestra comunidad, en imágenes</h2>
+      <span class="eyebrow">Mira cómo vivimos Constantino I</span>
+      <h2>Videos</h2>
+      <p>Testimonios, actividades y momentos del colegio. Toca un video para verlo aquí mismo.</p>
     </div>
-    <div class="carousel">
-      <div class="car-track" id="carTrack"></div>
-      <button class="car-arrow prev" aria-label="Anterior">‹</button>
-      <button class="car-arrow next" aria-label="Siguiente">›</button>
-      <div class="car-dots" id="carDots"></div>
-    </div>
-  </section>
-
-  <section id="testimonios" class="band-stone">
-    <div class="section-head">
-      <span class="eyebrow">Nuestros estudiantes opinan</span>
-      <h2>Testimonios</h2>
-    </div>
-    <div class="video-grid" id="gridTestimonios">
+    <div class="video-grid" id="gridVideos">
       <button class="video-thumb" data-yt="jONnOYgAWo4" aria-label="Reproducir testimonio 1"><img loading="lazy" src="https://i.ytimg.com/vi/jONnOYgAWo4/hqdefault.jpg" alt=""><span class="play">▶</span></button>
       <button class="video-thumb" data-yt="XBnGHBkUb9w" aria-label="Reproducir testimonio 2"><img loading="lazy" src="https://i.ytimg.com/vi/XBnGHBkUb9w/hqdefault.jpg" alt=""><span class="play">▶</span></button>
       <button class="video-thumb" data-yt="U7Rny7tDbN4" aria-label="Reproducir testimonio 3"><img loading="lazy" src="https://i.ytimg.com/vi/U7Rny7tDbN4/hqdefault.jpg" alt=""><span class="play">▶</span></button>
@@ -174,15 +175,6 @@
     <div class="noticias-grid" id="noticiasGrid">
       <p class="noticias-vacio">Cargando comunicados…</p>
     </div>
-  </section>
-
-  <section id="videos" hidden>
-    <div class="section-head">
-      <span class="eyebrow">Vida escolar en movimiento</span>
-      <h2>Videos del colegio</h2>
-      <p>Actividades, actos y momentos que vivimos en Constantino I. Toca un video para verlo aquí mismo.</p>
-    </div>
-    <div class="vgrid" id="gridVideos"></div>
   </section>
 
   <section id="redes" class="band-stone">
@@ -266,8 +258,12 @@
   <section>
     <div class="cta-final">
       <span class="eyebrow">¿Conversamos?</span>
-      <h2 style="margin-top:10px">Conoce Constantino I: Formador de Talentos</h2>
-      <a class="btn-primary" href="https://docs.google.com/forms/d/e/1FAIpQLSdvCqN2Y0-xOZLPVJ8u3MwoiWFspQfbiNjZdVNI_C1VT3KYOQ/viewform" target="_blank" rel="noopener">Ir al formulario de admisiones</a>
+      <h2 style="margin-top:10px">Agenda tu visita y conoce Constantino I</h2>
+      <p class="cta-sub">Recorre el colegio, conoce a nuestros docentes y resuelve todas tus dudas.</p>
+      <div class="cta-botones">
+        <a class="btn-primary" id="ctaVisita" href="https://wa.me/59144289388?text=Hola%2C%20quisiera%20agendar%20una%20visita%20al%20colegio%20Constantino%20I" target="_blank" rel="noopener">Agendar una visita</a>
+        <a class="btn-ghost-dark" href="https://docs.google.com/forms/d/e/1FAIpQLSdvCqN2Y0-xOZLPVJ8u3MwoiWFspQfbiNjZdVNI_C1VT3KYOQ/viewform" target="_blank" rel="noopener">Formulario de admisiones</a>
+      </div>
     </div>
   </section>
 
@@ -281,6 +277,7 @@
       </div>
     </div>
   </footer>
+<a class="wa-float" id="waFloat" href="https://wa.me/59144289388" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp">WhatsApp</a>
 </div>
 
 <script src="js/main.js"></script>

@@ -6,12 +6,13 @@
   if (!sec || !track || !dotsWrap) return;
   var RUTA_OK = /^assets\/[\w\-\/.]+$/;   // solo imágenes propias del sitio
 
-  function slide(f) {
+  function slide(f, primera) {
     var s = document.createElement('div');
     s.className = 'car-slide';
     var bg = document.createElement('div');
     bg.className = 'cs-bg';
-    bg.style.backgroundImage = 'url("' + f.imagen + '")';
+    if (primera) bg.style.backgroundImage = 'url("' + f.imagen + '")';
+    else bg.setAttribute('data-bg', f.imagen);
     s.appendChild(bg);
     if (f.etiqueta || f.titulo || f.descripcion) {
       var c = document.createElement('div');
@@ -57,9 +58,17 @@
         return f && f.publicar !== false && typeof f.imagen === 'string' && RUTA_OK.test(f.imagen) && f.imagen.indexOf('..') < 0;
       });
       if (!lista.length) return;           // sin fotos visibles: la sección sigue oculta
-      lista.forEach(function (f) { track.appendChild(slide(f)); });
+      lista.forEach(function (f, n) { track.appendChild(slide(f, n === 0)); });
       sec.hidden = false;
       iniciarCarrusel();
+      // el resto de las fotos se baja cuando la primera ya se vio
+      var resto = function () {
+        track.querySelectorAll('.cs-bg[data-bg]').forEach(function (d) {
+          var u = d.getAttribute('data-bg'); d.removeAttribute('data-bg');
+          d.style.backgroundImage = 'url("' + u + '")';
+        });
+      };
+      var im = new Image(); im.onload = im.onerror = function () { setTimeout(resto, 300); }; im.src = lista[0].imagen;
     })
     .catch(function () { /* sin galería: la sección sigue oculta */ });
 })();
@@ -270,7 +279,7 @@
     fila('ctTel', '☎️', 'Teléfono fijo y WhatsApp', c.telefono);
     fila('ctCel', '📱', 'Celular / WhatsApp', c.celular);
     if (/^\d{8,15}$/.test(String(c.whatsapp || ''))) {
-      document.querySelectorAll('a[href^="https://wa.me/"]').forEach(function (a) { a.href = 'https://wa.me/' + c.whatsapp; });
+      document.querySelectorAll('a[href^="https://wa.me/"]').forEach(function (a) { a.href = 'https://wa.me/' + c.whatsapp + (a.search || ''); });
     }
   }
 
@@ -324,6 +333,8 @@
     }, { once: true });
     item.appendChild(b);
     var meta = document.createElement('div'); meta.className = 'vmeta';
+    var ETQ = { testimonios: 'Testimonio', vida: 'Vida escolar' };
+    if (ETQ[v.categoria]) { var e = document.createElement('small'); e.className = 'vetq'; e.textContent = ETQ[v.categoria]; meta.appendChild(e); }
     if (v.titulo) { var t = document.createElement('b'); t.textContent = v.titulo; meta.appendChild(t); }
     if (typeof v.url === 'string' && URL_OK.test(v.url)) {
       var a = document.createElement('a'); a.href = v.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = 'Abrir en ' + NOMBRES[p] + ' ↗';
@@ -347,16 +358,11 @@
   cargar('data/videos.json').then(function (todos) {
     if (!Array.isArray(todos)) return;
     var vis = todos.filter(function (v) { return v && v.publicar !== false; });
-    var tes = document.getElementById('gridTestimonios');
-    if (tes) {
-      tes.className = 'vgrid';
-      var n = llenar(tes, vis.filter(function (v) { return v.categoria === 'testimonios'; }));
-      if (!n) document.getElementById('testimonios').hidden = true;
-    }
     var vid = document.getElementById('gridVideos');
     if (vid) {
-      var m = llenar(vid, vis.filter(function (v) { return v.categoria === 'vida'; }));
-      document.getElementById('videos').hidden = !m;
+      vid.className = 'vgrid';
+      var m = llenar(vid, vis);
+      if (!m) document.getElementById('videos').hidden = true;
     }
   }).catch(function () { /* se queda lo que ya trae la página */ });
 
@@ -381,4 +387,16 @@
     });
     document.getElementById('accesos').hidden = !lista.length;
   }).catch(function () { /* se queda lo que ya trae la página */ });
+})();
+
+/* ---------- Aparición suave al desplazarse ---------- */
+(function () {
+  if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var items = document.querySelectorAll('section > .section-head, .pilar-card, .noticia-card, .cta-final, .nivel-panel.active');
+  document.documentElement.classList.add('anim');
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('visto'); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  items.forEach(function (x) { x.classList.add('rev'); io.observe(x); });
+  setTimeout(function () { document.querySelectorAll('.rev:not(.visto)').forEach(function (x) { x.classList.add('visto'); }); }, 4000);
 })();
