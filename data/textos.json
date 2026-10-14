@@ -5,7 +5,7 @@
     "descripcion": "Unidad Educativa Constantino I: formación científica, inglés como segunda lengua, hábito por la lectura y desarrollo de los talentos de cada estudiante, desde Inicial hasta el último año de Secundaria.",
     "datos": [
       {
-        "valor": "Inicial–Secundaria",
+        "valor": "De Inicial a Secundaria",
         "texto": "Todos los niveles en un solo colegio"
       },
       {
@@ -18,7 +18,7 @@
       },
       {
         "valor": "Puerta a puerta",
-        "texto": "Bus escolar privado, choferes con +20 años"
+        "texto": "Bus escolar privado, choferes con +25 años"
       }
     ]
   },
@@ -94,7 +94,7 @@
   ],
   "transporte": {
     "titulo": "Servicio de bus escolar, de puerta a puerta",
-    "texto": "Servicio privado. Los choferes fueron rigurosamente seleccionados y llevan más de 20 años trabajando con la institución.",
+    "texto": "Servicio privado. Los choferes fueron rigurosamente seleccionados y llevan más de 25 años trabajando con la institución.",
     "publico_titulo": "Transporte público",
     "publico_texto": "Taxi Trufi 101 · Bus 3V · Minibús 290"
   },
@@ -103,6 +103,6 @@
     "direccion": "Calle Mejillones, entre Av. Circunvalación y Calle Cochabamba, Tiquipaya, Cochabamba",
     "telefono": "(+591-4) 4289388",
     "celular": "(+591) 71798840",
-    "whatsapp": "59171798840"
+    "whatsapp": "59144289388"
   }
 }
