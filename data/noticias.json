@@ -21,6 +21,6 @@
     "titulo": "Ejemplo: convocatoria a padres de familia",
     "resumen": "Texto breve del comunicado. Los más antiguos dejan de mostrarse solos (se ven los 6 más recientes).",
     "imagen": "",
-    "publicar": true
+    "publicar": false
   }
 ]
