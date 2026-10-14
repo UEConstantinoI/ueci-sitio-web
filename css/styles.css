@@ -74,8 +74,8 @@ ul.links a:hover{color:#fff;}
     linear-gradient(180deg, var(--verde) 0%, var(--verde-2) 100%);
   color:#fff; margin:0 -16px; padding:0 16px; border-radius:0 0 28px 28px; position:relative; overflow:hidden;
 }
-.hero::before{content:""; position:absolute; right:max(2vw,calc((100% - 1160px)/2)); top:50%; transform:translateY(-58%); width:min(34vw,380px); aspect-ratio:520/753; background:url(../assets/escudo-grande.png) center/contain no-repeat; opacity:.16; pointer-events:none;}
-@media (max-width:800px){ .hero::before{width:62vw; right:-8vw; opacity:.10;} }
+.hero::before{content:""; position:absolute; right:max(2vw,calc((100% - 1160px)/2)); top:50%; transform:translateY(-58%); width:min(34vw,380px); aspect-ratio:520/753; background:url(../assets/escudo-grande.png) center/contain no-repeat; opacity:.28; pointer-events:none;}
+@media (max-width:800px){ .hero::before{width:62vw; right:-8vw; opacity:.18;} }
 .hero-inner,.stat-strip{position:relative; z-index:1;}
 .hero-inner{max-width:1160px; margin:0 auto; padding:64px 0 54px;}
 .hero h1{font-size:clamp(34px,5.4vw,58px); color:#fff; line-height:1.04; max-width:16ch;}
@@ -222,7 +222,7 @@ footer{padding:36px 0 50px; color:var(--ink-soft); font-size:13px; border-top:1p
 
 /* KEYWORDS (pestañas Visión/Misión/Objetivo) */
 .keywords{display:flex; flex-wrap:wrap; gap:14px; align-content:center; position:relative; padding:18px 0;}
-.keywords::before{content:""; position:absolute; inset:0; background:url(../assets/monograma-verde.png) center/contain no-repeat; opacity:.07; pointer-events:none;}
+.keywords::before{content:""; flex:0 0 100%; height:96px; background:url(../assets/monograma-dorado.png) left center/contain no-repeat;}
 .keywords span{position:relative; background:var(--paper-2); color:var(--verde); border:1.5px solid var(--verde-2); border-left:7px solid var(--sun); padding:16px 26px; border-radius:14px; font-family:'Fraunces',serif; font-size:clamp(19px,2.2vw,24px); font-weight:600; box-shadow:var(--card-shadow);}
 
 /* VIDEOS DE TESTIMONIOS */
@@ -271,3 +271,9 @@ footer{padding:36px 0 50px; color:var(--ink-soft); font-size:13px; border-top:1p
 .vetq{display:inline-block; font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--sun-deep); font-weight:700; margin-bottom:3px;}
 .anim .rev{opacity:0; transform:translateY(18px); transition:opacity .6s ease, transform .6s ease;}
 .anim .rev.visto{opacity:1; transform:none;}
+
+@media (prefers-color-scheme: dark){
+  .keywords span{background:#1f3a27; color:#fff; border-color:var(--sun); box-shadow:none;}
+  .btn-ghost-dark{border-color:#fff; color:#fff;}
+  .cta-final .eyebrow, section.band-stone .eyebrow{color:var(--gold-light);}
+}
