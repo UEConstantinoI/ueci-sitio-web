@@ -248,6 +248,11 @@
     txt($('#transporte .section-head p'), t.texto);
     txt($('#transporte .acceso-card b'), t.publico_titulo);
     txt($('#transporte .acceso-card small'), t.publico_texto);
+    var fig = document.getElementById('trFoto'), lay = document.getElementById('trLayout');
+    if (fig && lay && typeof t.imagen === 'string' && /^assets\/[\w\-\/.]+$/.test(t.imagen) && t.imagen.indexOf('..') < 0) {
+      document.getElementById('trImg').src = t.imagen;
+      fig.hidden = false; lay.classList.add('con-foto');
+    }
   }
 
   function fila(id, icono, rotulo, valor) {
@@ -262,8 +267,8 @@
     if (!c) return;
     txt(document.getElementById('ctTitulo'), c.titulo);
     fila('ctDir', '📍', 'Dirección', c.direccion);
-    fila('ctTel', '☎️', 'Teléfono fijo', c.telefono);
-    fila('ctCel', '📱', 'Celular / WhatsApp', c.celular);
+    fila('ctTel', '☎️', 'Teléfono fijo y WhatsApp', c.telefono);
+    fila('ctCel', '📱', 'Celular', c.celular);
     if (/^\d{8,15}$/.test(String(c.whatsapp || ''))) {
       document.querySelectorAll('a[href^="https://wa.me/"]').forEach(function (a) { a.href = 'https://wa.me/' + c.whatsapp; });
     }

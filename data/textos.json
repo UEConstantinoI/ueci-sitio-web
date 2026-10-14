@@ -5,7 +5,7 @@
     "descripcion": "Unidad Educativa Constantino I: formación científica, inglés como segunda lengua, hábito por la lectura y desarrollo de los talentos de cada estudiante, desde Inicial hasta el último año de Secundaria.",
     "datos": [
       {
-        "valor": "De Inicial a Secundaria",
+        "valor": "Inicial-Primaria-Secundaria",
         "texto": "Todos los niveles en un solo colegio"
       },
       {
@@ -96,7 +96,8 @@
     "titulo": "Servicio de bus escolar, de puerta a puerta",
     "texto": "Servicio privado. Los choferes fueron rigurosamente seleccionados y llevan más de 25 años trabajando con la institución.",
     "publico_titulo": "Transporte público",
-    "publico_texto": "Taxi Trufi 101 · Bus 3V · Minibús 290"
+    "publico_texto": "Taxi Trufi 101 · Bus 3V · Minibús 290",
+    "imagen": "assets/sitio/transporte-semilla.jpg"
   },
   "contacto": {
     "titulo": "Hablemos sobre la inscripción de tu hijo/a",

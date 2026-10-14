@@ -297,7 +297,7 @@
 
 <script>
 (function(){
-  var S = { noticias:[], galeria:[], textos:null, t:null, sucio:false, imgBase:'', visibles:6, hoy:'', filtro:'todas', q:'', editId:null, img:{accion:'mantener'}, imgPrevia:'', fEditId:null, fImg:{accion:'mantener'}, fPrevia:'' };
+  var S = { noticias:[], galeria:[], textos:null, t:null, timg:{accion:'mantener'}, sucio:false, imgBase:'', visibles:6, hoy:'', filtro:'todas', q:'', editId:null, img:{accion:'mantener'}, imgPrevia:'', fEditId:null, fImg:{accion:'mantener'}, fPrevia:'' };
   var MESES=['ene.','feb.','mar.','abr.','may.','jun.','jul.','ago.','sep.','oct.','nov.','dic.'];
   var $=function(id){return document.getElementById(id)};
 
@@ -676,6 +676,35 @@
     dibujar(); return caja;
   }
 
+  function fotoTransporte(){
+    var caja=el('div',{class:'campo'});
+    var mini=el('img',{class:'miniatura',alt:''}), msg=el('div'), error=el('div',{class:'error'});
+    var inp=el('input',{type:'file',accept:'image/jpeg,image/png,image/webp',hidden:'hidden'});
+    var bElegir=el('button',{type:'button',class:'btn btn-ghost',text:'Elegir foto…',onclick:function(){ inp.click(); }});
+    var bQuitar=el('button',{type:'button',class:'btn btn-ghost',text:'Quitar foto',onclick:function(){
+      S.timg={accion:'quitar'}; S.t.transporte.imagen=''; marcar(); pintar();
+    }});
+    function actual(){ return S.timg.accion==='nueva' ? S.timg.dataUrl : (S.t.transporte.imagen ? urlImg(S.t.transporte.imagen) : ''); }
+    function pintar(){
+      var u=actual();
+      if(u){ mini.src=u; mini.hidden=false; msg.textContent=S.timg.accion==='nueva'?'Foto nueva lista (se publica al guardar)':'Foto actual'; bElegir.textContent='Cambiar foto…'; bQuitar.hidden=false; }
+      else { mini.hidden=true; mini.removeAttribute('src'); msg.textContent='Sin foto: el texto ocupa todo el ancho'; bElegir.textContent='Elegir foto…'; bQuitar.hidden=true; }
+    }
+    inp.onchange=function(){
+      var f=inp.files&&inp.files[0]; if(!f) return;
+      if(!/^image\/(jpeg|png|webp)$/.test(f.type)){ error.textContent='Elige una imagen JPG, PNG o WebP.'; error.classList.add('on'); return; }
+      reducir(f,1200,function(err,res){
+        if(err){ error.textContent=err; error.classList.add('on'); return; }
+        error.classList.remove('on');
+        S.timg={accion:'nueva',base64:res.base64,mime:'image/jpeg',dataUrl:res.dataUrl}; marcar(); pintar();
+      });
+    };
+    caja.appendChild(el('label',{class:'l',text:'Foto de transporte (opcional)'}));
+    caja.appendChild(el('div',{class:'drop'},[mini,msg,el('div',{class:'botones'},[bElegir,bQuitar]),inp]));
+    caja.appendChild(el('small',{text:'Aparece a la derecha del texto. Mejor si es horizontal; se reduce sola.'}));
+    caja.appendChild(error); pintar(); return caja;
+  }
+
   function renderTextos(){
     var f=$('formTextos');
     var abiertas=[].map.call(f.querySelectorAll(':scope > details'),function(d){ return d.open; });   // recordar qué secciones estaban abiertas
@@ -683,7 +712,7 @@
     if(!S.t){ return; }
     var datos=[0,1,2,3].map(function(i){
       return el('div',{class:'grupo'},[ el('div',{class:'sub',text:'Dato destacado '+(i+1)}),
-        el('div',{class:'cols2'},[ campoT('Titular','hero.datos.'+i+'.valor',24,'line'), campoT('Detalle','hero.datos.'+i+'.texto',60,'line') ]) ]);
+        el('div',{class:'cols2'},[ campoT('Titular','hero.datos.'+i+'.valor',32,'line'), campoT('Detalle','hero.datos.'+i+'.texto',60,'line') ]) ]);
     });
     f.appendChild(seccion('Portada',[
       campoT('Etiqueta superior','hero.etiqueta',40,'line'),
@@ -703,28 +732,29 @@
     f.appendChild(seccion('Pilares institucionales',[pilaresEd()]));
     f.appendChild(seccion('Transporte',[
       campoT('Título','transporte.titulo',90,'line'), campoT('Texto','transporte.texto',300,'area'),
+      fotoTransporte(),
       el('div',{class:'cols2'},[ campoT('Transporte público · título','transporte.publico_titulo',40,'line'), campoT('Transporte público · detalle','transporte.publico_texto',100,'line') ])
     ]));
     f.appendChild(seccion('Contacto',[
       campoT('Título','contacto.titulo',90,'line'), campoT('Dirección','contacto.direccion',160,'line'),
-      el('div',{class:'cols2'},[ campoT('Teléfono fijo','contacto.telefono',40,'line'), campoT('Celular','contacto.celular',40,'line') ]),
-      campoT('Número de WhatsApp (solo dígitos, con código de país)','contacto.whatsapp',15,'line','Ejemplo: 59171798840. Cambia todos los botones de WhatsApp del sitio.')
+      el('div',{class:'cols2'},[ campoT('Teléfono fijo (también WhatsApp)','contacto.telefono',40,'line'), campoT('Celular','contacto.celular',40,'line') ]),
+      campoT('Número de WhatsApp (solo dígitos, con código de país)','contacto.whatsapp',15,'line','Es el número al que escriben los botones de WhatsApp del sitio. Ejemplo: 59144289388 (591 = Bolivia, 4 = Cochabamba).')
     ]));
     [].forEach.call(f.querySelectorAll(':scope > details'),function(d,i){ if(abiertas[i]!==undefined) d.open=abiertas[i]; });
     $('barraTextos').hidden=false;
   }
   $('btnGuardarTextos').onclick=function(){
     ocupado(true,'Guardando y publicando…');
-    servidor('textosGuardar',[S.t],function(t){ S.textos=t; S.t=clonar(t); ocupado(false); limpiarMarca(); renderTextos(); toast('Guardado ✔  El sitio se actualiza en 1 o 2 minutos.'); });
+    servidor('textosGuardar',[S.t,{transporte:S.timg.accion==='nueva'?{accion:'nueva',base64:S.timg.base64,mime:S.timg.mime}:{accion:S.timg.accion}}],function(t){ S.textos=t; S.t=clonar(t); S.timg={accion:'mantener'}; ocupado(false); limpiarMarca(); renderTextos(); toast('Guardado ✔  El sitio se actualiza en 1 o 2 minutos.'); });
   };
   $('btnDescartarTextos').onclick=function(){
     if(!S.sucio) return;
-    confirmar('¿Descartar los cambios?','Se perderá lo que escribiste desde la última vez que guardaste.',function(){ S.t=clonar(S.textos); limpiarMarca(); renderTextos(); });
+    confirmar('¿Descartar los cambios?','Se perderá lo que escribiste desde la última vez que guardaste.',function(){ S.t=clonar(S.textos); S.timg={accion:'mantener'}; limpiarMarca(); renderTextos(); });
   };
   function iniciarTextos(rol,tx){
     if(rol!=='ADMIN') return;
     $('navTextos').hidden=false;
-    if(tx&&tx.datos){ S.textos=tx.datos; S.t=clonar(tx.datos); renderTextos(); }
+    if(tx&&tx.datos){ S.textos=tx.datos; S.t=clonar(tx.datos); S.timg={accion:'mantener'}; renderTextos(); }
     else { var f=$('formTextos'); f.textContent=''; f.appendChild(el('div',{class:'vacio',text:'No se pudieron cargar los textos: '+((tx&&tx.error)||'sin datos')})); }
   }
 

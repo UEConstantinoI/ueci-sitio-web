@@ -20,6 +20,7 @@ const CONFIG = {
   ARCHIVO_TEXTOS: 'data/textos.json',
   ARCHIVO_GALERIA: 'data/galeria.json',
   CARPETA_GAL: 'assets/galeria',
+  CARPETA_SITIO: 'assets/sitio',         // fotos de los textos del sitio (ej. transporte)
   MAX_GALERIA: 20,
   MAX_IMG_BYTES: 1500000,                // tope de seguridad por imagen (ya reducida en el navegador)
   VISIBLES_EN_SITIO: 6,
@@ -238,7 +239,7 @@ function validarImagen_(im) {
 function borrarImagen_(ruta, email) {
   try {
     const r0 = String(ruta);
-    if (r0.indexOf(CONFIG.CARPETA_IMG + '/') !== 0 && r0.indexOf(CONFIG.CARPETA_GAL + '/') !== 0) return;
+    if (r0.indexOf(CONFIG.CARPETA_IMG + '/') !== 0 && r0.indexOf(CONFIG.CARPETA_GAL + '/') !== 0 && r0.indexOf(CONFIG.CARPETA_SITIO + '/') !== 0) return;
     if (r0.indexOf('..') >= 0) return;
     const r = ghLeer_(ruta);
     if (r) ghBorrar_(ruta, r.sha, 'Noticias: se retira imagen sin uso (' + email + ')');
@@ -418,7 +419,7 @@ function validarTextos_(d) {
   if ((titulo.split('*').length - 1) % 2 !== 0) throw new Error('En el título de la portada, las palabras resaltadas van entre dos asteriscos: *así*.');
   const datos = lista_(h.datos, 4, 4, 'Portada · datos destacados').map(function (x, i) {
     x = x || {};
-    return { valor: cad_(x.valor, 24, 'Dato ' + (i + 1) + ' · titular'), texto: cad_(x.texto, 60, 'Dato ' + (i + 1) + ' · detalle') };
+    return { valor: cad_(x.valor, 32, 'Dato ' + (i + 1) + ' · titular'), texto: cad_(x.texto, 60, 'Dato ' + (i + 1) + ' · detalle') };
   });
   const hero = { etiqueta: cad_(h.etiqueta, 40, 'Portada · etiqueta'), titulo: titulo, descripcion: cad_(h.descripcion, 400, 'Portada · descripción'), datos: datos };
 
@@ -439,6 +440,7 @@ function validarTextos_(d) {
   });
 
   const transporte = {
+    imagen: '',   // la foto se maneja aparte (ver textosGuardar); lo que llegue desde la pantalla se ignora
     titulo: cad_(tr.titulo, 90, 'Transporte · título'), texto: cad_(tr.texto, 300, 'Transporte · texto'),
     publico_titulo: cad_(tr.publico_titulo, 40, 'Transporte público · título'), publico_texto: cad_(tr.publico_texto, 100, 'Transporte público · detalle')
   };
@@ -452,16 +454,33 @@ function validarTextos_(d) {
   return { hero: hero, nosotros: nosotros, pilares: pilares, transporte: transporte, contacto: contacto };
 }
 
-/** Recibe el documento completo de textos; devuelve el documento ya limpio y guardado. */
-function textosGuardar(datos) {
+/**
+ * Recibe el documento completo de textos; devuelve el documento ya limpio y guardado.
+ * imagenes = { transporte: { accion:'mantener'|'quitar'|'nueva', base64?, mime? } }  (opcional)
+ */
+function textosGuardar(datos, imagenes) {
   const u = exigirAdmin_();
   const t = validarTextos_(datos);
+  const im = (imagenes && imagenes.transporte) || { accion: 'mantener' };
+  if (['mantener', 'quitar', 'nueva'].indexOf(im.accion) < 0) throw new Error('Acción de imagen no válida.');
+  const bytes = im.accion === 'nueva' ? validarImagen_(im) : null;
   const lock = LockService.getScriptLock();
   lock.waitLock(25000);
   try {
     const act = textosLeer_();
+    const previa = String((act.textos.transporte && act.textos.transporte.imagen) || '');   // siempre la que ya está guardada
+    let ruta = previa, borrar = '';
+    if (im.accion === 'nueva') {
+      ruta = CONFIG.CARPETA_SITIO + '/transporte-' + Date.now().toString(36) + '.' + extension_(im.mime);
+      ghPonerBytes_(ruta, bytes, 'Textos del sitio: foto de transporte (' + u.email + ')');
+      borrar = previa;
+    } else if (im.accion === 'quitar') {
+      ruta = ''; borrar = previa;
+    }
+    t.transporte.imagen = ruta;
     ghPonerTexto_(CONFIG.ARCHIVO_TEXTOS, JSON.stringify(t, null, 2) + '\n', 'Textos del sitio actualizados (' + u.email + ')', act.sha);
-    registrar_(u, 'Textos del sitio', 'Se guardaron cambios en los textos');
+    if (borrar && borrar !== ruta) borrarImagen_(borrar, u.email);
+    registrar_(u, 'Textos del sitio', 'Se guardaron cambios' + (im.accion !== 'mantener' ? ' (foto de transporte: ' + im.accion + ')' : ''));
     return t;
   } finally {
     lock.releaseLock();
