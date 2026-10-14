@@ -1,0 +1,23 @@
+[
+  {
+    "fecha": "2026-09-12",
+    "titulo": "Ejemplo: inicio de inscripciones 2027",
+    "resumen": "Texto breve del comunicado. Más adelante se carga desde la planilla de Google, sin tocar código.",
+    "imagen": "",
+    "publicar": true
+  },
+  {
+    "fecha": "2026-09-05",
+    "titulo": "Ejemplo: acto cívico de aniversario",
+    "resumen": "Texto breve del comunicado, con foto opcional.",
+    "imagen": "",
+    "publicar": true
+  },
+  {
+    "fecha": "2026-08-28",
+    "titulo": "Ejemplo: convocatoria a padres de familia",
+    "resumen": "Texto breve del comunicado. Los más antiguos dejan de mostrarse solos (se ven los 6 más recientes).",
+    "imagen": "",
+    "publicar": true
+  }
+]
