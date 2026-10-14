@@ -38,8 +38,8 @@
   {
     "icono": "🔒",
     "titulo": "Cambiar contraseña",
-    "detalle": "Cuenta de Google",
-    "url": "https://myaccount.google.com/security",
+    "detalle": "Cuenta institucional",
+    "url": "https://cambioclave.ueconstantino.com",
     "color": "gris",
     "publicar": true,
     "id": "a20261014-00005"
