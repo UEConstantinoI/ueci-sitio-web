@@ -18,7 +18,7 @@
       },
       {
         "valor": "Puerta a puerta",
-        "texto": "Bus escolar privado, choferes con +25 años"
+        "texto": "Bus escolar privado, choferes con +25 años con nosotros."
       }
     ]
   },
@@ -93,11 +93,11 @@
     }
   ],
   "transporte": {
+    "imagen": "assets/sitio/transporte-semilla.jpg",
     "titulo": "Servicio de bus escolar, de puerta a puerta",
     "texto": "Servicio privado. Los choferes fueron rigurosamente seleccionados y llevan más de 25 años trabajando con la institución.",
     "publico_titulo": "Transporte público",
-    "publico_texto": "Taxi Trufi 101 · Bus 3V · Minibús 290",
-    "imagen": "assets/sitio/transporte-semilla.jpg"
+    "publico_texto": "Taxi Trufi 101 · Bus 3V · Minibús 290"
   },
   "contacto": {
     "titulo": "Hablemos sobre la inscripción de tu hijo/a",
