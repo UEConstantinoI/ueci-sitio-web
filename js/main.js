@@ -157,3 +157,15 @@
     }, { once: true });
   });
 })();
+
+/* ---------- Facebook: el plugin necesita el ancho exacto del contenedor ---------- */
+(function () {
+  var f = document.getElementById('fbFrame');
+  if (!f) return;
+  var cuerpo = f.parentNode;
+  var w = Math.floor(cuerpo.clientWidth - 24);           // menos el padding del contenedor
+  w = Math.max(280, Math.min(500, w));                   // Facebook acepta de 180 a 500
+  f.width = w;
+  f.src = 'https://www.facebook.com/plugins/page.php?href=' + encodeURIComponent('https://www.facebook.com/UEConstantinoI') +
+    '&tabs=timeline&width=' + w + '&height=480&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=false';
+})();
