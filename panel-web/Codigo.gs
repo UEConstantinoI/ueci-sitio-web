@@ -6,7 +6,7 @@
  * - Qué guarda: archivos JSON y fotos en el repositorio de GitHub; el sitio los lee solo.
  * - La clave de GitHub se guarda en las Propiedades del script (menú "Panel web").
  *
- * Fase 1: Noticias. Los demás módulos (carrusel, textos, etc.) se agregan después.
+ * Módulos: Noticias y Fotos del carrusel. Los demás (textos del sitio, accesos, videos) se agregan después.
  */
 
 const CONFIG = {
@@ -17,6 +17,9 @@ const CONFIG = {
   PAGINA_SITIO: 'sitio.html',            // cuando sea el sitio oficial: cambiar a '' (ver LEEME)
   ARCHIVO_NOTICIAS: 'data/noticias.json',
   CARPETA_IMG: 'assets/noticias',
+  ARCHIVO_GALERIA: 'data/galeria.json',
+  CARPETA_GAL: 'assets/galeria',
+  MAX_GALERIA: 20,
   MAX_IMG_BYTES: 1500000,                // tope de seguridad por imagen (ya reducida en el navegador)
   VISIBLES_EN_SITIO: 6,
   ICONO: 'https://raw.githubusercontent.com/UEConstantinoI/constantino-recursos/main/escudo.png'
@@ -81,6 +84,7 @@ function panelCargar() {
   return {
     usuario: u,
     noticias: leerNoticias_().lista,
+    galeria: galeriaLeer_().lista,
     imgBase: 'https://raw.githubusercontent.com/' + CONFIG.OWNER + '/' + CONFIG.REPO + '/' + CONFIG.BRANCH + '/',
     sitioUrl: CONFIG.SITIO_URL + CONFIG.PAGINA_SITIO,
     visibles: CONFIG.VISIBLES_EN_SITIO,
@@ -231,10 +235,138 @@ function validarImagen_(im) {
 
 function borrarImagen_(ruta, email) {
   try {
-    if (String(ruta).indexOf(CONFIG.CARPETA_IMG + '/') !== 0) return;
+    const r0 = String(ruta);
+    if (r0.indexOf(CONFIG.CARPETA_IMG + '/') !== 0 && r0.indexOf(CONFIG.CARPETA_GAL + '/') !== 0) return;
+    if (r0.indexOf('..') >= 0) return;
     const r = ghLeer_(ruta);
     if (r) ghBorrar_(ruta, r.sha, 'Noticias: se retira imagen sin uso (' + email + ')');
   } catch (e) { /* si no se puede borrar, no pasa nada: solo queda un archivo sin uso */ }
+}
+
+
+/* ───────────────────────── CARRUSEL DE FOTOS ───────────────────────── */
+
+const ID_G_RE = /^g\d{8}-[0-9a-f]{5}$/;
+
+function galeriaLeer_() {
+  const r = ghLeer_(CONFIG.ARCHIVO_GALERIA);
+  let crudo = [];
+  if (r) {
+    try { crudo = JSON.parse(r.texto); } catch (e) { throw new Error('El archivo del carrusel está dañado: ' + e.message); }
+    if (!Array.isArray(crudo)) throw new Error('El archivo del carrusel no tiene el formato esperado.');
+  }
+  const hoy = Utilities.formatDate(new Date(), 'America/La_Paz', 'yyyyMMdd');
+  const lista = crudo.map(function (x, i) {
+    return {
+      id: ID_G_RE.test(String(x.id || '')) ? x.id : 'g' + hoy + '-' + ('00000' + i).slice(-5),
+      etiqueta: String(x.etiqueta || ''),
+      titulo: String(x.titulo || ''),
+      descripcion: String(x.descripcion || ''),
+      imagen: String(x.imagen || ''),
+      publicar: x.publicar !== false
+    };
+  });
+  return { lista: lista, sha: r ? r.sha : null };
+}
+
+function galeriaGuardarArchivo_(lista, sha, mensaje) {
+  ghPonerTexto_(CONFIG.ARCHIVO_GALERIA, JSON.stringify(lista, null, 2) + '\n', mensaje, sha);
+}
+
+function validarFoto_(d) {
+  if (!d || typeof d !== 'object') throw new Error('Datos vacíos.');
+  const etiqueta = String(d.etiqueta || '').replace(/\s+/g, ' ').trim();
+  const titulo = String(d.titulo || '').replace(/\s+/g, ' ').trim();
+  const descripcion = String(d.descripcion || '').replace(/\s+/g, ' ').trim();
+  if (etiqueta.length > 30) throw new Error('La etiqueta es muy larga (máximo 30 letras).');
+  if (titulo.length > 80) throw new Error('El título es muy largo (máximo 80 letras).');
+  if (descripcion.length > 160) throw new Error('La descripción es muy larga (máximo 160 letras).');
+  return { etiqueta: etiqueta, titulo: titulo, descripcion: descripcion, publicar: d.publicar === true };
+}
+
+/**
+ * datos = { id?, etiqueta, titulo, descripcion, publicar:bool,
+ *           imagen: { accion:'mantener'|'nueva', base64?, mime? } }   (la foto es obligatoria)
+ */
+function galeriaGuardar(datos) {
+  const u = exigir_();
+  const f = validarFoto_(datos);
+  const lock = LockService.getScriptLock();
+  lock.waitLock(25000);
+  try {
+    const act = galeriaLeer_();
+    const lista = act.lista;
+    let idx = -1;
+    if (datos.id) {
+      if (!ID_G_RE.test(String(datos.id))) throw new Error('Identificador inválido.');
+      idx = lista.findIndex(function (x) { return x.id === datos.id; });
+      if (idx < 0) throw new Error('Esa foto ya no existe (alguien más la eliminó). Recarga el panel.');
+    }
+    const nueva = idx < 0;
+    if (nueva && lista.length >= CONFIG.MAX_GALERIA) throw new Error('Ya hay ' + CONFIG.MAX_GALERIA + ' fotos. Elimina alguna antes de agregar otra.');
+    const im = datos.imagen || { accion: 'mantener' };
+    if (nueva && im.accion !== 'nueva') throw new Error('Falta elegir la foto.');
+    if (im.accion === 'quitar') throw new Error('Una foto del carrusel no puede quedar sin imagen. Elige otra foto o elimina esta.');
+
+    const id = nueva ? 'g' + Utilities.formatDate(new Date(), 'America/La_Paz', 'yyyyMMdd') + '-' + Utilities.getUuid().replace(/-/g, '').slice(0, 5) : lista[idx].id;
+    const previa = nueva ? '' : lista[idx].imagen;
+    let ruta = previa, borrar = '';
+    if (im.accion === 'nueva') {
+      const bytes = validarImagen_(im);
+      ruta = CONFIG.CARPETA_GAL + '/' + id + '-' + Date.now().toString(36) + '.' + extension_(im.mime);
+      ghPonerBytes_(ruta, bytes, 'Carrusel: foto "' + (f.titulo || f.etiqueta || id) + '" (' + u.email + ')');
+      borrar = previa;
+    }
+    const item = { id: id, etiqueta: f.etiqueta, titulo: f.titulo, descripcion: f.descripcion, imagen: ruta, publicar: f.publicar };
+    if (nueva) lista.push(item); else lista[idx] = item;
+    galeriaGuardarArchivo_(lista, act.sha, 'Carrusel: ' + (nueva ? 'nueva' : 'editada') + ' foto "' + (f.titulo || f.etiqueta || id) + '" (' + u.email + ')');
+    if (borrar) borrarImagen_(borrar, u.email);
+    registrar_(u, nueva ? 'Foto agregada' : 'Foto editada', (f.titulo || f.etiqueta || id) + (f.publicar ? ' [visible]' : ' [oculta]'));
+    return lista;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function galeriaEliminar(id) {
+  const u = exigir_();
+  if (!ID_G_RE.test(String(id))) throw new Error('Identificador inválido.');
+  const lock = LockService.getScriptLock();
+  lock.waitLock(25000);
+  try {
+    const act = galeriaLeer_();
+    const idx = act.lista.findIndex(function (x) { return x.id === id; });
+    if (idx < 0) throw new Error('Esa foto ya no existe. Recarga el panel.');
+    const q = act.lista.splice(idx, 1)[0];
+    galeriaGuardarArchivo_(act.lista, act.sha, 'Carrusel: eliminada foto "' + (q.titulo || q.etiqueta || q.id) + '" (' + u.email + ')');
+    if (q.imagen) borrarImagen_(q.imagen, u.email);
+    registrar_(u, 'Foto eliminada', q.titulo || q.etiqueta || q.id);
+    return act.lista;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// dir = -1 (subir, antes en el carrusel) o 1 (bajar, después)
+function galeriaMover(id, dir) {
+  const u = exigir_();
+  if (!ID_G_RE.test(String(id))) throw new Error('Identificador inválido.');
+  if (dir !== -1 && dir !== 1) throw new Error('Movimiento inválido.');
+  const lock = LockService.getScriptLock();
+  lock.waitLock(25000);
+  try {
+    const act = galeriaLeer_();
+    const i = act.lista.findIndex(function (x) { return x.id === id; });
+    if (i < 0) throw new Error('Esa foto ya no existe. Recarga el panel.');
+    const j = i + dir;
+    if (j < 0 || j >= act.lista.length) return act.lista;
+    const t = act.lista[i]; act.lista[i] = act.lista[j]; act.lista[j] = t;
+    galeriaGuardarArchivo_(act.lista, act.sha, 'Carrusel: se cambia el orden de las fotos (' + u.email + ')');
+    registrar_(u, 'Foto movida', (t.titulo || t.etiqueta || t.id) + (dir < 0 ? ' ← antes' : ' → después'));
+    return act.lista;
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 /* ───────────────────────── GITHUB ───────────────────────── */

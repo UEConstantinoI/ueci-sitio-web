@@ -118,6 +118,24 @@
   .spin{width:38px;height:38px;border:4px solid #cfe0d2;border-top-color:var(--verde);border-radius:50%;animation:g 0.8s linear infinite}
   @keyframes g{to{transform:rotate(360deg)}}
   .carga{padding:80px 20px;text-align:center;color:var(--soft)}
+
+  /* ---- fotos del carrusel ---- */
+  .nav-item{cursor:pointer}
+  .vista[hidden]{display:none}
+  .num{position:absolute;left:10px;top:10px;background:rgba(14,30,20,.78);color:#fff;font-weight:700;border-radius:99px;min-width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;padding:0 8px}
+  .card .foto{position:relative}
+  .orden{display:flex;gap:8px;padding:10px 18px 0}
+  .orden button{flex:1;padding:7px 6px;border-radius:9px;border:1px solid var(--line);background:#fff;font-weight:600;color:var(--ink)}
+  .orden button[disabled]{opacity:.4;cursor:default}
+  .aviso{background:#fff;border:1px solid var(--line);border-left:4px solid var(--sun);border-radius:10px;padding:11px 14px;margin-bottom:18px;color:var(--soft)}
+  .slide-prev{position:relative;aspect-ratio:16/7;border-radius:12px;overflow:hidden;background:var(--verde);display:flex;align-items:flex-end;padding:16px;color:#fff}
+  .slide-prev .bg{position:absolute;inset:0;background-size:cover;background-position:center}
+  .slide-prev::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(10,28,16,.82),rgba(10,28,16,.05) 60%)}
+  .slide-prev .tx{position:relative;z-index:2}
+  .slide-prev .et{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--gold-light);font-weight:700}
+  .slide-prev h3{color:#fff;font-size:17px;margin-top:3px}
+  .slide-prev p{margin:3px 0 0;font-size:12px;color:#e0ece2}
+  .req{color:var(--rojo)}
 </style>
 </head>
 <body>
@@ -127,8 +145,8 @@
       <img src="https://raw.githubusercontent.com/UEConstantinoI/constantino-recursos/main/escudo.png" alt="">
       <div><b>Panel del sitio</b><small>Constantino I</small></div>
     </div>
-    <button class="nav-item act">📰&nbsp; Noticias</button>
-    <button class="nav-item" disabled>🖼️&nbsp; Fotos del carrusel <span class="pronto">pronto</span></button>
+    <button class="nav-item act" data-vista="Noticias">📰&nbsp; Noticias</button>
+    <button class="nav-item" data-vista="Fotos">🖼️&nbsp; Fotos del carrusel</button>
     <button class="nav-item" disabled>✏️&nbsp; Textos del sitio <span class="pronto">pronto</span></button>
     <button class="nav-item" disabled>🔗&nbsp; Accesos y videos <span class="pronto">pronto</span></button>
     <div class="spacer"></div>
@@ -137,6 +155,7 @@
   </aside>
 
   <main>
+    <div class="vista" id="vNoticias">
     <div class="head">
       <div>
         <h1>Noticias</h1>
@@ -149,6 +168,19 @@
       <input class="buscar" id="buscar" type="search" placeholder="Buscar por título…" aria-label="Buscar">
     </div>
     <div class="grid" id="grid"><div class="carga">Cargando noticias…</div></div>
+      </div>
+
+    <div class="vista" id="vFotos" hidden>
+      <div class="head">
+        <div>
+          <h1>Fotos del carrusel</h1>
+          <p>Las fotos de la portada del sitio, en este orden. Cambian solas cada 5 segundos.</p>
+        </div>
+        <button class="btn btn-sun" id="btnNuevaFoto">+ Nueva foto</button>
+      </div>
+      <div class="aviso" id="avisoFotos"></div>
+      <div class="grid" id="gridFotos"><div class="carga">Cargando fotos…</div></div>
+    </div>
   </main>
 </div>
 
@@ -185,6 +217,37 @@
   <div class="m-foot"><button class="btn btn-ghost" id="btnCancelar">Cancelar</button><button class="btn btn-verde" id="btnGuardar">Guardar</button></div>
 </div></div>
 
+
+<!-- Editor de foto -->
+<div class="velo" id="veloF"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="fmTitulo">
+  <div class="m-head"><h2 id="fmTitulo">Nueva foto</h2><button class="x" id="fbtnX" aria-label="Cerrar">×</button></div>
+  <div class="m-body">
+    <div>
+      <div class="campo">
+        <label class="l">Foto <span class="req">*</span></label>
+        <div class="drop">
+          <img class="miniatura" id="fMini" alt="" hidden>
+          <div id="fDropTxt">Todavía no elegiste la foto</div>
+          <div class="botones"><button class="btn btn-ghost" id="fBtnImg" type="button">Elegir foto…</button></div>
+          <input type="file" id="fArchivoF" accept="image/jpeg,image/png,image/webp" hidden>
+        </div>
+        <small>Mejor si es horizontal. Se reduce sola para que el sitio cargue rápido.</small>
+      </div>
+      <div class="campo"><label class="l" for="gEtiqueta">Etiqueta (opcional) <span class="cuenta" id="cEtiqueta"></span></label><input type="text" id="gEtiqueta" maxlength="30" placeholder="Ej.: Infraestructura"></div>
+      <div class="campo"><label class="l" for="gTitulo">Título (opcional) <span class="cuenta" id="cGTitulo"></span></label><input type="text" id="gTitulo" maxlength="80" placeholder="Ej.: Patio principal"></div>
+      <div class="campo"><label class="l" for="gDesc">Descripción (opcional) <span class="cuenta" id="cGDesc"></span></label><input type="text" id="gDesc" maxlength="160" placeholder="Una línea corta"></div>
+      <div class="sw"><input type="checkbox" id="gPublicar" checked><label for="gPublicar" style="cursor:pointer"><b>Mostrar en el carrusel</b><span>Si lo desmarcas, la foto queda guardada pero oculta.</span></label></div>
+    </div>
+    <div>
+      <div class="prev-t">Así se verá en el sitio</div>
+      <div class="slide-prev" id="slidePrev"></div>
+      <div class="prev-nota">Todo lo que publicas es <b>público en internet</b>. Cuida que las fotos tengan autorización de las familias.</div>
+    </div>
+  </div>
+  <div class="error" id="fError"></div>
+  <div class="m-foot"><button class="btn btn-ghost" id="fBtnCancelar">Cancelar</button><button class="btn btn-verde" id="fBtnGuardar">Guardar</button></div>
+</div></div>
+
 <!-- Confirmar -->
 <div class="velo" id="veloC"><div class="modal chico" role="alertdialog" aria-modal="true">
   <div class="m-head"><h2 id="cTit">¿Eliminar?</h2></div>
@@ -197,7 +260,7 @@
 
 <script>
 (function(){
-  var S = { noticias:[], imgBase:'', visibles:6, hoy:'', filtro:'todas', q:'', editId:null, img:{accion:'mantener'}, imgPrevia:'' };
+  var S = { noticias:[], galeria:[], imgBase:'', visibles:6, hoy:'', filtro:'todas', q:'', editId:null, img:{accion:'mantener'}, imgPrevia:'', fEditId:null, fImg:{accion:'mantener'}, fPrevia:'' };
   var MESES=['ene.','feb.','mar.','abr.','may.','jun.','jul.','ago.','sep.','oct.','nov.','dic.'];
   var $=function(id){return document.getElementById(id)};
 
@@ -284,19 +347,20 @@
     });
   }
 
-  /* ---------- eliminar ---------- */
-  var pend=null;
-  function pedirEliminar(n){
-    pend=n; $('cTit').textContent='¿Eliminar esta noticia?';
-    $('cTxt').textContent='“'+n.titulo+'” se borrará del sitio y no se puede deshacer. Si solo quieres que no se vea, usa “Ocultar”.';
+  /* ---------- confirmar (genérico) ---------- */
+  var accionConfirmar=null;
+  function confirmar(titulo,texto,fn){
+    accionConfirmar=fn; $('cTit').textContent=titulo; $('cTxt').textContent=texto;
     $('veloC').classList.add('on'); $('cNo').focus();
   }
-  $('cNo').onclick=function(){ $('veloC').classList.remove('on'); pend=null; };
-  $('cSi').onclick=function(){
-    var n=pend; $('veloC').classList.remove('on'); if(!n) return;
-    ocupado(true,'Eliminando…');
-    servidor('noticiaEliminar',[n.id],function(l){ S.noticias=l; ocupado(false); render(); toast('Noticia eliminada.'); });
-  };
+  $('cNo').onclick=function(){ $('veloC').classList.remove('on'); accionConfirmar=null; };
+  $('cSi').onclick=function(){ var f=accionConfirmar; $('veloC').classList.remove('on'); accionConfirmar=null; if(f) f(); };
+  function pedirEliminar(n){
+    confirmar('¿Eliminar esta noticia?','“'+n.titulo+'” se borrará del sitio y no se puede deshacer. Si solo quieres que no se vea, usa “Ocultar”.',function(){
+      ocupado(true,'Eliminando…');
+      servidor('noticiaEliminar',[n.id],function(l){ S.noticias=l; ocupado(false); render(); toast('Noticia eliminada.'); });
+    });
+  }
 
   /* ---------- editor ---------- */
   function abrirEditor(n){
@@ -340,7 +404,7 @@
   $('fArchivo').onchange=function(){
     var f=this.files&&this.files[0]; if(!f) return;
     if(!/^image\/(jpeg|png|webp)$/.test(f.type)){ errorEditor('Elige una imagen JPG, PNG o WebP.'); return; }
-    reducir(f,function(err,res){
+    reducir(f,1200,function(err,res){
       if(err){ errorEditor(err); return; }
       $('mError').classList.remove('on');
       S.img={accion:'nueva',base64:res.base64,mime:'image/jpeg',dataUrl:res.dataUrl}; pintarImagen(); actualizar();
@@ -349,14 +413,14 @@
   function errorEditor(m){ var e=$('mError'); e.textContent=m; e.classList.add('on'); }
 
   // Reduce la foto en el navegador: máx. 1200 px de ancho, JPEG, bajo ~1,2 MB
-  function reducir(file,cb){
+  function reducir(file,max,cb){
     var rd=new FileReader();
     rd.onerror=function(){cb('No se pudo leer el archivo.')};
     rd.onload=function(){
       var im=new Image();
       im.onerror=function(){cb('No se pudo abrir la imagen. Prueba con otra.')};
       im.onload=function(){
-        var w=im.naturalWidth,h=im.naturalHeight,max=1200;
+        var w=im.naturalWidth,h=im.naturalHeight;
         if(w>max){ h=Math.round(h*max/w); w=max; }
         var c=document.createElement('canvas'); c.width=w; c.height=h;
         var x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,w,h); x.drawImage(im,0,0,w,h);
@@ -388,18 +452,127 @@
   $('btnCancelar').onclick=cerrarEditor; $('btnX').onclick=cerrarEditor;
   $('btnNueva').onclick=function(){ abrirEditor(null); };
   $('buscar').addEventListener('input',function(){ S.q=this.value; render(); });
-  document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ cerrarEditor(); $('veloC').classList.remove('on'); } });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ cerrarEditor(); cerrarFoto(); $('veloC').classList.remove('on'); } });
+
+
+  /* ---------- navegación entre vistas ---------- */
+  function irA(v){
+    ['Noticias','Fotos'].forEach(function(n){ $('v'+n).hidden=(n!==v); });
+    document.querySelectorAll('.nav-item[data-vista]').forEach(function(b){ b.classList.toggle('act',b.getAttribute('data-vista')===v); });
+    window.scrollTo(0,0);
+  }
+  document.querySelectorAll('.nav-item[data-vista]').forEach(function(b){ b.addEventListener('click',function(){ irA(b.getAttribute('data-vista')); }); });
+
+  /* ---------- FOTOS DEL CARRUSEL ---------- */
+  function renderFotos(){
+    var g=$('gridFotos'); g.textContent='';
+    var vis=S.galeria.filter(function(x){return x.publicar;}).length;
+    $('avisoFotos').textContent = S.galeria.length
+      ? 'Hay '+S.galeria.length+' foto(s); '+vis+' visible(s) en el carrusel. Si no hay ninguna visible, el sitio oculta toda la sección. Máximo 20 fotos.'
+      : 'Todavía no hay fotos. Mientras no haya ninguna visible, el sitio no muestra el carrusel.';
+    if(!S.galeria.length){ g.appendChild(el('div',{class:'vacio',text:'Agrega la primera foto con “+ Nueva foto”.'})); return; }
+    S.galeria.forEach(function(f,i){
+      var foto=el('div',{class:'foto'},[ el('img',{src:urlImg(f.imagen),alt:'',loading:'lazy'}), el('span',{class:'num',text:String(i+1)}) ]);
+      var badges=[ f.publicar ? el('span',{class:'badge',text:'● Visible en el carrusel'}) : el('span',{class:'badge gris',text:'Oculta'}) ];
+      var cuerpo=el('div',{class:'cuerpo'},[
+        f.etiqueta ? el('span',{class:'fecha',text:f.etiqueta}) : null,
+        el('h3',{text:f.titulo||'(sin título)'}),
+        f.descripcion ? el('p',{text:f.descripcion}) : null,
+        el('div',{class:'estado'},badges)
+      ]);
+      var orden=el('div',{class:'orden'},[
+        el('button',{type:'button',text:'◀ Antes',onclick:function(){mover(f,-1);}}),
+        el('button',{type:'button',text:'Después ▶',onclick:function(){mover(f,1);}})
+      ]);
+      if(i===0) orden.children[0].setAttribute('disabled','disabled');
+      if(i===S.galeria.length-1) orden.children[1].setAttribute('disabled','disabled');
+      var acc=el('div',{class:'acciones'},[
+        el('button',{type:'button',text:'Editar',onclick:function(){abrirFoto(f);}}),
+        el('button',{type:'button',text:f.publicar?'Ocultar':'Mostrar',onclick:function(){alternarFoto(f);}}),
+        el('button',{type:'button',class:'del',text:'Eliminar','aria-label':'Eliminar foto '+(f.titulo||i+1),onclick:function(){pedirEliminarFoto(f);}})
+      ]);
+      g.appendChild(el('div',{class:'card'+(f.publicar?'':' oculta')},[foto,cuerpo,orden,acc]));
+    });
+  }
+  function mover(f,dir){
+    ocupado(true,'Cambiando el orden…');
+    servidor('galeriaMover',[f.id,dir],function(l){ S.galeria=l; ocupado(false); renderFotos(); toast('Orden guardado.'); });
+  }
+  function alternarFoto(f){
+    ocupado(true,f.publicar?'Ocultando…':'Mostrando…');
+    servidor('galeriaGuardar',[{id:f.id,etiqueta:f.etiqueta,titulo:f.titulo,descripcion:f.descripcion,publicar:!f.publicar,imagen:{accion:'mantener'}}],function(l){
+      S.galeria=l; ocupado(false); renderFotos(); toast(f.publicar?'Foto oculta. El sitio se actualiza en 1 o 2 minutos.':'Foto visible. El sitio se actualiza en 1 o 2 minutos.');
+    });
+  }
+  function pedirEliminarFoto(f){
+    confirmar('¿Eliminar esta foto?','Se quitará del carrusel y no se puede deshacer. Si solo quieres que no se vea, usa “Ocultar”.',function(){
+      ocupado(true,'Eliminando…');
+      servidor('galeriaEliminar',[f.id],function(l){ S.galeria=l; ocupado(false); renderFotos(); toast('Foto eliminada.'); });
+    });
+  }
+
+  function fotoUrlActual(){ return S.fImg.accion==='nueva' ? S.fImg.dataUrl : urlImg(S.fPrevia); }
+  function abrirFoto(f){
+    S.fEditId=f?f.id:null; S.fImg={accion:'mantener'}; S.fPrevia=f?f.imagen:'';
+    $('fmTitulo').textContent=f?'Editar foto':'Nueva foto';
+    $('gEtiqueta').value=f?f.etiqueta:''; $('gTitulo').value=f?f.titulo:''; $('gDesc').value=f?f.descripcion:'';
+    $('gPublicar').checked=f?f.publicar:true; $('fArchivoF').value=''; $('fError').classList.remove('on');
+    pintarFoto(); actualizarFoto(); $('veloF').classList.add('on'); $('gEtiqueta').focus();
+  }
+  function cerrarFoto(){ $('veloF').classList.remove('on'); }
+  function pintarFoto(){
+    var u=fotoUrlActual(), m=$('fMini');
+    if(u){ m.src=u; m.hidden=false; $('fDropTxt').textContent=S.fImg.accion==='nueva'?'Foto nueva lista':'Foto actual'; $('fBtnImg').textContent='Cambiar foto…'; }
+    else { m.hidden=true; m.removeAttribute('src'); $('fDropTxt').textContent='Todavía no elegiste la foto'; $('fBtnImg').textContent='Elegir foto…'; }
+  }
+  function actualizarFoto(){
+    var e=$('gEtiqueta').value, t=$('gTitulo').value, d=$('gDesc').value;
+    $('cEtiqueta').textContent=e.length+'/30'; $('cEtiqueta').classList.toggle('mal',e.length>30);
+    $('cGTitulo').textContent=t.length+'/80'; $('cGTitulo').classList.toggle('mal',t.length>80);
+    $('cGDesc').textContent=d.length+'/160'; $('cGDesc').classList.toggle('mal',d.length>160);
+    var box=$('slidePrev'); box.textContent='';
+    var u=fotoUrlActual(); var bg=el('div',{class:'bg'}); if(u) bg.style.backgroundImage='url("'+u+'")';
+    box.appendChild(bg);
+    if(e||t||d) box.appendChild(el('div',{class:'tx'},[ e?el('div',{class:'et',text:e}):null, t?el('h3',{text:t}):null, d?el('p',{text:d}):null ]));
+  }
+  ['gEtiqueta','gTitulo','gDesc'].forEach(function(id){ $(id).addEventListener('input',actualizarFoto); });
+  function errorFoto(m){ var e=$('fError'); e.textContent=m; e.classList.add('on'); }
+  $('fBtnImg').onclick=function(){ $('fArchivoF').click(); };
+  $('fArchivoF').onchange=function(){
+    var f=this.files&&this.files[0]; if(!f) return;
+    if(!/^image\/(jpeg|png|webp)$/.test(f.type)){ errorFoto('Elige una imagen JPG, PNG o WebP.'); return; }
+    reducir(f,1600,function(err,res){
+      if(err){ errorFoto(err); return; }
+      $('fError').classList.remove('on');
+      S.fImg={accion:'nueva',base64:res.base64,mime:'image/jpeg',dataUrl:res.dataUrl}; pintarFoto(); actualizarFoto();
+    });
+  };
+  $('fBtnGuardar').onclick=function(){
+    var d={ id:S.fEditId||undefined, etiqueta:$('gEtiqueta').value, titulo:$('gTitulo').value, descripcion:$('gDesc').value,
+            publicar:$('gPublicar').checked, imagen:{accion:S.fImg.accion} };
+    if(!S.fEditId && S.fImg.accion!=='nueva') return errorFoto('Elige la foto.');
+    if(d.etiqueta.length>30) return errorFoto('La etiqueta es muy larga (máximo 30 letras).');
+    if(d.titulo.length>80) return errorFoto('El título es muy largo (máximo 80 letras).');
+    if(d.descripcion.length>160) return errorFoto('La descripción es muy larga (máximo 160 letras).');
+    if(S.fImg.accion==='nueva'){ d.imagen.base64=S.fImg.base64; d.imagen.mime=S.fImg.mime; }
+    $('fError').classList.remove('on'); ocupado(true,'Guardando y publicando…');
+    servidor('galeriaGuardar',[d],function(l){
+      S.galeria=l; ocupado(false); cerrarFoto(); renderFotos(); toast('Guardado ✔  El sitio se actualiza en 1 o 2 minutos.');
+    },function(e){ ocupado(false); errorFoto(mensajeError(e)); });
+  };
+  $('fBtnCancelar').onclick=cerrarFoto; $('fbtnX').onclick=cerrarFoto;
+  $('btnNuevaFoto').onclick=function(){ abrirFoto(null); };
 
   /* ---------- arranque ---------- */
   servidor('panelCargar',[],function(d){
-    S.noticias=d.noticias; S.imgBase=d.imgBase; S.visibles=d.visibles; S.hoy=d.hoy;
+    S.noticias=d.noticias; S.galeria=d.galeria||[]; S.imgBase=d.imgBase; S.visibles=d.visibles; S.hoy=d.hoy;
     $('nVis').textContent=d.visibles; $('verSitio').href=d.sitioUrl;
     var u=$('user'); u.textContent='';
     u.appendChild(el('b',{text:d.usuario.nombre||d.usuario.email}));
     u.appendChild(document.createTextNode(d.usuario.email));
     u.appendChild(document.createElement('br'));
     u.appendChild(el('span',{class:'rol',text:d.usuario.rol}));
-    render();
+    render(); renderFotos();
   },function(e){ $('grid').textContent=''; $('grid').appendChild(el('div',{class:'vacio',text:'No se pudo cargar el panel: '+mensajeError(e)})); });
 })();
 </script>

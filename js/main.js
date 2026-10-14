@@ -1,33 +1,67 @@
-/* ---------- Carrusel ---------- */
+/* ---------- Carrusel desde data/galeria.json ---------- */
 (function () {
+  var sec = document.getElementById('galeria');
   var track = document.getElementById('carTrack');
   var dotsWrap = document.getElementById('carDots');
-  if (!track || !dotsWrap) return;
-  var slides = track.children.length;
-  var idx = 0, timer;
+  if (!sec || !track || !dotsWrap) return;
+  var RUTA_OK = /^assets\/[\w\-\/.]+$/;   // solo imágenes propias del sitio
 
-  for (var i = 0; i < slides; i++) {
-    (function (n) {
-      var b = document.createElement('button');
-      b.setAttribute('aria-label', 'Ir a la imagen ' + (n + 1));
-      if (n === 0) b.classList.add('active');
-      b.addEventListener('click', function () { goTo(n); });
-      dotsWrap.appendChild(b);
-    })(i);
+  function slide(f) {
+    var s = document.createElement('div');
+    s.className = 'car-slide';
+    var bg = document.createElement('div');
+    bg.className = 'cs-bg';
+    bg.style.backgroundImage = 'url("' + f.imagen + '")';
+    s.appendChild(bg);
+    if (f.etiqueta || f.titulo || f.descripcion) {
+      var c = document.createElement('div');
+      c.className = 'cs-content';
+      if (f.etiqueta) { var t = document.createElement('span'); t.className = 'cs-tag'; t.textContent = f.etiqueta; c.appendChild(t); }
+      if (f.titulo) { var h = document.createElement('h3'); h.textContent = f.titulo; c.appendChild(h); }
+      if (f.descripcion) { var p = document.createElement('p'); p.textContent = f.descripcion; c.appendChild(p); }
+      s.appendChild(c);
+    }
+    return s;
   }
 
-  function render() {
-    track.style.transform = 'translateX(-' + (idx * 100) + '%)';
-    Array.prototype.forEach.call(dotsWrap.children, function (d, n) {
-      d.classList.toggle('active', n === idx);
-    });
+  function iniciarCarrusel() {
+    var slides = track.children.length;
+    var idx = 0, timer;
+    var multi = slides > 1;
+    for (var i = 0; i < slides; i++) {
+      (function (n) {
+        var b = document.createElement('button');
+        b.setAttribute('aria-label', 'Ir a la imagen ' + (n + 1));
+        if (n === 0) b.classList.add('active');
+        b.addEventListener('click', function () { goTo(n); });
+        dotsWrap.appendChild(b);
+      })(i);
+    }
+    function render() {
+      track.style.transform = 'translateX(-' + (idx * 100) + '%)';
+      Array.prototype.forEach.call(dotsWrap.children, function (d, n) { d.classList.toggle('active', n === idx); });
+    }
+    function restart() { clearInterval(timer); if (multi) timer = setInterval(function () { goTo(idx + 1); }, 5000); }
+    function goTo(n) { idx = (n + slides) % slides; render(); restart(); }
+    var prev = sec.querySelector('.car-arrow.prev'), next = sec.querySelector('.car-arrow.next');
+    prev.addEventListener('click', function () { goTo(idx - 1); });
+    next.addEventListener('click', function () { goTo(idx + 1); });
+    if (!multi) { prev.hidden = true; next.hidden = true; dotsWrap.hidden = true; }
+    restart();
   }
-  function restart() { clearInterval(timer); timer = setInterval(function () { goTo(idx + 1); }, 5000); }
-  function goTo(n) { idx = (n + slides) % slides; render(); restart(); }
 
-  document.querySelector('.car-arrow.prev').addEventListener('click', function () { goTo(idx - 1); });
-  document.querySelector('.car-arrow.next').addEventListener('click', function () { goTo(idx + 1); });
-  restart();
+  fetch('data/galeria.json', { cache: 'no-cache' })
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (lista) {
+      lista = (Array.isArray(lista) ? lista : []).filter(function (f) {
+        return f && f.publicar !== false && typeof f.imagen === 'string' && RUTA_OK.test(f.imagen) && f.imagen.indexOf('..') < 0;
+      });
+      if (!lista.length) return;           // sin fotos visibles: la sección sigue oculta
+      lista.forEach(function (f) { track.appendChild(slide(f)); });
+      sec.hidden = false;
+      iniciarCarrusel();
+    })
+    .catch(function () { /* sin galería: la sección sigue oculta */ });
 })();
 
 /* ---------- Pestañas de niveles ---------- */
