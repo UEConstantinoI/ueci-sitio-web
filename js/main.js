@@ -124,7 +124,6 @@
       var img = document.createElement('img');
       img.src = n.imagen;
       img.alt = n.titulo || '';
-      img.loading = 'lazy';
       // Imagen vertical (afiche): la tarjeta pasa a diseño lateral con la imagen entera.
       var marcar = function () { if (img.naturalHeight > img.naturalWidth * 1.1) art.classList.add('vertical'); };
       img.addEventListener('load', marcar);
@@ -427,7 +426,6 @@
     b.setAttribute('aria-label', 'Reproducir: ' + (v.titulo || NOMBRES[p]));
     if (p === 'youtube') {
       var img = document.createElement('img');
-      img.loading = 'lazy'; img.alt = ''; img.src = 'https://i.ytimg.com/vi/' + c + '/hqdefault.jpg';
       b.appendChild(img);
     } else {
       var f = document.createElement('div'); f.className = 'vfondo'; f.textContent = p === 'tiktok' ? 'Ver en TikTok' : NOMBRES[p]; b.appendChild(f);
@@ -547,4 +545,28 @@
       sec.hidden = false;
     })
     .catch(function () { /* sin calendario: la sección queda oculta */ });
+})();
+
+/* ---------- Enlaces con #ancla (p. ej. desde WhatsApp) ----------
+   Las secciones de arriba (galería, videos, noticias…) se llenan después de
+   que la página carga y empujan el destino hacia abajo. Se vuelve a
+   posicionar en el ancla mientras cambie el alto, hasta que la persona
+   mueva la página o pasen unos segundos. */
+(function () {
+  var h = location.hash;
+  if (!h || h.length < 2 || !window.ResizeObserver) return;
+  var id;
+  try { id = decodeURIComponent(h.slice(1)); } catch (e) { return; }
+  var activo = true;
+  function ir() {
+    var t = document.getElementById(id);
+    if (t && activo) t.scrollIntoView({ block: 'start', behavior: 'instant' });
+  }
+  function parar() { activo = false; ro.disconnect(); }
+  var ro = new ResizeObserver(ir);
+  ro.observe(document.body);
+  ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(function (ev) {
+    window.addEventListener(ev, parar, { passive: true, once: true });
+  });
+  setTimeout(parar, 6000);
 })();
