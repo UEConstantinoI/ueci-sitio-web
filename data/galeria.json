@@ -1,1 +1,122 @@
-[]
+[
+  {
+    "id": "g20261014-000a1",
+    "etiqueta": "Infraestructura",
+    "titulo": "Fachada principal",
+    "descripcion": "Nuestra unidad educativa en Tiquipaya.",
+    "imagen": "assets/galeria/g20261014-000a1-semilla1.jpg",
+    "publicar": true
+  },
+  {
+    "id": "g20261014-000a2",
+    "etiqueta": "Infraestructura",
+    "titulo": "Bienvenidos",
+    "descripcion": "Ingreso principal a la Unidad Educativa Constantino I.",
+    "imagen": "assets/galeria/g20261014-000a2-semilla2.jpg",
+    "publicar": true
+  },
+  {
+    "id": "g20261014-000a3",
+    "etiqueta": "Infraestructura",
+    "titulo": "Patio techado",
+    "descripcion": "Espacio amplio y cubierto para actividades deportivas y cívicas.",
+    "imagen": "assets/galeria/g20261014-000a3-semilla3.jpg",
+    "publicar": true
+  },
+  {
+    "id": "g20261014-000a4",
+    "etiqueta": "Deporte y recreación",
+    "titulo": "Cancha y gradas",
+    "descripcion": "Instalaciones para educación física y competencias.",
+    "imagen": "assets/galeria/g20261014-000a4-semilla4.jpg",
+    "publicar": true
+  },
+  {
+    "id": "g20261014-000a5",
+    "etiqueta": "Áreas verdes",
+    "titulo": "Jardines y espacios al aire libre",
+    "descripcion": "Ambientes para el recreo y la convivencia.",
+    "imagen": "assets/galeria/g20261014-000a5-semilla5.jpg",
+    "publicar": true
+  },
+  {
+    "id": "g20261014-000a6",
+    "etiqueta": "Aulas",
+    "titulo": "Aulas equipadas",
+    "descripcion": "Ambientes cómodos y luminosos para el aprendizaje.",
+    "imagen": "assets/galeria/g20261014-000a6-semilla6.jpg",
+    "publicar": true
+  },
+  {
+    "id": "g20261014-000a7",
+    "etiqueta": "Laboratorio",
+    "titulo": "Laboratorio de ciencias",
+    "descripcion": "Espacio para prácticas y experimentos.",
+    "imagen": "assets/galeria/g20261014-000a7-semilla7.jpg",
+    "publicar": true
+  },
+  {
+    "id": "g20261014-000a8",
+    "etiqueta": "Tecnología",
+    "titulo": "Sala de computación",
+    "descripcion": "Equipos para el aprendizaje de herramientas digitales.",
+    "imagen": "assets/galeria/g20261014-000a8-semilla8.jpg",
+    "publicar": true
+  },
+  {
+    "id": "g20261014-000b1",
+    "etiqueta": "Cultura",
+    "titulo": "Música y tradición",
+    "descripcion": "Celebramos nuestras raíces con música andina.",
+    "imagen": "assets/galeria/g20261014-000b1-foto1.jpg",
+    "publicar": true
+  },
+  {
+    "id": "g20261014-000b2",
+    "etiqueta": "Cultura",
+    "titulo": "Danzas y trajes típicos",
+    "descripcion": "Nuestras tradiciones, vividas en comunidad.",
+    "imagen": "assets/galeria/g20261014-000b2-foto2.jpg",
+    "publicar": true
+  },
+  {
+    "id": "g20261014-000b3",
+    "etiqueta": "Vida escolar",
+    "titulo": "Creatividad en acción",
+    "descripcion": "Nuestro “School Bus”, hecho por los más pequeños.",
+    "imagen": "assets/galeria/g20261014-000b3-foto3.jpg",
+    "publicar": true
+  },
+  {
+    "id": "g20261014-000b4",
+    "etiqueta": "Talentos",
+    "titulo": "Ferias escolares",
+    "descripcion": "Aprender haciendo: cocina y alimentación saludable.",
+    "imagen": "assets/galeria/g20261014-000b4-foto4.jpg",
+    "publicar": true
+  },
+  {
+    "id": "g20261014-000b5",
+    "etiqueta": "Talentos",
+    "titulo": "Estudiantes que presentan",
+    "descripcion": "Proyectos y ferias donde cada talento brilla.",
+    "imagen": "assets/galeria/g20261014-000b5-foto5.jpg",
+    "publicar": true
+  },
+  {
+    "id": "g20261014-000b6",
+    "etiqueta": "Vida escolar",
+    "titulo": "Día del Niño",
+    "descripcion": "Disfraces, risas y alegría compartida.",
+    "imagen": "assets/galeria/g20261014-000b6-foto6.jpg",
+    "publicar": true
+  },
+  {
+    "id": "g20261014-000b7",
+    "etiqueta": "Vida escolar",
+    "titulo": "Un día para jugar",
+    "descripcion": "Celebramos a nuestros niños con juegos y color.",
+    "imagen": "assets/galeria/g20261014-000b7-foto7.jpg",
+    "publicar": true
+  }
+]
