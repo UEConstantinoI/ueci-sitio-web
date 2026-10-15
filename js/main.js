@@ -122,6 +122,12 @@
     var p = document.createElement('p');
     p.textContent = n.resumen || '';
     body.appendChild(f); body.appendChild(h); body.appendChild(p);
+    var sh = document.createElement('a');
+    sh.className = 'noticia-compartir';
+    sh.target = '_blank'; sh.rel = 'noopener';
+    sh.textContent = 'Compartir por WhatsApp';
+    sh.href = 'https://wa.me/?text=' + encodeURIComponent((n.titulo || 'Comunicado') + ' - Unidad Educativa Constantino I\n' + location.origin + location.pathname.replace(/[^\/]*$/, '') + '#noticias');
+    body.appendChild(sh);
     art.appendChild(body);
     return art;
   }
@@ -314,13 +320,39 @@
     fila('ctTel', '☎️', 'Teléfono fijo y WhatsApp', c.telefono);
     fila('ctCel', '📱', 'Celular / WhatsApp', c.celular);
     if (/^\d{8,15}$/.test(String(c.whatsapp || ''))) {
-      document.querySelectorAll('a[href^="https://wa.me/"]').forEach(function (a) { a.href = 'https://wa.me/' + c.whatsapp + (a.search || ''); });
+      document.querySelectorAll('a[href^="https://wa.me/"]:not(.noticia-compartir)').forEach(function (a) { a.href = 'https://wa.me/' + c.whatsapp + (a.search || ''); });
+      document.querySelectorAll('a[href^="tel:"]').forEach(function (a) { a.href = 'tel:+' + c.whatsapp; });
+    }
+  }
+
+  function aviso(a) {
+    var box = document.getElementById('avisoTop');
+    if (!box || !a || a.activo !== true || typeof a.texto !== 'string' || !a.texto.trim()) return;
+    document.getElementById('avisoTxt').textContent = a.texto;
+    var l = document.getElementById('avisoLink');
+    if (l && typeof a.enlace === 'string' && /^https:\/\/\S+$/.test(a.enlace)) { l.href = a.enlace; l.hidden = false; }
+    box.hidden = false;
+  }
+
+  function horarios(h) {
+    if (!h) return;
+    var ul = document.getElementById('ctHorAt'), cl = document.getElementById('ctHorCl');
+    if (ul && Array.isArray(h.atencion) && h.atencion.length) {
+      ul.textContent = '';
+      h.atencion.forEach(function (t) { if (typeof t === 'string' && t) { var li = document.createElement('li'); li.textContent = t; ul.appendChild(li); } });
+    }
+    if (cl && typeof h.clases_turno === 'string') {
+      cl.textContent = '';
+      var partes = [h.clases_turno].concat(Array.isArray(h.clases) ? h.clases : []).filter(function (x) { return typeof x === 'string' && x; });
+      if (!partes.length) { cl.hidden = true; return; }
+      var b = document.createElement('b'); b.textContent = 'Horario de clases: ';
+      cl.appendChild(b); cl.appendChild(document.createTextNode(partes.join(' · ')));
     }
   }
 
   fetch('data/textos.json', { cache: 'no-cache' })
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(function (t) { hero(t.hero); nosotros(t.nosotros); pilares(t.pilares); transporte(t.transporte); requisitos(t.requisitos); contacto(t.contacto); })
+    .then(function (t) { hero(t.hero); nosotros(t.nosotros); pilares(t.pilares); transporte(t.transporte); requisitos(t.requisitos); contacto(t.contacto); aviso(t.aviso); horarios(t.horarios); })
     .catch(function () { /* se queda el texto que ya trae la página */ });
 })();
 
@@ -456,4 +488,43 @@
   }, { threshold: 0.12 });
   items.forEach(function (x) { x.classList.add('rev'); io.observe(x); });
   setTimeout(function () { document.querySelectorAll('.rev:not(.visto)').forEach(function (x) { x.classList.add('visto'); }); }, 4000);
+})();
+
+/* ---------- Calendario escolar desde data/calendario.json (se oculta si no hay fechas próximas) ---------- */
+(function () {
+  var sec = document.getElementById('calendario'), cont = document.getElementById('calLista');
+  if (!sec || !cont) return;
+  var MES = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+  var ISO = /^\d{4}-\d{2}-\d{2}$/;
+  function hoyBolivia() {
+    var d = new Date(Date.now() - 4 * 3600 * 1000);   // UTC-4
+    return d.toISOString().slice(0, 10);
+  }
+  function partes(iso) { var p = iso.split('-'); return { d: parseInt(p[2], 10), m: MES[parseInt(p[1], 10) - 1] }; }
+  function mk(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt) e.textContent = txt; return e; }
+
+  fetch('data/calendario.json', { cache: 'no-cache' })
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (lista) {
+      var hoy = hoyBolivia();
+      lista = (Array.isArray(lista) ? lista : []).filter(function (x) {
+        return x && x.publicar !== false && ISO.test(String(x.fecha || '')) && typeof x.titulo === 'string' && x.titulo &&
+               (ISO.test(String(x.fin || '')) ? x.fin : x.fecha) >= hoy;
+      }).sort(function (a, b) { return a.fecha.localeCompare(b.fecha); }).slice(0, 8);
+      if (!lista.length) return;
+      cont.textContent = '';
+      lista.forEach(function (x) {
+        var a = partes(x.fecha), fin = ISO.test(String(x.fin || '')) && x.fin > x.fecha ? partes(x.fin) : null;
+        var card = mk('div', 'cal-item');
+        var f = mk('div', 'cal-fecha');
+        f.appendChild(mk('b', '', fin && fin.m === a.m ? a.d + '–' + fin.d : String(a.d)));
+        f.appendChild(mk('span', '', a.m + (fin && fin.m !== a.m ? ' – ' + fin.d + ' ' + fin.m : '')));
+        var t = mk('div', 'cal-texto');
+        t.appendChild(mk('h3', '', x.titulo));
+        if (typeof x.detalle === 'string' && x.detalle) t.appendChild(mk('p', '', x.detalle));
+        card.appendChild(f); card.appendChild(t); cont.appendChild(card);
+      });
+      sec.hidden = false;
+    })
+    .catch(function () { /* sin calendario: la sección queda oculta */ });
 })();

@@ -6,7 +6,7 @@
  * - Qué guarda: archivos JSON y fotos en el repositorio de GitHub; el sitio los lee solo.
  * - La clave de GitHub se guarda en las Propiedades del script (menú "Panel web").
  *
- * Módulos: Noticias, Fotos del carrusel, Videos, y (solo ADMIN) Textos del sitio y Accesos directos.
+ * Módulos: Noticias, Fotos del carrusel, Videos, Calendario escolar, y (solo ADMIN) Textos del sitio y Accesos directos.
  */
 
 const CONFIG = {
@@ -20,6 +20,8 @@ const CONFIG = {
   ARCHIVO_TEXTOS: 'data/textos.json',
   ARCHIVO_VIDEOS: 'data/videos.json',
   ARCHIVO_ACCESOS: 'data/accesos.json',
+  ARCHIVO_CALENDARIO: 'data/calendario.json',
+  MAX_CALENDARIO: 40,
   MAX_VIDEOS: 24,
   MAX_ACCESOS: 12,
   ARCHIVO_GALERIA: 'data/galeria.json',
@@ -93,6 +95,7 @@ function panelCargar() {
     galeria: galeriaLeer_().lista,
     videos: listaLeer_(listaVideos_()).lista,
     accesos: u.rol === 'ADMIN' ? accesosParaPanel_() : null,
+    calendario: calendarioParaPanel_(),
     textos: textosParaPanel_(u),   // los textos solo los ve y edita un ADMIN
     imgBase: 'https://raw.githubusercontent.com/' + CONFIG.OWNER + '/' + CONFIG.REPO + '/' + CONFIG.BRANCH + '/',
     sitioUrl: CONFIG.SITIO_URL + CONFIG.PAGINA_SITIO,
@@ -465,7 +468,20 @@ function validarTextos_(d) {
     titulo: cad_(c.titulo, 90, 'Contacto · título'), direccion: cad_(c.direccion, 160, 'Contacto · dirección'),
     telefono: cad_(c.telefono, 40, 'Contacto · teléfono fijo'), celular: cad_(c.celular, 40, 'Contacto · celular'), whatsapp: wa
   };
-  return { hero: hero, nosotros: nosotros, pilares: pilares, transporte: transporte, requisitos: requisitos, contacto: contacto };
+  const av = d.aviso || {};
+  const avActivo = av.activo === true;
+  const avTexto = cad_(av.texto, 140, 'Aviso destacado · texto', !avActivo);
+  const avEnlace = cad_(av.enlace, 300, 'Aviso destacado · enlace', true);
+  if (avEnlace && !/^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)+(:\d+)?([\/?#]\S*)?$/i.test(avEnlace)) throw new Error('El enlace del aviso debe empezar con https:// y ser una dirección web completa.');
+  const aviso = { activo: avActivo, texto: avTexto, enlace: avEnlace };
+
+  const hr = d.horarios || {};
+  const horarios = {
+    atencion: lista_(hr.atencion || [], 0, 6, 'Horario de atención').map(function (x, i) { return cad_(x, 80, 'Horario de atención · renglón ' + (i + 1)); }),
+    clases_turno: cad_(hr.clases_turno, 40, 'Horario de clases · turno', true),
+    clases: lista_(hr.clases || [], 0, 6, 'Horario de clases').map(function (x, i) { return cad_(x, 80, 'Horario de clases · renglón ' + (i + 1)); })
+  };
+  return { hero: hero, nosotros: nosotros, pilares: pilares, transporte: transporte, requisitos: requisitos, contacto: contacto, aviso: aviso, horarios: horarios };
 }
 
 const FOTOS_TEXTOS = {
@@ -527,6 +543,7 @@ function textosGuardar(datos, imagenes) {
 const ID_V_RE = /^v\d{8}-[0-9a-f]{5}$/;
 const ID_A_RE = /^a\d{8}-[0-9a-f]{5}$/;
 const CATEGORIAS_VIDEO = ['testimonios', 'vida'];
+const ID_C_RE = /^c\d{8}-[0-9a-f]{5}$/;
 const COLORES_ACCESO = ['rojo', 'verde', 'sol', 'azul', 'royal', 'gris'];
 
 function listaVideos_() {
@@ -548,6 +565,17 @@ function listaAccesos_() {
                color: COLORES_ACCESO.indexOf(x.color) >= 0 ? x.color : 'gris', publicar: x.publicar !== false };
     },
     rotulo: function (x) { return x.titulo; }
+  };
+}
+
+function listaCalendario_() {
+  return {
+    archivo: CONFIG.ARCHIVO_CALENDARIO, idRe: ID_C_RE, pref: 'c', max: CONFIG.MAX_CALENDARIO, nombre: 'evento', plural: 'eventos',
+    leer: function (x) {
+      return { fecha: String(x.fecha || ''), fin: String(x.fin || ''), titulo: String(x.titulo || ''), detalle: String(x.detalle || ''), publicar: x.publicar !== false };
+    },
+    rotulo: function (x) { return x.titulo + ' (' + x.fecha + ')'; },
+    ordenar: function (a, b) { return String(a.fecha).localeCompare(String(b.fecha)); }
   };
 }
 
@@ -592,6 +620,7 @@ function listaGuardarItem_(cfg, u, datos, item) {
     if (nuevo && act.lista.length >= cfg.max) throw new Error('Ya hay ' + cfg.max + ' ' + cfg.plural + '. Elimina alguno antes de agregar otro.');
     item.id = nuevo ? nuevoIdLista_(cfg.pref) : act.lista[idx].id;
     if (nuevo) act.lista.push(item); else act.lista[idx] = item;
+    if (cfg.ordenar) act.lista.sort(cfg.ordenar);
     listaEscribir_(cfg, act.lista, act.sha, cfg.nombre[0].toUpperCase() + cfg.nombre.slice(1) + ': ' + (nuevo ? 'nuevo' : 'editado') + ' "' + cfg.rotulo(item) + '" (' + u.email + ')');
     registrar_(u, cfg.nombre[0].toUpperCase() + cfg.nombre.slice(1) + (nuevo ? ' agregado' : ' editado'), cfg.rotulo(item) + (item.publicar ? ' [visible]' : ' [oculto]'));
     return act.lista;
@@ -714,6 +743,36 @@ function accesoGuardar(datos) {
 }
 function accesoEliminar(id) { return listaEliminarItem_(listaAccesos_(), exigirAdmin_(), id); }
 function accesoMover(id, dir) { return listaMoverItem_(listaAccesos_(), exigirAdmin_(), id, dir); }
+
+/* ───────────────────────── CALENDARIO ESCOLAR (ADMIN y EDITOR) ───────────────────────── */
+
+function calendarioParaPanel_() {
+  try { return { datos: listaLeer_(listaCalendario_()).lista }; } catch (e) { return { error: String(e.message || e) }; }
+}
+
+function fechaValida_(v, nombre, opcional) {
+  const t = String(v || '').trim();
+  if (!t && opcional) return '';
+  const m = t.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) throw new Error('Elige una fecha válida en “' + nombre + '”.');
+  const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  if (d.getUTCFullYear() !== +m[1] || d.getUTCMonth() !== +m[2] - 1 || d.getUTCDate() !== +m[3]) throw new Error('La fecha de “' + nombre + '” no existe.');
+  if (+m[1] < 2020 || +m[1] > 2100) throw new Error('Revisa el año de “' + nombre + '”.');
+  return t;
+}
+
+/** datos = { id?, fecha:'AAAA-MM-DD', fin?:'AAAA-MM-DD', titulo, detalle, publicar:bool } */
+function calendarioGuardar(datos) {
+  const u = exigir_();
+  if (!datos || typeof datos !== 'object') throw new Error('Datos vacíos.');
+  const fecha = fechaValida_(datos.fecha, 'Fecha');
+  const fin = fechaValida_(datos.fin, 'Hasta (opcional)', true);
+  if (fin && fin < fecha) throw new Error('“Hasta” no puede ser antes de la fecha de inicio.');
+  return listaGuardarItem_(listaCalendario_(), u, datos, {
+    fecha: fecha, fin: fin && fin !== fecha ? fin : '', titulo: cad_(datos.titulo, 70, 'Título'), detalle: cad_(datos.detalle, 120, 'Detalle', true), publicar: datos.publicar === true
+  });
+}
+function calendarioEliminar(id) { return listaEliminarItem_(listaCalendario_(), exigir_(), id); }
 
 /* ───────────────────────── GITHUB ───────────────────────── */
 

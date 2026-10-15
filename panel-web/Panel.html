@@ -194,6 +194,7 @@
     <button class="nav-item" data-vista="Fotos">🖼️&nbsp; Fotos del carrusel</button>
     <button class="nav-item" data-vista="Textos" id="navTextos" hidden>✏️&nbsp; Textos del sitio</button>
     <button class="nav-item" data-vista="Videos">🎬&nbsp; Videos</button>
+    <button class="nav-item" data-vista="Calendario">📅&nbsp; Calendario escolar</button>
     <button class="nav-item" data-vista="Accesos" id="navAccesos" hidden>🔗&nbsp; Accesos directos</button>
     <div class="spacer"></div>
     <div class="espacio" id="espacio" hidden></div>
@@ -241,6 +242,18 @@
       </div>
       <div class="aviso" id="avisoVideos"></div>
       <div class="grid" id="gridVideos"><div class="carga">Cargando videos…</div></div>
+    </div>
+
+    <div class="vista" id="vCalendario" hidden>
+      <div class="head">
+        <div>
+          <h1>Calendario escolar</h1>
+          <p>Fechas importantes que se ven en el sitio (inscripciones, inicio de clases, vacaciones, actos…). Se ordenan solas por fecha y, cuando la fecha pasa, el sitio deja de mostrarlas. Si no hay fechas próximas, la sección se oculta.</p>
+        </div>
+        <button class="btn btn-sun" id="btnNuevoEvento">+ Nueva fecha</button>
+      </div>
+      <div class="aviso" id="avisoCalendario"></div>
+      <div class="grid" id="gridCalendario"><div class="carga">Cargando calendario…</div></div>
     </div>
 
     <div class="vista" id="vAccesos" hidden>
@@ -387,7 +400,7 @@
     box.title='GitHub recomienda no pasar de 1 GB por sitio. Incluye el historial: borrar una foto no libera todo el espacio. El dato puede tardar unas horas en actualizarse.';
     box.hidden=false;
   }
-  var S = { noticias:[], galeria:[], videos:[], accesos:[], textos:null, t:null, timgs:{transporte:{accion:'mantener'},hero1:{accion:'mantener'},hero2:{accion:'mantener'},nosotros:{accion:'mantener'}}, sucio:false, imgBase:'', visibles:6, hoy:'', filtro:'todas', q:'', editId:null, img:{accion:'mantener'}, imgPrevia:'', fEditId:null, fImg:{accion:'mantener'}, fPrevia:'' };
+  var S = { noticias:[], galeria:[], videos:[], calendario:[], accesos:[], textos:null, t:null, timgs:{transporte:{accion:'mantener'},hero1:{accion:'mantener'},hero2:{accion:'mantener'},nosotros:{accion:'mantener'}}, sucio:false, imgBase:'', visibles:6, hoy:'', filtro:'todas', q:'', editId:null, img:{accion:'mantener'}, imgPrevia:'', fEditId:null, fImg:{accion:'mantener'}, fPrevia:'' };
   var MESES=['ene.','feb.','mar.','abr.','may.','jun.','jul.','ago.','sep.','oct.','nov.','dic.'];
   var $=function(id){return document.getElementById(id)};
 
@@ -596,7 +609,7 @@
 
   /* ---------- navegación entre vistas ---------- */
   function irA(v){
-    ['Noticias','Fotos','Videos','Accesos','Textos'].forEach(function(n){ $('v'+n).hidden=(n!==v); });
+    ['Noticias','Fotos','Videos','Calendario','Accesos','Textos'].forEach(function(n){ $('v'+n).hidden=(n!==v); });
     document.querySelectorAll('.nav-item[data-vista]').forEach(function(b){ b.classList.toggle('act',b.getAttribute('data-vista')===v); });
     window.scrollTo(0,0);
   }
@@ -747,6 +760,13 @@
     return el('div',{class:'campo'},[ el('label',{class:'l',for:id},[document.createTextNode(rot+' '),cuenta]), inp, ayuda?el('small',{text:ayuda}):null ]);
   }
 
+  function checkT(rot,ruta,ayuda){
+    var id='t_'+ruta.replace(/\./g,'_');
+    var inp=el('input',{type:'checkbox',id:id}); inp.checked=!!getP(S.t,ruta);
+    inp.addEventListener('change',function(){ setP(S.t,ruta,inp.checked); marcar(); });
+    return el('div',{class:'sw'},[ inp, el('label',{for:id,style:'cursor:pointer'},[ el('b',{text:rot}), el('span',{text:ayuda||''}) ]) ]);
+  }
+
   function seccion(titulo,hijos,abierta){
     var d=el('details',{class:'sec'},[ el('summary',{text:titulo}), el('div',{class:'sec-body'},hijos) ]);
     if(abierta) d.open=true; return d;
@@ -830,10 +850,17 @@
     f.textContent='';
     if(!S.t){ return; }
     if(!S.t.requisitos) S.t.requisitos={reserva:[],inscripcion:[],nota:''};
+    if(!S.t.aviso) S.t.aviso={activo:false,texto:'',enlace:''};
+    if(!S.t.horarios) S.t.horarios={atencion:[],clases_turno:'',clases:[]};
     var datos=[0,1,2,3].map(function(i){
       return el('div',{class:'grupo'},[ el('div',{class:'sub',text:'Dato destacado '+(i+1)}),
         el('div',{class:'cols2'},[ campoT('Titular','hero.datos.'+i+'.valor',32,'line'), campoT('Detalle','hero.datos.'+i+'.texto',60,'line') ]) ]);
     });
+    f.appendChild(seccion('Aviso destacado (franja de color arriba de todo el sitio)',[
+      checkT('Mostrar el aviso en el sitio','aviso.activo','Márcalo cuando haya un anuncio urgente y desmárcalo cuando termine. Si está desmarcado, no se ve nada.'),
+      campoT('Texto del aviso','aviso.texto',140,'line','Una frase corta. Ejemplo: Inscripciones abiertas para la gestión 2027.'),
+      campoT('Enlace (opcional)','aviso.enlace',300,'line','Si lo escribes, aparece un “Más información” que lleva a esa dirección (debe empezar con https://).')
+    ],true));
     f.appendChild(seccion('Portada',[
       campoT('Etiqueta superior','hero.etiqueta',40,'line'),
       campoT('Título principal','hero.titulo',120,'line','Las palabras entre asteriscos salen resaltadas. Ejemplo: Formamos *bachilleres bilingües* con talento.'),
@@ -863,6 +890,11 @@
       campoT('Título','transporte.titulo',90,'line'), campoT('Texto','transporte.texto',300,'area'),
       fotoTransporte(),
       el('div',{class:'cols2'},[ campoT('Transporte público · título','transporte.publico_titulo',40,'line'), campoT('Transporte público · detalle','transporte.publico_texto',100,'line') ])
+    ]));
+    f.appendChild(seccion('Horarios (se ven en Contacto)',[
+      campoT('Horario de atención (un renglón por línea)','horarios.atencion',80,'lines','Ejemplo: Lunes a Viernes: 8:00 a 15:30',6),
+      campoT('Horario de clases · turno','horarios.clases_turno',40,'line','Ejemplo: Turno mañana. Si lo dejas vacío y sin renglones, no se muestra.'),
+      campoT('Horario de clases · detalle (opcional, un renglón por línea)','horarios.clases',80,'lines','Ejemplo: Inicial: 8:00 a 12:00',6)
     ]));
     f.appendChild(seccion('Contacto',[
       campoT('Título','contacto.titulo',90,'line'), campoT('Dirección','contacto.direccion',160,'line'),
@@ -954,9 +986,9 @@ function parsearVideo_(entrada) {
       if(c.t==='select'){
         inp=el('select',{id:id}); c.opciones.forEach(function(o){ var op=el('option',{value:o[0],text:o[1]}); inp.appendChild(op); }); inp.value=v[c.k]||c.opciones[0][0];
       } else {
-        inp=el('input',{type:'text',id:id}); inp.value=v[c.k]||'';
-        function medir(){ cuenta.textContent=inp.value.length+'/'+c.max; cuenta.classList.toggle('mal',inp.value.length>c.max); }
-        inp.addEventListener('input',medir); medir();
+        inp=el('input',{type:(c.t==='date'?'date':'text'),id:id}); inp.value=v[c.k]||'';
+        if(c.t!=='date'){ var medir=function(){ cuenta.textContent=inp.value.length+'/'+c.max; cuenta.classList.toggle('mal',inp.value.length>c.max); };
+        inp.addEventListener('input',medir); medir(); }
       }
       if(c.detecta){
         extra=el('div',{class:'detecta'});
@@ -976,7 +1008,7 @@ function parsearVideo_(entrada) {
     cfg.campos.forEach(function(c){
       var e=$('g_'+c.k);
       if(c.t==='check') d[c.k]=e.checked; else d[c.k]=e.value;
-      if(c.max && c.t!=='check' && c.t!=='select' && d[c.k].length>c.max){ d.__mal=c.rot+' es muy largo (máximo '+c.max+' letras).'; }
+      if(c.max && c.t!=='check' && c.t!=='select' && c.t!=='date' && d[c.k].length>c.max){ d.__mal=c.rot+' es muy largo (máximo '+c.max+' letras).'; }
     });
     if(d.__mal) return errorG(d.__mal);
     if(cfg.validar){ var m=cfg.validar(d); if(m) return errorG(m); }
@@ -996,8 +1028,9 @@ function parsearVideo_(entrada) {
         el('button',{type:'button',text:'◀ Antes',onclick:function(){ moverLista(cfg,it,-1); }}),
         el('button',{type:'button',text:'Después ▶',onclick:function(){ moverLista(cfg,it,1); }})
       ]);
-      if(i===0) orden.children[0].setAttribute('disabled','disabled');
-      if(i===l.length-1) orden.children[1].setAttribute('disabled','disabled');
+      if(cfg.sinOrden) orden=null;
+      if(orden&&i===0) orden.children[0].setAttribute('disabled','disabled');
+      if(orden&&i===l.length-1) orden.children[1].setAttribute('disabled','disabled');
       var badges=[ it.publicar?el('span',{class:'badge',text:'● Visible en el sitio'}):el('span',{class:'badge gris',text:'Oculto'}) ].concat(cfg.badges?cfg.badges(it):[]);
       var cuerpo=el('div',{class:'cuerpo'},cfg.cuerpo(it).concat([el('div',{class:'estado'},badges)]));
       var acc=el('div',{class:'acciones'},[
@@ -1005,7 +1038,7 @@ function parsearVideo_(entrada) {
         el('button',{type:'button',text:it.publicar?'Ocultar':'Mostrar',onclick:function(){ alternarLista(cfg,it); }}),
         el('button',{type:'button',class:'del',text:'Eliminar','aria-label':'Eliminar '+cfg.nombre,onclick:function(){ pedirEliminar2(cfg,it); }})
       ]);
-      g.appendChild(el('div',{class:'card'+(it.publicar?'':' oculta')},[cfg.tope(it),cuerpo,orden,acc]));
+      g.appendChild(el('div',{class:'card'+(it.publicar?'':' oculta')},[cfg.tope(it),cuerpo,orden,acc].filter(Boolean)));
     });
   }
   function moverLista(cfg,it,dir){
@@ -1060,6 +1093,26 @@ function parsearVideo_(entrada) {
     tope:function(it){ return el('div',{class:'atop c-'+it.color},[ el('div',{class:'ico',text:it.icono||'🔗'}), el('b',{text:it.titulo}) ]); },
     cuerpo:function(it){ return [ el('h3',{text:it.titulo||'(sin título)'}), it.detalle?el('p',{text:it.detalle}):null, el('div',{class:'url-corta',text:it.url}) ]; }
   };
+  var MESES_UI=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  function fechaUI(iso){ var p=String(iso||'').split('-'); return p.length===3?(parseInt(p[2],10)+' '+MESES_UI[parseInt(p[1],10)-1]+' '+p[0]):''; }
+  var CFG_CALENDARIO={
+    nombre:'evento', grid:'gridCalendario', aviso:'avisoCalendario', sinOrden:true, get:function(){return S.calendario;}, set:function(l){S.calendario=l;},
+    srv:{guardar:'calendarioGuardar',eliminar:'calendarioEliminar'},
+    vacio:'Todavía no hay fechas. Agrega la primera con “+ Nueva fecha”. Mientras no haya, el sitio no muestra el calendario.',
+    avisoTxt:function(n,v){ return n?('Hay '+n+' fecha(s); '+v+' visible(s). Máximo 40. Las que ya pasaron dejan de verse en el sitio, pero puedes borrarlas cuando quieras.'):'Todavía no hay fechas.'; },
+    defecto:function(){ return {fecha:'',fin:'',titulo:'',detalle:'',publicar:true}; },
+    campos:[
+      {k:'fecha',rot:'Fecha',t:'date'},
+      {k:'fin',rot:'Hasta (opcional, si dura varios días)',t:'date'},
+      {k:'titulo',rot:'Título',max:70,ayuda:'Por ejemplo: Inicio de clases, Feriado, Reunión de padres.'},
+      {k:'detalle',rot:'Detalle (opcional)',max:120},
+      {k:'publicar',rot:'Mostrar en el sitio',t:'check',ayuda:'Si lo desmarcas, queda guardado pero oculto.'}
+    ],
+    validar:function(d){ if(!d.fecha) return 'Elige la fecha.'; if(!d.titulo.trim()) return 'Escribe un título.'; if(d.fin&&d.fin<d.fecha) return '“Hasta” no puede ser antes de la fecha de inicio.'; return ''; },
+    tope:function(it){ return el('div',{class:'atop c-verde'},[ el('div',{class:'ico',text:'📅'}), el('b',{text:fechaUI(it.fecha)+(it.fin?' → '+fechaUI(it.fin):'')}) ]); },
+    cuerpo:function(it){ return [ el('h3',{text:it.titulo||'(sin título)'}), it.detalle?el('p',{text:it.detalle}):null ]; }
+  };
+  $('btnNuevoEvento').onclick=function(){ abrirG(CFG_CALENDARIO,null); };
   $('btnNuevoVideo').onclick=function(){ abrirG(CFG_VIDEOS,null); };
   $('btnNuevoAcceso').onclick=function(){ abrirG(CFG_ACCESOS,null); };
   function iniciarAccesos(rol,ac){
@@ -1071,14 +1124,14 @@ function parsearVideo_(entrada) {
 
   /* ---------- arranque ---------- */
   servidor('panelCargar',[],function(d){
-    pintarEspacio(d.espacio); S.noticias=d.noticias; S.galeria=d.galeria||[]; S.videos=d.videos||[]; S.imgBase=d.imgBase; S.visibles=d.visibles; S.hoy=d.hoy;
+    pintarEspacio(d.espacio); S.noticias=d.noticias; S.galeria=d.galeria||[]; S.videos=d.videos||[]; S.calendario=(d.calendario&&d.calendario.datos)||[]; S.imgBase=d.imgBase; S.visibles=d.visibles; S.hoy=d.hoy;
     $('nVis').textContent=d.visibles; $('verSitio').href=d.sitioUrl;
     var u=$('user'); u.textContent='';
     u.appendChild(el('b',{text:d.usuario.nombre||d.usuario.email}));
     u.appendChild(document.createTextNode(d.usuario.email));
     u.appendChild(document.createElement('br'));
     u.appendChild(el('span',{class:'rol',text:d.usuario.rol}));
-    render(); renderFotos(); renderLista(CFG_VIDEOS); iniciarTextos(d.usuario.rol,d.textos); iniciarAccesos(d.usuario.rol,d.accesos);
+    render(); renderFotos(); renderLista(CFG_VIDEOS); if(d.calendario&&d.calendario.datos) renderLista(CFG_CALENDARIO); else { var gc=$('gridCalendario'); gc.textContent=''; gc.appendChild(el('div',{class:'vacio',text:'No se pudo cargar el calendario: '+((d.calendario&&d.calendario.error)||'sin datos')})); } iniciarTextos(d.usuario.rol,d.textos); iniciarAccesos(d.usuario.rol,d.accesos);
   },function(e){ $('grid').textContent=''; $('grid').appendChild(el('div',{class:'vacio',text:'No se pudo cargar el panel: '+mensajeError(e)})); });
 })();
 </script>

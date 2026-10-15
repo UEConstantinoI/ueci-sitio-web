@@ -48,3 +48,11 @@ Una dirección corta como `panel.ueconstantino.com` con una regla de redirecció
 ## Fotos de portada y de Nosotros (14/10)
 - **Textos del sitio → Portada**: dos fotos (principal grande y pequeña superpuesta). **Acerca de nosotros**: una foto que se ve junto a las palabras clave. Se pueden cambiar o quitar; el escudo se estampa si el casillero está marcado.
 - Los videos ahora se abren en una ventana centrada con el tamaño que les corresponde (vertical u horizontal); las tarjetas de la lista son todas iguales.
+
+## Calendario, aviso, horarios, llamar y estadísticas (14/10)
+- **Calendario escolar** (menú nuevo; lo pueden usar ADMIN y EDITOR): fechas con título; se ordenan solas, las pasadas dejan de verse y, si no hay próximas, la sección se oculta. Datos en `data/calendario.json`.
+- **Aviso destacado** y **Horarios** están en *Textos del sitio* (solo ADMIN). El aviso es una franja arriba de todo el sitio; se activa/desactiva con una casilla.
+- Botón **Llamar** (flotante en celular + en Contacto) usa el número de WhatsApp de Textos → Contacto. Botón **Cómo llegar** abre el enlace de Google Maps. Cada noticia tiene **Compartir por WhatsApp**.
+- **Estadísticas**: GoatCounter (cuenta `ueci`); enlace en el menú del panel. Script en `sitio.html`.
+- **Vista previa al compartir** (WhatsApp/Facebook): metadatos `og:` y `assets/og.jpg` (1200×630). Datos para Google (JSON-LD) y `sitemap.xml`.
+- Al lanzar: quitar `noindex`; si el sitio cambia de dirección, actualizar las URL de `og:image`, JSON-LD y `sitemap.xml`.

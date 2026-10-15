@@ -6,6 +6,24 @@
 <meta name="robots" content="noindex,nofollow"><!-- QUITAR esta línea cuando el sitio sea el oficial -->
 <title>Unidad Educativa Constantino I · Formador de Talentos</title>
 <meta name="description" content="Unidad Educativa Constantino I, Tiquipaya, Cochabamba. Formador de Talentos: Inicial, Primaria y Secundaria con transporte escolar puerta a puerta.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_BO">
+<meta property="og:site_name" content="Unidad Educativa Constantino I">
+<meta property="og:title" content="Unidad Educativa Constantino I · Formador de Talentos">
+<meta property="og:description" content="Inicial, Primaria y Secundaria en Tiquipaya, Cochabamba. Bachilleres bilingües, formación en valores y transporte escolar puerta a puerta.">
+<meta property="og:image" content="https://ueconstantinoi.github.io/ueci-sitio-web/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"School","name":"Unidad Educativa Constantino I","alternateName":"Constantino I","slogan":"Formador de Talentos",
+"url":"https://ueconstantinoi.github.io/ueci-sitio-web/","logo":"https://ueconstantinoi.github.io/ueci-sitio-web/assets/escudo.png","image":"https://ueconstantinoi.github.io/ueci-sitio-web/assets/og.jpg",
+"telephone":"+59144289388",
+"address":{"@type":"PostalAddress","streetAddress":"Calle Mejillones, entre Av. Circunvalación y Calle Cochabamba","addressLocality":"Tiquipaya","addressRegion":"Cochabamba","addressCountry":"BO"},
+"geo":{"@type":"GeoCoordinates","latitude":-17.3464175,"longitude":-66.1936887},
+"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"08:00","closes":"15:30"},{"@type":"OpeningHoursSpecification","dayOfWeek":"Saturday","opens":"09:00","closes":"13:00"}],
+"sameAs":["https://www.facebook.com/UEConstantinoI","https://www.instagram.com/u.e.constantinoi","https://www.tiktok.com/@u.e.constantinoi"]}
+</script>
 <link rel="icon" type="image/png" href="assets/escudo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,6 +33,7 @@
 </head>
 <body>
 
+<div class="aviso-top" id="avisoTop" role="status" hidden><span id="avisoTxt"></span><a id="avisoLink" href="#" target="_blank" rel="noopener" hidden>Más información</a></div>
 <header>
   <div class="nav">
     <a class="brand" href="#top">
@@ -243,6 +262,14 @@
     </div>
   </section>
 
+  <section id="calendario" hidden>
+    <div class="section-head">
+      <span class="eyebrow">Calendario escolar</span>
+      <h2>Próximas fechas importantes</h2>
+    </div>
+    <div class="cal-lista" id="calLista"></div>
+  </section>
+
   <section id="redes" class="band-stone">
     <div class="section-head">
       <span class="eyebrow">Vida escolar en redes</span>
@@ -310,13 +337,21 @@
         <div class="info-row"><div id="ctDir">📍<b>Dirección</b>Calle Mejillones, entre Av. Circunvalación y Calle Cochabamba, Tiquipaya, Cochabamba</div></div>
         <div class="info-row"><div id="ctTel">☎️<b>Teléfono fijo y WhatsApp</b>(+591-4) 4289388</div></div>
         <div class="info-row"><div id="ctCel">📱<b>Celular / WhatsApp</b>(+591) 71798840</div></div>
+        <div class="info-row horarios"><div>🕘<b>Horario de atención</b>
+          <ul id="ctHorAt"><li>Lunes a Viernes: 8:00 a 15:30</li><li>Sábados: 9:00 a 13:00</li><li>Domingos: cerrado</li></ul>
+          <p class="hor-clases" id="ctHorCl"><b>Horario de clases:</b> Turno mañana</p>
+        </div></div>
         <a class="whatsapp-btn" href="https://wa.me/59144289388" target="_blank" rel="noopener">Escribir por WhatsApp</a>
+        <a class="llamar-btn" id="ctLlamar" href="tel:+59144289388">📞 Llamar</a>
         <a class="form-btn" href="https://docs.google.com/forms/d/e/1FAIpQLScLdCaYUKVsRMEiZl_TOvzDc0-V9KHM_0HsVRyL0lpXrOe5MA/viewform" target="_blank" rel="noopener">Formulario de contacto</a>
       </div>
-      <div class="map-box">
+      <div class="map-col">
+        <div class="map-box">
         <iframe title="Mapa de ubicación del colegio"
           src="https://www.google.com/maps?q=-17.3464175,-66.1936887&z=17&output=embed"
           loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+        <a class="llegar-btn" href="https://maps.app.goo.gl/BpWKyAvVUDyLoMEV9" target="_blank" rel="noopener">🧭 Cómo llegar</a>
       </div>
     </div>
   </section>
@@ -343,6 +378,7 @@
       </div>
     </div>
   </footer>
+<a class="call-float" id="callFloat" href="tel:+59144289388" aria-label="Llamar al colegio">Llamar</a>
 <a class="wa-float" id="waFloat" href="https://wa.me/59144289388" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp">WhatsApp</a>
 </div>
 

@@ -129,5 +129,19 @@
       "Carnet de vacuna para Inicial, 1° y 2° primaria."
     ],
     "nota": ""
+  },
+  "aviso": {
+    "activo": false,
+    "texto": "",
+    "enlace": ""
+  },
+  "horarios": {
+    "atencion": [
+      "Lunes a Viernes: 8:00 a 15:30",
+      "Sábados: 9:00 a 13:00",
+      "Domingos: cerrado"
+    ],
+    "clases_turno": "Turno mañana",
+    "clases": []
   }
 }
