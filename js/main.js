@@ -278,8 +278,8 @@
     if (!t) return;
     txt($('#transporte .section-head h2'), t.titulo);
     txt($('#transporte .section-head p'), t.texto);
-    txt($('#transporte .acceso-card b'), t.publico_titulo);
-    txt($('#transporte .acceso-card small'), t.publico_texto);
+    txt($('#transporte .tr-publico b'), t.publico_titulo);
+    txt($('#transporte .tr-publico small'), t.publico_texto);
     var fig = document.getElementById('trFoto'), lay = document.getElementById('trLayout');
     if (fig && lay && typeof t.imagen === 'string' && /^assets\/[\w\-\/.]+$/.test(t.imagen) && t.imagen.indexOf('..') < 0) {
       document.getElementById('trImg').src = t.imagen;
