@@ -1,18 +1,18 @@
 [
   {
-    "id": "g20261014-000a1",
-    "etiqueta": "Infraestructura",
-    "titulo": "Fachada principal",
-    "descripcion": "Nuestra unidad educativa en Tiquipaya.",
-    "imagen": "assets/galeria/g20261014-000a1-semilla1.jpg",
-    "publicar": true
-  },
-  {
     "id": "g20261014-000a2",
     "etiqueta": "Infraestructura",
     "titulo": "Bienvenidos",
     "descripcion": "Ingreso principal a la Unidad Educativa Constantino I.",
     "imagen": "assets/galeria/g20261014-000a2-semilla2.jpg",
+    "publicar": true
+  },
+  {
+    "id": "g20261014-000a1",
+    "etiqueta": "Infraestructura",
+    "titulo": "Fachada principal",
+    "descripcion": "Nuestra unidad educativa en Tiquipaya.",
+    "imagen": "assets/galeria/g20261014-000a1-semilla1.jpg",
     "publicar": true
   },
   {
