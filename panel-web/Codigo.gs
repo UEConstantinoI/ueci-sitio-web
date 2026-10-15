@@ -451,13 +451,20 @@ function validarTextos_(d) {
     publico_titulo: cad_(tr.publico_titulo, 40, 'Transporte público · título'), publico_texto: cad_(tr.publico_texto, 100, 'Transporte público · detalle')
   };
 
+  const rq = d.requisitos || {};
+  const requisitos = {
+    reserva: lista_(rq.reserva || [], 1, 12, 'Requisitos de reserva de cupo').map(function (x, i) { return cad_(x, 200, 'Reserva de cupo · requisito ' + (i + 1)); }),
+    inscripcion: lista_(rq.inscripcion || [], 1, 14, 'Requisitos de inscripción').map(function (x, i) { return cad_(x, 200, 'Inscripción · requisito ' + (i + 1)); }),
+    nota: cad_(rq.nota, 240, 'Requisitos · nota', true)
+  };
+
   const wa = String(c.whatsapp || '').replace(/[\s+()-]/g, '');
   if (!/^\d{8,15}$/.test(wa)) throw new Error('El número de WhatsApp debe tener solo dígitos con el código de país, por ejemplo 59171798840.');
   const contacto = {
     titulo: cad_(c.titulo, 90, 'Contacto · título'), direccion: cad_(c.direccion, 160, 'Contacto · dirección'),
     telefono: cad_(c.telefono, 40, 'Contacto · teléfono fijo'), celular: cad_(c.celular, 40, 'Contacto · celular'), whatsapp: wa
   };
-  return { hero: hero, nosotros: nosotros, pilares: pilares, transporte: transporte, contacto: contacto };
+  return { hero: hero, nosotros: nosotros, pilares: pilares, transporte: transporte, requisitos: requisitos, contacto: contacto };
 }
 
 /**

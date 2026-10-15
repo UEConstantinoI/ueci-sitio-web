@@ -264,6 +264,18 @@
     }
   }
 
+  function requisitos(r) {
+    if (!r) return;
+    [['reqReserva', r.reserva], ['reqInscripcion', r.inscripcion]].forEach(function (x) {
+      var ul = document.getElementById(x[0]);
+      if (!ul || !Array.isArray(x[1]) || !x[1].length) return;
+      ul.textContent = '';
+      x[1].forEach(function (t) { if (typeof t === 'string' && t) { var li = document.createElement('li'); li.textContent = t; ul.appendChild(li); } });
+    });
+    var n = document.getElementById('reqNota');
+    if (n && typeof r.nota === 'string' && r.nota) { n.textContent = r.nota; n.hidden = false; }
+  }
+
   function fila(id, icono, rotulo, valor) {
     var el = document.getElementById(id);
     if (!el || typeof valor !== 'string') return;
@@ -285,7 +297,7 @@
 
   fetch('data/textos.json', { cache: 'no-cache' })
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(function (t) { hero(t.hero); nosotros(t.nosotros); pilares(t.pilares); transporte(t.transporte); contacto(t.contacto); })
+    .then(function (t) { hero(t.hero); nosotros(t.nosotros); pilares(t.pilares); transporte(t.transporte); requisitos(t.requisitos); contacto(t.contacto); })
     .catch(function () { /* se queda el texto que ya trae la página */ });
 })();
 
@@ -320,17 +332,21 @@
       img.loading = 'lazy'; img.alt = ''; img.src = 'https://i.ytimg.com/vi/' + c + '/hqdefault.jpg';
       b.appendChild(img);
     } else {
-      var f = document.createElement('div'); f.className = 'vfondo'; f.textContent = NOMBRES[p]; b.appendChild(f);
+      var f = document.createElement('div'); f.className = 'vfondo'; f.textContent = p === 'tiktok' ? 'Ver en TikTok' : NOMBRES[p]; b.appendChild(f);
     }
     var play = document.createElement('span'); play.className = 'play'; play.textContent = '▶'; b.appendChild(play);
     b.addEventListener('click', function () {
+      if (p === 'tiktok') {   // el reproductor incrustado de TikTok falla con frecuencia: se abre el video en TikTok
+        if (typeof v.url === 'string' && URL_OK.test(v.url)) window.open(v.url, '_blank', 'noopener,noreferrer');
+        return;
+      }
       var fr = document.createElement('iframe');
       fr.src = embed(p, c);
       fr.title = v.titulo || ('Video de ' + NOMBRES[p]);
       fr.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
       fr.allowFullscreen = true;
       b.textContent = ''; b.appendChild(fr);
-    }, { once: true });
+    }, p === 'tiktok' ? undefined : { once: true });
     item.appendChild(b);
     var meta = document.createElement('div'); meta.className = 'vmeta';
     var ETQ = { testimonios: 'Testimonio', vida: 'Vida escolar' };

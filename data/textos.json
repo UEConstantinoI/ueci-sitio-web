@@ -105,5 +105,26 @@
     "telefono": "(+591-4) 4289388",
     "celular": "(+591) 71798840",
     "whatsapp": "59144289388"
+  },
+  "requisitos": {
+    "reserva": [
+      "Certificado de nacimiento original y 2 copias.",
+      "Fotocopia carnet de identidad del estudiante anverso y reverso (A/R).",
+      "Fotocopias de carnet de identidad A/R de ambos padres o tutores.",
+      "Croquis de la vivienda.",
+      "Teléfonos fijos y celulares del papá y mamá."
+    ],
+    "inscripcion": [
+      "Certificado de nacimiento original y 2 copias.",
+      "Fotocopia carnet de identidad del estudiante anverso y reverso (A/R).",
+      "Libreta original + fotocopia A/R (si reprobó libreta original de las 2 gestiones anteriores).",
+      "RUDE fotocopia u original 2 copias (actualizado).",
+      "Fotocopias de carnet de identidad A/R de ambos padres o tutores.",
+      "Croquis de la vivienda.",
+      "Certificado de solvencia indicando que se canceló todas las mensualidades, en la anterior institución.",
+      "Teléfonos fijos y celulares del papá y mamá.",
+      "Carnet de vacuna para Inicial, 1° y 2° primaria."
+    ],
+    "nota": ""
   }
 }
