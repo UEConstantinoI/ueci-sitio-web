@@ -1,5 +1,7 @@
 {
   "hero": {
+    "imagen1": "assets/sitio/hero-1.jpg",
+    "imagen2": "assets/sitio/hero-2.jpg",
     "etiqueta": "Tiquipaya · Cochabamba",
     "titulo": "Formamos *bachilleres bilingües* con talento y valores.",
     "descripcion": "Unidad Educativa Constantino I: formación científica, inglés como segunda lengua, hábito por la lectura y desarrollo de los talentos de cada estudiante, desde Inicial hasta el último año de Secundaria.",
@@ -20,11 +22,10 @@
         "valor": "Puerta a puerta",
         "texto": "Bus escolar privado, choferes con +25 años con nosotros."
       }
-    ],
-    "imagen1": "assets/sitio/hero-1.jpg",
-    "imagen2": "assets/sitio/hero-2.jpg"
+    ]
   },
   "nosotros": {
+    "imagen": "assets/sitio/nosotros.jpg",
     "vision": {
       "titulo": "Consolidar nuestro liderazgo en gestión educativa",
       "texto": "Ser un colegio de alta calidad, reconocido localmente por su gestión eficiente y por un rendimiento estudiantil por encima del promedio nacional, y liderar a instituciones similares con procesos de gestión innovadores.",
@@ -65,8 +66,7 @@
         "Talento",
         "Ética y solidaridad"
       ]
-    },
-    "imagen": "assets/sitio/nosotros.jpg"
+    }
   },
   "pilares": [
     {
@@ -102,13 +102,6 @@
     "publico_titulo": "Transporte público",
     "publico_texto": "Taxi Trufi 101 · Bus 3V · Minibús 290"
   },
-  "contacto": {
-    "titulo": "Hablemos sobre la inscripción de tu hijo/a",
-    "direccion": "Calle Mejillones, entre Av. Circunvalación y Calle Cochabamba, Tiquipaya, Cochabamba",
-    "telefono": "(+591-4) 4289388",
-    "celular": "(+591) 71798840",
-    "whatsapp": "59144289388"
-  },
   "requisitos": {
     "reserva": [
       "Certificado de nacimiento original y 2 copias.",
@@ -130,9 +123,16 @@
     ],
     "nota": ""
   },
+  "contacto": {
+    "titulo": "Hablemos sobre la inscripción de tu hijo/a",
+    "direccion": "Calle Mejillones, entre Av. Circunvalación y Calle Cochabamba, Tiquipaya, Cochabamba",
+    "telefono": "(+591-4) 4289388",
+    "celular": "(+591) 71798840",
+    "whatsapp": "59144289388"
+  },
   "aviso": {
-    "activo": false,
-    "texto": "",
+    "activo": true,
+    "texto": "INSCRIPCIONES ABIERTAS",
     "enlace": ""
   },
   "horarios": {
