@@ -14,7 +14,7 @@ const CONFIG = {
   REPO: 'ueci-sitio-web',
   BRANCH: 'main',
   SITIO_URL: 'https://ueconstantinoi.github.io/ueci-sitio-web/',
-  PAGINA_SITIO: 'sitio.html',            // cuando sea el sitio oficial: cambiar a '' (ver LEEME)
+  PAGINA_SITIO: '',                      // el sitio oficial es la portada del repositorio
   ARCHIVO_NOTICIAS: 'data/noticias.json',
   CARPETA_IMG: 'assets/noticias',
   ARCHIVO_TEXTOS: 'data/textos.json',

@@ -53,6 +53,9 @@ Una dirección corta como `panel.ueconstantino.com` con una regla de redirecció
 - **Calendario escolar** (menú nuevo; lo pueden usar ADMIN y EDITOR): fechas con título; se ordenan solas, las pasadas dejan de verse y, si no hay próximas, la sección se oculta. Datos en `data/calendario.json`.
 - **Aviso destacado** y **Horarios** están en *Textos del sitio* (solo ADMIN). El aviso es una franja arriba de todo el sitio; se activa/desactiva con una casilla.
 - Botón **Llamar** (flotante en celular + en Contacto) usa el número de WhatsApp de Textos → Contacto. Botón **Cómo llegar** abre el enlace de Google Maps. Cada noticia tiene **Compartir por WhatsApp**.
-- **Estadísticas**: GoatCounter (cuenta `ueci`); enlace en el menú del panel. Script en `sitio.html`.
+- **Estadísticas**: GoatCounter (cuenta `ueci`); enlace en el menú del panel. Script en `index.html`.
 - **Vista previa al compartir** (WhatsApp/Facebook): metadatos `og:` y `assets/og.jpg` (1200×630). Datos para Google (JSON-LD) y `sitemap.xml`.
 - Al lanzar: quitar `noindex`; si el sitio cambia de dirección, actualizar las URL de `og:image`, JSON-LD y `sitemap.xml`.
+
+## Lanzamiento (14/10)
+Hecho: `index.html` es ahora el sitio oficial (sin `noindex`, con verificación de Search Console y `canonical`); la carátula quedó como `construccion.html`; `PAGINA_SITIO` es `''`.
