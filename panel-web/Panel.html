@@ -196,6 +196,7 @@
     <button class="nav-item" data-vista="Videos">🎬&nbsp; Videos</button>
     <button class="nav-item" data-vista="Calendario">📅&nbsp; Calendario escolar</button>
     <button class="nav-item" data-vista="Accesos" id="navAccesos" hidden>🔗&nbsp; Accesos directos</button>
+    <button class="nav-item" data-vista="Redes" id="navRedes" hidden>📣&nbsp; Redes sociales</button>
     <div class="spacer"></div>
     <div class="espacio" id="espacio" hidden></div>
     <div class="user" id="user"></div>
@@ -266,6 +267,18 @@
       </div>
       <div class="aviso" id="avisoAccesos"></div>
       <div class="grid" id="gridAccesos"><div class="carga">Cargando accesos…</div></div>
+    </div>
+
+    <div class="vista" id="vRedes" hidden>
+      <div class="head">
+        <div>
+          <h1>Redes sociales</h1>
+          <p>Los perfiles del colegio que aparecen en “Vida escolar” y al pie del sitio. Si cambia una dirección, edítala aquí. Solo un administrador puede cambiarlas.</p>
+        </div>
+        <button class="btn btn-sun" id="btnNuevaRed">+ Nueva red</button>
+      </div>
+      <div class="aviso" id="avisoRedes"></div>
+      <div class="grid" id="gridRedes"><div class="carga">Cargando redes…</div></div>
     </div>
 
     <div class="vista" id="vTextos" hidden>
@@ -400,7 +413,7 @@
     box.title='GitHub recomienda no pasar de 1 GB por sitio. Incluye el historial: borrar una foto no libera todo el espacio. El dato puede tardar unas horas en actualizarse.';
     box.hidden=false;
   }
-  var S = { noticias:[], galeria:[], videos:[], calendario:[], accesos:[], textos:null, t:null, timgs:{transporte:{accion:'mantener'},hero1:{accion:'mantener'},hero2:{accion:'mantener'},nosotros:{accion:'mantener'}}, sucio:false, imgBase:'', visibles:6, hoy:'', filtro:'todas', q:'', editId:null, img:{accion:'mantener'}, imgPrevia:'', fEditId:null, fImg:{accion:'mantener'}, fPrevia:'' };
+  var S = { noticias:[], galeria:[], videos:[], calendario:[], accesos:[], redes:[], textos:null, t:null, timgs:{transporte:{accion:'mantener'},hero1:{accion:'mantener'},hero2:{accion:'mantener'},nosotros:{accion:'mantener'}}, sucio:false, imgBase:'', visibles:6, hoy:'', filtro:'todas', q:'', editId:null, img:{accion:'mantener'}, imgPrevia:'', fEditId:null, fImg:{accion:'mantener'}, fPrevia:'' };
   var MESES=['ene.','feb.','mar.','abr.','may.','jun.','jul.','ago.','sep.','oct.','nov.','dic.'];
   var $=function(id){return document.getElementById(id)};
 
@@ -609,7 +622,7 @@
 
   /* ---------- navegación entre vistas ---------- */
   function irA(v){
-    ['Noticias','Fotos','Videos','Calendario','Accesos','Textos'].forEach(function(n){ $('v'+n).hidden=(n!==v); });
+    ['Noticias','Fotos','Videos','Calendario','Accesos','Redes','Textos'].forEach(function(n){ $('v'+n).hidden=(n!==v); });
     document.querySelectorAll('.nav-item[data-vista]').forEach(function(b){ b.classList.toggle('act',b.getAttribute('data-vista')===v); });
     window.scrollTo(0,0);
   }
@@ -899,6 +912,7 @@
     f.appendChild(seccion('Contacto',[
       campoT('Título','contacto.titulo',90,'line'), campoT('Dirección','contacto.direccion',160,'line'),
       el('div',{class:'cols2'},[ campoT('Teléfono fijo (también WhatsApp)','contacto.telefono',40,'line'), campoT('Celular (también WhatsApp)','contacto.celular',40,'line') ]),
+      campoT('Correo de contacto','contacto.email',80,'line','Aparece en la sección Contacto con enlace para escribir. Si lo dejas vacío, no se muestra.'),
       campoT('Número de WhatsApp (solo dígitos, con código de país)','contacto.whatsapp',15,'line','Es el número al que escriben los botones de WhatsApp del sitio. Ejemplo: 59144289388 (591 = Bolivia, 4 = Cochabamba).')
     ]));
     [].forEach.call(f.querySelectorAll(':scope > details'),function(d,i){ if(abiertas[i]!==undefined) d.open=abiertas[i]; });
@@ -1093,6 +1107,26 @@ function parsearVideo_(entrada) {
     tope:function(it){ return el('div',{class:'atop c-'+it.color},[ el('div',{class:'ico',text:it.icono||'🔗'}), el('b',{text:it.titulo}) ]); },
     cuerpo:function(it){ return [ el('h3',{text:it.titulo||'(sin título)'}), it.detalle?el('p',{text:it.detalle}):null, el('div',{class:'url-corta',text:it.url}) ]; }
   };
+  var REDES_UI=[['facebook','Facebook'],['instagram','Instagram'],['tiktok','TikTok'],['youtube','YouTube'],['x','X (Twitter)'],['linkedin','LinkedIn'],['threads','Threads'],['telegram','Telegram'],['canalwa','Canal de WhatsApp'],['otra','Otra (escribe el nombre)']];
+  var REDES_NOM={}; REDES_UI.forEach(function(r){REDES_NOM[r[0]]=r[1];});
+  var REDES_HOST={facebook:/^https:\/\/([\w-]+\.)*(facebook\.com|fb\.com)\//i,instagram:/^https:\/\/([\w-]+\.)*instagram\.com\//i,tiktok:/^https:\/\/([\w-]+\.)*tiktok\.com\//i,youtube:/^https:\/\/([\w-]+\.)*(youtube\.com|youtu\.be)\//i,x:/^https:\/\/([\w-]+\.)*(x\.com|twitter\.com)\//i,linkedin:/^https:\/\/([\w-]+\.)*linkedin\.com\//i,threads:/^https:\/\/([\w-]+\.)*threads\.(net|com)\//i,telegram:/^https:\/\/(t\.me|telegram\.me)\//i,canalwa:/^https:\/\/(www\.)?(whatsapp\.com|wa\.me)\//i,otra:/^https:\/\/\S+\.\S+/i};
+  var CFG_REDES={
+    nombre:'red social', grid:'gridRedes', aviso:'avisoRedes', get:function(){return S.redes;}, set:function(l){S.redes=l;},
+    srv:{guardar:'redGuardar',eliminar:'redEliminar',mover:'redMover'},
+    vacio:'No hay redes. Agrega la primera con “+ Nueva red”. Si no hay ninguna visible, el sitio oculta la sección “Vida escolar”.',
+    avisoTxt:function(n,v){ return n?('Hay '+n+' red(es); '+v+' visible(s). Máximo 10. Solo puede haber una página de Facebook (es la que se muestra con sus publicaciones). Usa la dirección del perfil, empezando con https://'):'Todavía no hay redes.'; },
+    defecto:function(){ return {red:'instagram',nombre:'',usuario:'',url:'https://',publicar:true}; },
+    campos:[
+      {k:'red',rot:'Red social',t:'select',opciones:REDES_UI},
+      {k:'nombre',rot:'Nombre (solo si elegiste “Otra”)',max:20},
+      {k:'url',rot:'Enlace del perfil',max:300,ayuda:'Cópialo desde la barra de direcciones al abrir el perfil. Debe empezar con https://'},
+      {k:'usuario',rot:'Usuario que se muestra (opcional)',max:40,ayuda:'Por ejemplo @u.e.constantinoi'},
+      {k:'publicar',rot:'Mostrar en el sitio',t:'check',ayuda:'Si lo desmarcas, queda guardado pero oculto.'}
+    ],
+    validar:function(d){ if(d.red==='otra'&&!d.nombre.trim()) return 'Escribe el nombre de la red.'; if(!/^https:\/\/\S+\.\S+$/.test(d.url.trim())) return 'El enlace debe empezar con https:// y ser una dirección web completa.'; if(!REDES_HOST[d.red].test(d.url.trim())) return 'Ese enlace no parece ser de '+(REDES_NOM[d.red]||'la red elegida')+'. Revisa que sea la dirección del perfil.'; return ''; },
+    tope:function(it){ return el('div',{class:'atop c-azul'},[ el('div',{class:'ico',text:'📣'}), el('b',{text:it.red==='otra'?(it.nombre||'Red social'):REDES_NOM[it.red]}) ]); },
+    cuerpo:function(it){ return [ el('h3',{text:it.usuario||'(sin usuario)'}), el('div',{class:'url-corta',text:it.url}) ]; }
+  };
   var MESES_UI=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
   function fechaUI(iso){ var p=String(iso||'').split('-'); return p.length===3?(parseInt(p[2],10)+' '+MESES_UI[parseInt(p[1],10)-1]+' '+p[0]):''; }
   var CFG_CALENDARIO={
@@ -1115,6 +1149,13 @@ function parsearVideo_(entrada) {
   $('btnNuevoEvento').onclick=function(){ abrirG(CFG_CALENDARIO,null); };
   $('btnNuevoVideo').onclick=function(){ abrirG(CFG_VIDEOS,null); };
   $('btnNuevoAcceso').onclick=function(){ abrirG(CFG_ACCESOS,null); };
+  $('btnNuevaRed').onclick=function(){ abrirG(CFG_REDES,null); };
+  function iniciarRedes(rol,rd){
+    if(rol!=='ADMIN') return;
+    $('navRedes').hidden=false;
+    if(rd&&rd.datos){ S.redes=rd.datos; renderLista(CFG_REDES); }
+    else { var g=$('gridRedes'); g.textContent=''; g.appendChild(el('div',{class:'vacio',text:'No se pudieron cargar las redes: '+((rd&&rd.error)||'sin datos')})); }
+  }
   function iniciarAccesos(rol,ac){
     if(rol!=='ADMIN') return;
     $('navAccesos').hidden=false;
@@ -1131,7 +1172,7 @@ function parsearVideo_(entrada) {
     u.appendChild(document.createTextNode(d.usuario.email));
     u.appendChild(document.createElement('br'));
     u.appendChild(el('span',{class:'rol',text:d.usuario.rol}));
-    render(); renderFotos(); renderLista(CFG_VIDEOS); if(d.calendario&&d.calendario.datos) renderLista(CFG_CALENDARIO); else { var gc=$('gridCalendario'); gc.textContent=''; gc.appendChild(el('div',{class:'vacio',text:'No se pudo cargar el calendario: '+((d.calendario&&d.calendario.error)||'sin datos')})); } iniciarTextos(d.usuario.rol,d.textos); iniciarAccesos(d.usuario.rol,d.accesos);
+    render(); renderFotos(); renderLista(CFG_VIDEOS); if(d.calendario&&d.calendario.datos) renderLista(CFG_CALENDARIO); else { var gc=$('gridCalendario'); gc.textContent=''; gc.appendChild(el('div',{class:'vacio',text:'No se pudo cargar el calendario: '+((d.calendario&&d.calendario.error)||'sin datos')})); } iniciarTextos(d.usuario.rol,d.textos); iniciarAccesos(d.usuario.rol,d.accesos); iniciarRedes(d.usuario.rol,d.redes);
   },function(e){ $('grid').textContent=''; $('grid').appendChild(el('div',{class:'vacio',text:'No se pudo cargar el panel: '+mensajeError(e)})); });
 })();
 </script>

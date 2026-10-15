@@ -59,3 +59,11 @@ Una dirección corta como `panel.ueconstantino.com` con una regla de redirecció
 
 ## Lanzamiento (14/10)
 Hecho: `index.html` es ahora el sitio oficial (sin `noindex`, con verificación de Search Console y `canonical`); la carátula quedó como `construccion.html`; `PAGINA_SITIO` es `''`.
+
+
+## Redes sociales y correo de contacto (15/10)
+
+- **Redes sociales** (menú nuevo, solo ADMIN): lista de perfiles del colegio. Se muestran en "Vida escolar" y al pie del sitio. Redes disponibles: Facebook, Instagram, TikTok, YouTube, X, LinkedIn, Threads, Telegram, Canal de WhatsApp y "Otra" (con nombre propio). Máximo 10. El enlace debe ser https:// y del dominio de esa red. Solo puede haber **una** página de Facebook: es la que muestra sus publicaciones incrustadas; si no hay Facebook, ese recuadro se oculta. Si no queda ninguna red visible, se oculta la sección.
+- **Correo de contacto**: en Textos del sitio → Contacto → "Correo de contacto". Si se deja vacío, la fila no se muestra.
+- Nota: el dato estructurado para Google (`sameAs` en index.html) y el pie de `construccion.html` no se actualizan solos; si cambia una red de forma permanente, avisar para ajustarlos.
+- Archivo nuevo en el repositorio: `data/redes.json`. Al actualizar el panel: pegar `Codigo.gs` y `Panel.html` en Apps Script y publicar una NUEVA VERSIÓN de la misma implementación.

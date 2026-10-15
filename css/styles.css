@@ -196,6 +196,9 @@ ul.links a:hover{color:#fff;}
 .net-dot.fb{background:#fff;}
 .net-dot.tt{background:linear-gradient(135deg,#25f4ee,#111,#fe2c55);}
 .net-dot.wa{background:#25D366;}
+.net-dot.yt{background:#ff0000;} .net-dot.x{background:#111;} .net-dot.li{background:#0a66c2;} .net-dot.th{background:#444;} .net-dot.tg{background:#27a7e7;} .net-dot.ot{background:var(--sun);}
+.redes-layout.sin-fb{grid-template-columns:1fr; max-width:520px;}
+.info-row a{color:inherit; font-weight:600;}
 
 /* ACCESOS */
 .accesos-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:14px;}

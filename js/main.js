@@ -192,22 +192,113 @@
   });
 })();
 
-/* ---------- Facebook: el plugin necesita el ancho exacto del contenedor ---------- */
+/* ---------- Redes sociales (data/redes.json) + plugin de Facebook ----------
+   El HTML ya trae las redes actuales; si el archivo no carga, la página queda igual.
+   El plugin de Facebook necesita el ancho exacto del contenedor. */
 (function () {
-  var viejo = document.getElementById('fbFrame');
-  if (!viejo) return;
-  var cuerpo = viejo.parentNode;
-  var w = Math.floor(cuerpo.clientWidth - 24);           // menos el padding del contenedor
-  w = Math.max(280, Math.min(500, w));                   // Facebook acepta de 180 a 500
-  var f = document.createElement('iframe');              // iframe nuevo, ya con su dirección final
-  f.title = viejo.title;
-  f.width = w; f.height = 480;
-  f.setAttribute('frameborder', '0');
-  f.setAttribute('scrolling', 'no');
-  f.setAttribute('allow', 'encrypted-media');
-  f.src = 'https://www.facebook.com/plugins/page.php?href=' + encodeURIComponent('https://www.facebook.com/UEConstantinoI') +
-    '&tabs=timeline&width=' + w + '&height=480&small_header=true&hide_cover=false&show_facepile=false';
-  cuerpo.replaceChild(f, viejo);
+  var FB_DEFECTO = 'https://www.facebook.com/UEConstantinoI';
+  var REDES = {
+    facebook: { n: 'Facebook', d: 'fb', h: /^https:\/\/([\w-]+\.)*(facebook\.com|fb\.com)\// },
+    instagram: { n: 'Instagram', d: 'ig', h: /^https:\/\/([\w-]+\.)*instagram\.com\// },
+    tiktok: { n: 'TikTok', d: 'tt', h: /^https:\/\/([\w-]+\.)*tiktok\.com\// },
+    youtube: { n: 'YouTube', d: 'yt', h: /^https:\/\/([\w-]+\.)*(youtube\.com|youtu\.be)\// },
+    x: { n: 'X (Twitter)', d: 'x', h: /^https:\/\/([\w-]+\.)*(x\.com|twitter\.com)\// },
+    linkedin: { n: 'LinkedIn', d: 'li', h: /^https:\/\/([\w-]+\.)*linkedin\.com\// },
+    threads: { n: 'Threads', d: 'th', h: /^https:\/\/([\w-]+\.)*threads\.(net|com)\// },
+    telegram: { n: 'Telegram', d: 'tg', h: /^https:\/\/(t\.me|telegram\.me)\// },
+    canalwa: { n: 'Canal de WhatsApp', d: 'wa', h: /^https:\/\/(whatsapp\.com|www\.whatsapp\.com|wa\.me)\// },
+    otra: { n: 'Red social', d: 'ot', h: /^https:\/\/\S+\.\S+/ }
+  };
+
+  function montarFb(url) {
+    var viejo = document.getElementById('fbFrame');
+    if (!viejo) return;
+    var cuerpo = viejo.parentNode;
+    var w = Math.floor(cuerpo.clientWidth - 24);         // menos el padding del contenedor
+    w = Math.max(280, Math.min(500, w));                 // Facebook acepta de 180 a 500
+    var f = document.createElement('iframe');            // iframe nuevo, ya con su dirección final
+    f.title = viejo.title;
+    f.width = w; f.height = 480;
+    f.setAttribute('frameborder', '0');
+    f.setAttribute('scrolling', 'no');
+    f.setAttribute('allow', 'encrypted-media');
+    f.src = 'https://www.facebook.com/plugins/page.php?href=' + encodeURIComponent(url) +
+      '&tabs=timeline&width=' + w + '&height=480&small_header=true&hide_cover=false&show_facepile=false';
+    cuerpo.replaceChild(f, viejo);
+  }
+
+  function nombreDe(it) { return it.red === 'otra' ? (it.nombre || 'Red social') : REDES[it.red].n; }
+
+  function pintar(lista) {
+    var fb = lista.filter(function (x) { return x.red === 'facebook'; })[0];
+    var otras = lista.filter(function (x) { return x !== fb; });
+    var nombres = lista.map(nombreDe);
+
+    var tit = document.getElementById('redesTitulo');
+    if (tit) tit.textContent = 'Síguenos en ' + (nombres.length > 1 ? nombres.slice(0, -1).join(', ') + ' y ' + nombres[nombres.length - 1] : nombres[0]);
+    var sub = document.getElementById('redesSub');
+    if (sub) sub.textContent = fb ? 'Las últimas publicaciones de Facebook aparecen aquí solas. ' + (otras.length ? 'Las demás redes abren el perfil del colegio.' : '')
+                                   : 'Elige la red donde quieres seguir al colegio.';
+
+    // Facebook (publicaciones incrustadas)
+    var emb = document.getElementById('fbEmbed');
+    if (fb) {
+      var cab = emb && emb.querySelector('.fb-embed-head');
+      if (cab) { cab.textContent = ''; var dot = document.createElement('span'); dot.className = 'net-dot fb'; cab.appendChild(dot); cab.appendChild(document.createTextNode(' Facebook' + (fb.usuario ? ' · ' + fb.usuario : ''))); }
+      montarFb(fb.url);
+    } else if (emb) {
+      emb.hidden = true;
+      var lay = emb.parentNode; if (lay) lay.classList.add('sin-fb');
+    }
+
+    // Botones laterales: todas las redes (menos Facebook, que va incrustado) + WhatsApp
+    var side = document.getElementById('redesSide');
+    if (side) {
+      var wa = side.querySelector('a[href^="https://wa.me/"]');
+      side.textContent = '';
+      otras.forEach(function (it) {
+        var a = document.createElement('a');
+        a.className = 'red-btn'; a.href = it.url; a.target = '_blank'; a.rel = 'noopener';
+        var d = document.createElement('span'); d.className = 'net-dot ' + REDES[it.red].d;
+        var box = document.createElement('div');
+        var b = document.createElement('b'); b.textContent = nombreDe(it);
+        var s = document.createElement('small'); s.textContent = it.usuario || 'Ver perfil';
+        box.appendChild(b); box.appendChild(s);
+        var ar = document.createElement('span'); ar.className = 'arrow'; ar.textContent = '↗';
+        a.appendChild(d); a.appendChild(box); a.appendChild(ar);
+        side.appendChild(a);
+      });
+      if (wa) side.appendChild(wa);
+    }
+
+    // Pie de página
+    var foot = document.getElementById('footSocial');
+    if (foot) {
+      foot.textContent = '';
+      lista.forEach(function (it) {
+        var a = document.createElement('a');
+        a.href = it.url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = nombreDe(it);
+        foot.appendChild(a);
+      });
+    }
+  }
+
+  function valida(it) {
+    return it && typeof it === 'object' && it.publicar !== false && REDES[it.red] && typeof it.url === 'string' && it.url.length <= 300 &&
+      !/\s/.test(it.url) && REDES[it.red].h.test(it.url);
+  }
+
+  fetch('data/redes.json', { cache: 'no-cache' })
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (lista) {
+      if (!Array.isArray(lista)) throw new Error('formato');
+      lista = lista.filter(valida).slice(0, 10).map(function (it) {
+        return { red: it.red, nombre: typeof it.nombre === 'string' ? it.nombre.slice(0, 20) : '', usuario: typeof it.usuario === 'string' ? it.usuario.slice(0, 40) : '', url: it.url };
+      });
+      if (!lista.length) { var e = document.getElementById('redes'); var f2 = document.getElementById('footSocial'); if (e) e.hidden = true; if (f2) f2.textContent = ''; var nv = document.querySelector('a[href="#redes"]'); if (nv && nv.parentNode) nv.parentNode.hidden = true; return; }
+      pintar(lista);
+    })
+    .catch(function () { montarFb(FB_DEFECTO); });   // sin archivo: queda lo que trae el HTML
 })();
 
 /* ---------- Textos editables desde data/textos.json ----------
@@ -338,6 +429,16 @@
     fila('ctDir', '📍', 'Dirección', c.direccion);
     fila('ctTel', '☎️', 'Teléfono fijo y WhatsApp', c.telefono);
     fila('ctCel', '📱', 'Celular / WhatsApp', c.celular);
+    var mf = document.getElementById('ctMail');
+    if (mf) {
+      if (typeof c.email === 'string' && /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(c.email) && c.email.length <= 80) {
+        mf.textContent = '✉️';
+        var mb = document.createElement('b'); mb.textContent = 'Correo';
+        var ma = document.createElement('a'); ma.href = 'mailto:' + c.email; ma.textContent = c.email;
+        mf.appendChild(mb); mf.appendChild(ma);
+        mf.parentNode.hidden = false;
+      } else if (typeof c.email === 'string' && !c.email.trim()) { mf.parentNode.hidden = true; }
+    }
     if (/^\d{8,15}$/.test(String(c.whatsapp || ''))) {
       document.querySelectorAll('a[href^="https://wa.me/"]:not(.noticia-compartir)').forEach(function (a) { a.href = 'https://wa.me/' + c.whatsapp + (a.search || ''); });
       document.querySelectorAll('a[href^="tel:"]').forEach(function (a) { a.href = 'tel:+' + c.whatsapp; });

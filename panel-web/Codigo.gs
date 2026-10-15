@@ -20,6 +20,8 @@ const CONFIG = {
   ARCHIVO_TEXTOS: 'data/textos.json',
   ARCHIVO_VIDEOS: 'data/videos.json',
   ARCHIVO_ACCESOS: 'data/accesos.json',
+  ARCHIVO_REDES: 'data/redes.json',
+  MAX_REDES: 10,
   ARCHIVO_CALENDARIO: 'data/calendario.json',
   MAX_CALENDARIO: 40,
   MAX_VIDEOS: 24,
@@ -95,6 +97,7 @@ function panelCargar() {
     galeria: galeriaLeer_().lista,
     videos: listaLeer_(listaVideos_()).lista,
     accesos: u.rol === 'ADMIN' ? accesosParaPanel_() : null,
+    redes: u.rol === 'ADMIN' ? redesParaPanel_() : null,
     calendario: calendarioParaPanel_(),
     textos: textosParaPanel_(u),   // los textos solo los ve y edita un ADMIN
     imgBase: 'https://raw.githubusercontent.com/' + CONFIG.OWNER + '/' + CONFIG.REPO + '/' + CONFIG.BRANCH + '/',
@@ -464,9 +467,11 @@ function validarTextos_(d) {
 
   const wa = String(c.whatsapp || '').replace(/[\s+()-]/g, '');
   if (!/^\d{8,15}$/.test(wa)) throw new Error('El número de WhatsApp debe tener solo dígitos con el código de país, por ejemplo 59171798840.');
+  const correo = cad_(c.email, 80, 'Contacto · correo', true);
+  if (correo && !/^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(correo)) throw new Error('El correo de contacto no parece válido.');
   const contacto = {
     titulo: cad_(c.titulo, 90, 'Contacto · título'), direccion: cad_(c.direccion, 160, 'Contacto · dirección'),
-    telefono: cad_(c.telefono, 40, 'Contacto · teléfono fijo'), celular: cad_(c.celular, 40, 'Contacto · celular'), whatsapp: wa
+    telefono: cad_(c.telefono, 40, 'Contacto · teléfono fijo'), celular: cad_(c.celular, 40, 'Contacto · celular'), email: correo, whatsapp: wa
   };
   const av = d.aviso || {};
   const avActivo = av.activo === true;
@@ -542,6 +547,20 @@ function textosGuardar(datos, imagenes) {
 
 const ID_V_RE = /^v\d{8}-[0-9a-f]{5}$/;
 const ID_A_RE = /^a\d{8}-[0-9a-f]{5}$/;
+const ID_R_RE = /^r\d{8}-[0-9a-f]{5}$/;
+// red → expresión que debe cumplir el enlace (evita pegar el enlace de otra red por error)
+const REDES_SOCIALES = {
+  facebook: /^https:\/\/([a-z0-9-]+\.)*(facebook\.com|fb\.com)\//i,
+  instagram: /^https:\/\/([a-z0-9-]+\.)*instagram\.com\//i,
+  tiktok: /^https:\/\/([a-z0-9-]+\.)*tiktok\.com\//i,
+  youtube: /^https:\/\/([a-z0-9-]+\.)*(youtube\.com|youtu\.be)\//i,
+  x: /^https:\/\/([a-z0-9-]+\.)*(x\.com|twitter\.com)\//i,
+  linkedin: /^https:\/\/([a-z0-9-]+\.)*linkedin\.com\//i,
+  threads: /^https:\/\/([a-z0-9-]+\.)*threads\.(net|com)\//i,
+  telegram: /^https:\/\/(t\.me|telegram\.me)\//i,
+  canalwa: /^https:\/\/(www\.)?(whatsapp\.com|wa\.me)\//i,
+  otra: /^https:\/\/\S+\.\S+/i
+};
 const CATEGORIAS_VIDEO = ['testimonios', 'vida'];
 const ID_C_RE = /^c\d{8}-[0-9a-f]{5}$/;
 const COLORES_ACCESO = ['rojo', 'verde', 'sol', 'azul', 'royal', 'gris'];
@@ -565,6 +584,16 @@ function listaAccesos_() {
                color: COLORES_ACCESO.indexOf(x.color) >= 0 ? x.color : 'gris', publicar: x.publicar !== false };
     },
     rotulo: function (x) { return x.titulo; }
+  };
+}
+
+function listaRedes_() {
+  return {
+    archivo: CONFIG.ARCHIVO_REDES, idRe: ID_R_RE, pref: 'r', max: CONFIG.MAX_REDES, nombre: 'red social', plural: 'redes sociales',
+    leer: function (x) {
+      return { red: REDES_SOCIALES[x.red] ? x.red : 'otra', nombre: String(x.nombre || ''), usuario: String(x.usuario || ''), url: String(x.url || ''), publicar: x.publicar !== false };
+    },
+    rotulo: function (x) { return x.red === 'otra' ? x.nombre : x.red; }
   };
 }
 
@@ -743,6 +772,30 @@ function accesoGuardar(datos) {
 }
 function accesoEliminar(id) { return listaEliminarItem_(listaAccesos_(), exigirAdmin_(), id); }
 function accesoMover(id, dir) { return listaMoverItem_(listaAccesos_(), exigirAdmin_(), id, dir); }
+
+/* ───────────────────────── REDES SOCIALES (solo ADMIN) ───────────────────────── */
+
+function redesParaPanel_() {
+  try { return { datos: listaLeer_(listaRedes_()).lista }; } catch (e) { return { error: String(e.message || e) }; }
+}
+
+/** datos = { id?, red, nombre?, usuario?, url, publicar:bool } */
+function redGuardar(datos) {
+  const u = exigirAdmin_();
+  if (!datos || typeof datos !== 'object') throw new Error('Datos vacíos.');
+  if (!REDES_SOCIALES[datos.red]) throw new Error('Elige la red social.');
+  const url = validarUrlAcceso_(datos.url);
+  if (!REDES_SOCIALES[datos.red].test(url)) throw new Error('Ese enlace no parece ser de la red elegida. Revisa que sea la dirección del perfil, empezando con https://');
+  const lista = listaLeer_(listaRedes_()).lista;
+  const otras = lista.filter(function (x) { return x.id !== datos.id; });
+  if (datos.red === 'facebook' && otras.some(function (x) { return x.red === 'facebook'; })) throw new Error('Ya hay una página de Facebook. Edítala en lugar de agregar otra.');
+  return listaGuardarItem_(listaRedes_(), u, datos, {
+    red: datos.red, nombre: cad_(datos.nombre, 20, 'Nombre de la red', datos.red !== 'otra'),
+    usuario: cad_(datos.usuario, 40, 'Usuario', true), url: url, publicar: datos.publicar === true
+  });
+}
+function redEliminar(id) { return listaEliminarItem_(listaRedes_(), exigirAdmin_(), id); }
+function redMover(id, dir) { return listaMoverItem_(listaRedes_(), exigirAdmin_(), id, dir); }
 
 /* ───────────────────────── CALENDARIO ESCOLAR (ADMIN y EDITOR) ───────────────────────── */
 

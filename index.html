@@ -19,7 +19,7 @@
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"School","name":"Unidad Educativa Constantino I","alternateName":"Constantino I","slogan":"Formador de Talentos",
 "url":"https://ueconstantinoi.github.io/ueci-sitio-web/","logo":"https://ueconstantinoi.github.io/ueci-sitio-web/assets/escudo.png","image":"https://ueconstantinoi.github.io/ueci-sitio-web/assets/og.jpg",
-"telephone":"+59144289388",
+"telephone":"+59144289388","email":"ueconstantino@ueconstantino.com",
 "address":{"@type":"PostalAddress","streetAddress":"Calle Mejillones, entre Av. Circunvalación y Calle Cochabamba","addressLocality":"Tiquipaya","addressRegion":"Cochabamba","addressCountry":"BO"},
 "geo":{"@type":"GeoCoordinates","latitude":-17.3464175,"longitude":-66.1936887},
 "openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"08:00","closes":"15:30"},{"@type":"OpeningHoursSpecification","dayOfWeek":"Saturday","opens":"09:00","closes":"13:00"}],
@@ -274,11 +274,11 @@
   <section id="redes" class="band-stone">
     <div class="section-head">
       <span class="eyebrow">Vida escolar en redes</span>
-      <h2>Síguenos en Facebook, Instagram y TikTok</h2>
-      <p>Las últimas publicaciones de Facebook aparecen aquí solas. Instagram y TikTok abren el perfil del colegio.</p>
+      <h2 id="redesTitulo">Síguenos en Facebook, Instagram y TikTok</h2>
+      <p id="redesSub">Las últimas publicaciones de Facebook aparecen aquí solas. Instagram y TikTok abren el perfil del colegio.</p>
     </div>
     <div class="redes-layout">
-      <div class="fb-embed">
+      <div class="fb-embed" id="fbEmbed">
         <div class="fb-embed-head"><span class="net-dot fb"></span> Facebook · UEConstantinoI</div>
         <div class="fb-embed-body">
           <iframe id="fbFrame" title="Publicaciones de Facebook del colegio"
@@ -286,7 +286,7 @@
             allow="encrypted-media"></iframe>
         </div>
       </div>
-      <div class="redes-side">
+      <div class="redes-side" id="redesSide">
         <a class="red-btn" href="https://www.instagram.com/u.e.constantinoi">
           <span class="net-dot ig"></span><div><b>Instagram</b><small>@u.e.constantinoi</small></div><span class="arrow">↗</span>
         </a>
@@ -338,6 +338,7 @@
         <div class="info-row"><div id="ctDir">📍<b>Dirección</b>Calle Mejillones, entre Av. Circunvalación y Calle Cochabamba, Tiquipaya, Cochabamba</div></div>
         <div class="info-row"><div id="ctTel">☎️<b>Teléfono fijo y WhatsApp</b>(+591-4) 4289388</div></div>
         <div class="info-row"><div id="ctCel">📱<b>Celular / WhatsApp</b>(+591) 71798840</div></div>
+        <div class="info-row"><div id="ctMail">✉️<b>Correo</b><a href="mailto:ueconstantino@ueconstantino.com">ueconstantino@ueconstantino.com</a></div></div>
         <div class="info-row horarios"><div>🕘<b>Horario de atención</b>
           <ul id="ctHorAt"><li>Lunes a Viernes: 8:00 a 15:30</li><li>Sábados: 9:00 a 13:00</li><li>Domingos: cerrado</li></ul>
           <p class="hor-clases" id="ctHorCl"><b>Horario de clases:</b> Turno mañana</p>
@@ -372,7 +373,7 @@
   <footer>
     <div class="foot-row">
       <span>© Unidad Educativa Constantino I · Tiquipaya, Cochabamba</span>
-      <div class="foot-social">
+      <div class="foot-social" id="footSocial">
         <a href="https://www.facebook.com/UEConstantinoI">Facebook</a>
         <a href="https://www.instagram.com/u.e.constantinoi">Instagram</a>
         <a href="https://www.tiktok.com/@u.e.constantinoi">TikTok</a>
