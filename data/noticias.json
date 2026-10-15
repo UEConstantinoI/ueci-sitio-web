@@ -1,13 +1,5 @@
 [
   {
-    "id": "n20260912-00000",
-    "fecha": "2026-10-14",
-    "titulo": "Ejemplo: inicio de inscripciones 2027",
-    "resumen": "ESTAMOS REALIZANDO LAS PRUEBAS DEL NUEVO SITIO WEB",
-    "imagen": "assets/noticias/n20260912-00000-mv8ja2lv.jpg",
-    "publicar": true
-  },
-  {
     "id": "n20260905-00001",
     "fecha": "2026-09-05",
     "titulo": "Ejemplo: acto cívico de aniversario",
@@ -21,6 +13,14 @@
     "titulo": "Ejemplo: convocatoria a padres de familia",
     "resumen": "Texto breve del comunicado. Los más antiguos dejan de mostrarse solos (se ven los 6 más recientes).",
     "imagen": "",
+    "publicar": true
+  },
+  {
+    "id": "n20260912-00000",
+    "fecha": "2026-07-07",
+    "titulo": "Refaccionarán 161 escuelas en la vacación de invierno en Cercado",
+    "resumen": "La Alcaldía lanzó su plan de mantenimiento de infraestructura escolar 2026. Incluye pintura, sanitarios, electricidad, canaletas y techos, con Bs 2,5 millones. El alcalde dijo que ya habían ingresado a 58 colegios, y que luego habrá una ampliación de Bs 54 millones.",
+    "imagen": "assets/noticias/n20260912-00000-mv90txq8.jpg",
     "publicar": true
   }
 ]
