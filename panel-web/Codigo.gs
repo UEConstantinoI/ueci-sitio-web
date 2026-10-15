@@ -97,6 +97,7 @@ function panelCargar() {
     imgBase: 'https://raw.githubusercontent.com/' + CONFIG.OWNER + '/' + CONFIG.REPO + '/' + CONFIG.BRANCH + '/',
     sitioUrl: CONFIG.SITIO_URL + CONFIG.PAGINA_SITIO,
     visibles: CONFIG.VISIBLES_EN_SITIO,
+    espacio: espacioRepo_(),
     hoy: Utilities.formatDate(new Date(), 'America/La_Paz', 'yyyy-MM-dd')
   };
 }
@@ -705,6 +706,21 @@ function gh_(metodo, rutaApi, payload) {
   };
   if (payload) { opts.contentType = 'application/json'; opts.payload = JSON.stringify(payload); }
   return UrlFetchApp.fetch('https://api.github.com' + rutaApi, opts);
+}
+
+/**
+ * Espacio que usa el repositorio en GitHub (en KB, incluye el historial de cambios).
+ * GitHub recomienda no pasar de 1 GB; GitHub Pages publica hasta 1 GB.
+ * Si falla, devuelve null y el panel simplemente no muestra el indicador.
+ */
+function espacioRepo_() {
+  try {
+    const r = gh_('get', '/repos/' + CONFIG.OWNER + '/' + CONFIG.REPO);
+    if (r.getResponseCode() !== 200) return null;
+    const kb = Number(JSON.parse(r.getContentText()).size);
+    if (!isFinite(kb) || kb < 0) return null;
+    return { usadoKB: Math.round(kb), limiteKB: 1024 * 1024 };
+  } catch (e) { return null; }
 }
 
 function rutaContenido_(ruta) {

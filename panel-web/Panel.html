@@ -32,6 +32,12 @@
   .nav-item[disabled]{opacity:.5;cursor:default}
   .nav-item .pronto{margin-left:auto;font-size:10px;background:rgba(255,255,255,.15);border-radius:99px;padding:2px 8px}
   .side .spacer{flex:1}
+  .espacio{font-size:11.5px;color:#cfe3d3;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.07);line-height:1.35}
+  .espacio b{color:#fff;font-weight:700}
+  .espacio .barra{height:7px;border-radius:5px;background:rgba(255,255,255,.18);margin:7px 0 5px;overflow:hidden}
+  .espacio .barra i{display:block;height:100%;background:#7ed491;border-radius:5px}
+  .espacio.medio .barra i{background:#f0b429}.espacio.alto .barra i{background:#ef6b5b}
+  .espacio small{display:block;opacity:.85}
   .user{padding:12px;border-radius:12px;background:rgba(0,0,0,.18);font-size:12.5px;word-break:break-all}
   .user b{display:block;font-size:13.5px;word-break:normal}
   .user .rol{display:inline-block;margin-top:4px;font-size:10.5px;letter-spacing:.08em;background:var(--sun);color:#1a1200;border-radius:99px;padding:1px 9px;font-weight:700}
@@ -190,6 +196,7 @@
     <button class="nav-item" data-vista="Videos">🎬&nbsp; Videos</button>
     <button class="nav-item" data-vista="Accesos" id="navAccesos" hidden>🔗&nbsp; Accesos directos</button>
     <div class="spacer"></div>
+    <div class="espacio" id="espacio" hidden></div>
     <div class="user" id="user"></div>
     <a class="ver-sitio" id="verSitio" href="#" target="_blank" rel="noopener">Ver el sitio ↗</a>
   </aside>
@@ -359,6 +366,22 @@
     return el('label',{class:'marca',style:'display:flex;gap:8px;align-items:center;font-size:13px;margin-top:8px;cursor:pointer'},[inp,el('span',{text:'Poner el escudo del colegio en la foto (arriba a la derecha)'})]);
   }
 
+  // Indicador del espacio usado en GitHub (límite recomendado: 1 GB)
+  function pintarEspacio(e){
+    var box=$('espacio'); if(!box) return;
+    if(!e || !(e.limiteKB>0)){ box.hidden=true; return; }
+    var usado=e.usadoKB/1024, lim=e.limiteKB/1024, pct=Math.min(100,Math.round(usado*100/lim));
+    var u=usado>=1024?(usado/1024).toFixed(2)+' GB':usado.toFixed(usado<10?1:0)+' MB';
+    var fotos=Math.max(0,Math.floor((lim-usado)/0.3));
+    box.className='espacio'+(pct>=80?' alto':pct>=50?' medio':'');
+    box.textContent='';
+    box.appendChild(el('div',{},[ el('b',{text:'Espacio del sitio: '+pct+' %'}) ]));
+    box.appendChild(el('div',{class:'barra'},[ el('i',{style:'width:'+Math.max(2,pct)+'%'}) ]));
+    box.appendChild(el('small',{text:u+' de 1 GB'}));
+    box.appendChild(el('small',{text:pct>=80?'Casi lleno: avisa a sistemas antes de subir más fotos.':'Caben unas '+fotos+' fotos más.'}));
+    box.title='GitHub recomienda no pasar de 1 GB por sitio. Incluye el historial: borrar una foto no libera todo el espacio. El dato puede tardar unas horas en actualizarse.';
+    box.hidden=false;
+  }
   var S = { noticias:[], galeria:[], videos:[], accesos:[], textos:null, t:null, timg:{accion:'mantener'}, sucio:false, imgBase:'', visibles:6, hoy:'', filtro:'todas', q:'', editId:null, img:{accion:'mantener'}, imgPrevia:'', fEditId:null, fImg:{accion:'mantener'}, fPrevia:'' };
   var MESES=['ene.','feb.','mar.','abr.','may.','jun.','jul.','ago.','sep.','oct.','nov.','dic.'];
   var $=function(id){return document.getElementById(id)};
@@ -1035,7 +1058,7 @@ function parsearVideo_(entrada) {
 
   /* ---------- arranque ---------- */
   servidor('panelCargar',[],function(d){
-    S.noticias=d.noticias; S.galeria=d.galeria||[]; S.videos=d.videos||[]; S.imgBase=d.imgBase; S.visibles=d.visibles; S.hoy=d.hoy;
+    pintarEspacio(d.espacio); S.noticias=d.noticias; S.galeria=d.galeria||[]; S.videos=d.videos||[]; S.imgBase=d.imgBase; S.visibles=d.visibles; S.hoy=d.hoy;
     $('nVis').textContent=d.visibles; $('verSitio').href=d.sitioUrl;
     var u=$('user'); u.textContent='';
     u.appendChild(el('b',{text:d.usuario.nombre||d.usuario.email}));

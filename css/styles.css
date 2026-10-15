@@ -74,10 +74,9 @@ ul.links a:hover{color:#fff;}
     linear-gradient(180deg, var(--verde) 0%, var(--verde-2) 100%);
   color:#fff; margin:0 -16px; padding:0 16px; border-radius:0 0 28px 28px; position:relative; overflow:hidden;
 }
-.hero::before{content:""; position:absolute; right:max(2vw,calc((100% - 1160px)/2)); top:50%; transform:translateY(-58%); width:min(34vw,380px); aspect-ratio:520/753; background:url(../assets/escudo-grande.png) center/contain no-repeat; opacity:.28; pointer-events:none;}
-@media (max-width:800px){ .hero::before{width:62vw; right:-8vw; opacity:.18;} }
-.hero-inner,.stat-strip{position:relative; z-index:1;}
-.hero-inner{max-width:1160px; margin:0 auto; padding:64px 0 54px;}
+
+.hero-inner{max-width:1160px; margin:0 auto; padding:56px 0 46px; display:grid; grid-template-columns:1.05fr 1fr; gap:44px; align-items:center;}
+@media (max-width:900px){ .hero-inner{grid-template-columns:1fr; gap:30px; padding:40px 0 34px;} }
 .hero h1{font-size:clamp(34px,5.4vw,58px); color:#fff; line-height:1.04; max-width:16ch;}
 .hero h1 em{font-style:normal; color:var(--sun);}
 .hero p.lede{color:#d4e3d6; font-size:18px; max-width:52ch; margin-top:20px;}
@@ -222,7 +221,7 @@ footer{padding:36px 0 50px; color:var(--ink-soft); font-size:13px; border-top:1p
 
 /* KEYWORDS (pestañas Visión/Misión/Objetivo) */
 .keywords{display:flex; flex-wrap:wrap; gap:14px; align-content:center; position:relative; padding:18px 0;}
-.keywords::before{content:""; flex:0 0 100%; height:96px; background:url(../assets/monograma-dorado.png) left center/contain no-repeat;}
+.keywords::before{content:""; flex:0 0 100%; height:72px; background:url(../assets/monograma-dorado.png) left center/contain no-repeat;}
 .keywords span{position:relative; background:var(--paper-2); color:var(--verde); border:1.5px solid var(--verde-2); border-left:7px solid var(--sun); padding:16px 26px; border-radius:14px; font-family:'Fraunces',serif; font-size:clamp(19px,2.2vw,24px); font-weight:600; box-shadow:var(--card-shadow);}
 
 /* VIDEOS DE TESTIMONIOS */
@@ -298,3 +297,14 @@ footer{padding:36px 0 50px; color:var(--ink-soft); font-size:13px; border-top:1p
 .req-nota{margin:18px auto 0; max-width:70ch; text-align:center; color:var(--ink-soft); font-size:14.5px;}
 .req-cta{text-align:center; margin-top:26px;}
 .vcard.p-tiktok .vfondo{font-weight:700;}
+
+/* ---------- Fotos de la portada y de Nosotros ---------- */
+.hero-fotos{position:relative; padding:0 0 38px 38px;}
+.hf1{display:block; width:100%; height:auto; aspect-ratio:4/3; object-fit:cover; border-radius:20px; box-shadow:0 24px 50px -16px rgba(0,0,0,.55); border:3px solid rgba(255,255,255,.9);}
+.hf2{position:absolute; left:0; bottom:0; width:46%; height:auto; aspect-ratio:16/10; object-fit:cover; border-radius:14px; border:3px solid #fff; box-shadow:0 16px 34px -10px rgba(0,0,0,.6);}
+.hf-sello{position:absolute; right:-10px; top:-18px; width:74px; height:auto; background:#fff; padding:8px 10px; border-radius:16px; box-shadow:0 12px 26px -8px rgba(0,0,0,.5);}
+@media (max-width:900px){ .hero-fotos{padding:0 0 30px 22px; max-width:560px;} .hf-sello{width:60px; right:-4px;} }
+.nos-col{display:grid; gap:20px; align-content:center;}
+.nos-foto{margin:0;}
+.nos-foto img{display:block; width:100%; height:auto; aspect-ratio:3/2; object-fit:cover; border-radius:16px; box-shadow:var(--card-shadow);}
+.nos-col .keywords{padding:0;}
