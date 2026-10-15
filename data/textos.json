@@ -20,7 +20,9 @@
         "valor": "Puerta a puerta",
         "texto": "Bus escolar privado, choferes con +25 años con nosotros."
       }
-    ]
+    ],
+    "imagen1": "assets/sitio/hero-1.jpg",
+    "imagen2": "assets/sitio/hero-2.jpg"
   },
   "nosotros": {
     "vision": {
@@ -63,7 +65,8 @@
         "Talento",
         "Ética y solidaridad"
       ]
-    }
+    },
+    "imagen": "assets/sitio/nosotros.jpg"
   },
   "pilares": [
     {

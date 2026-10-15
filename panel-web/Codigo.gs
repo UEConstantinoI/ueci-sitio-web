@@ -428,9 +428,9 @@ function validarTextos_(d) {
     x = x || {};
     return { valor: cad_(x.valor, 32, 'Dato ' + (i + 1) + ' · titular'), texto: cad_(x.texto, 60, 'Dato ' + (i + 1) + ' · detalle') };
   });
-  const hero = { etiqueta: cad_(h.etiqueta, 40, 'Portada · etiqueta'), titulo: titulo, descripcion: cad_(h.descripcion, 400, 'Portada · descripción'), datos: datos };
+  const hero = { imagen1: '', imagen2: '', etiqueta: cad_(h.etiqueta, 40, 'Portada · etiqueta'), titulo: titulo, descripcion: cad_(h.descripcion, 400, 'Portada · descripción'), datos: datos };
 
-  const nosotros = {};
+  const nosotros = { imagen: '' };   // las fotos se manejan aparte (ver textosGuardar)
   [['vision', 'Visión'], ['mision', 'Misión'], ['objetivo', 'Objetivo']].forEach(function (k) {
     const x = n[k[0]] || {};
     nosotros[k[0]] = {
@@ -468,33 +468,54 @@ function validarTextos_(d) {
   return { hero: hero, nosotros: nosotros, pilares: pilares, transporte: transporte, requisitos: requisitos, contacto: contacto };
 }
 
+const FOTOS_TEXTOS = {
+  transporte: { pref: 'transporte', rot: 'foto de transporte',
+                leer: function (t) { return (t.transporte && t.transporte.imagen) || ''; }, poner: function (t, r) { t.transporte.imagen = r; } },
+  hero1:      { pref: 'portada-1', rot: 'foto principal de la portada',
+                leer: function (t) { return (t.hero && t.hero.imagen1) || ''; }, poner: function (t, r) { t.hero.imagen1 = r; } },
+  hero2:      { pref: 'portada-2', rot: 'foto pequeña de la portada',
+                leer: function (t) { return (t.hero && t.hero.imagen2) || ''; }, poner: function (t, r) { t.hero.imagen2 = r; } },
+  nosotros:   { pref: 'nosotros', rot: 'foto de Acerca de nosotros',
+                leer: function (t) { return (t.nosotros && t.nosotros.imagen) || ''; }, poner: function (t, r) { t.nosotros.imagen = r; } }
+};
+
 /**
  * Recibe el documento completo de textos; devuelve el documento ya limpio y guardado.
- * imagenes = { transporte: { accion:'mantener'|'quitar'|'nueva', base64?, mime? } }  (opcional)
+ * imagenes = { transporte|hero1|hero2|nosotros: { accion:'mantener'|'quitar'|'nueva', base64?, mime? } }  (opcional)
  */
 function textosGuardar(datos, imagenes) {
   const u = exigirAdmin_();
   const t = validarTextos_(datos);
-  const im = (imagenes && imagenes.transporte) || { accion: 'mantener' };
-  if (['mantener', 'quitar', 'nueva'].indexOf(im.accion) < 0) throw new Error('Acción de imagen no válida.');
-  const bytes = im.accion === 'nueva' ? validarImagen_(im) : null;
+  imagenes = imagenes || {};
+  const cambios = [];   // { clave, im, bytes }
+  Object.keys(FOTOS_TEXTOS).forEach(function (clave) {
+    const im = imagenes[clave] || { accion: 'mantener' };
+    if (['mantener', 'quitar', 'nueva'].indexOf(im.accion) < 0) throw new Error('Acción de imagen no válida.');
+    cambios.push({ clave: clave, im: im, bytes: im.accion === 'nueva' ? validarImagen_(im) : null });
+  });
   const lock = LockService.getScriptLock();
   lock.waitLock(25000);
   try {
     const act = textosLeer_();
-    const previa = String((act.textos.transporte && act.textos.transporte.imagen) || '');   // siempre la que ya está guardada
-    let ruta = previa, borrar = '';
-    if (im.accion === 'nueva') {
-      ruta = CONFIG.CARPETA_SITIO + '/transporte-' + Date.now().toString(36) + '.' + extension_(im.mime);
-      ghPonerBytes_(ruta, bytes, 'Textos del sitio: foto de transporte (' + u.email + ')');
-      borrar = previa;
-    } else if (im.accion === 'quitar') {
-      ruta = ''; borrar = previa;
-    }
-    t.transporte.imagen = ruta;
+    const aBorrar = [], hechos = [];
+    cambios.forEach(function (c) {
+      const f = FOTOS_TEXTOS[c.clave];
+      const previa = String(f.leer(act.textos) || '');   // siempre la que ya está guardada
+      let ruta = previa;
+      if (c.im.accion === 'nueva') {
+        ruta = CONFIG.CARPETA_SITIO + '/' + f.pref + '-' + Date.now().toString(36) + '.' + extension_(c.im.mime);
+        ghPonerBytes_(ruta, c.bytes, 'Textos del sitio: ' + f.rot + ' (' + u.email + ')');
+        if (previa) aBorrar.push(previa);
+        hechos.push(f.rot + ': nueva');
+      } else if (c.im.accion === 'quitar') {
+        ruta = ''; if (previa) aBorrar.push(previa);
+        hechos.push(f.rot + ': quitada');
+      }
+      f.poner(t, ruta);
+    });
     ghPonerTexto_(CONFIG.ARCHIVO_TEXTOS, JSON.stringify(t, null, 2) + '\n', 'Textos del sitio actualizados (' + u.email + ')', act.sha);
-    if (borrar && borrar !== ruta) borrarImagen_(borrar, u.email);
-    registrar_(u, 'Textos del sitio', 'Se guardaron cambios' + (im.accion !== 'mantener' ? ' (foto de transporte: ' + im.accion + ')' : ''));
+    aBorrar.forEach(function (r) { if (r) borrarImagen_(r, u.email); });
+    registrar_(u, 'Textos del sitio', 'Se guardaron cambios' + (hechos.length ? ' (' + hechos.join('; ') + ')' : ''));
     return t;
   } finally {
     lock.releaseLock();

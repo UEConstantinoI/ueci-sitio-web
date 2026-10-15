@@ -201,8 +201,27 @@
     });
   }
 
+  var RUTA_IMG = /^assets\/[\w\-\/.]+$/;
+  function rutaOk(r) { return typeof r === 'string' && RUTA_IMG.test(r) && r.indexOf('..') < 0; }
+  // devuelve true si la foto queda visible; '' = sin foto; cualquier otra cosa = se deja la que ya trae la página
+  function ponerFoto(img, ruta) {
+    if (!img) return false;
+    if (ruta === '') { img.hidden = true; return false; }
+    if (rutaOk(ruta)) { img.src = ruta; img.hidden = false; return true; }
+    return !img.hidden;
+  }
+
   function hero(h) {
     if (!h) return;
+    var f1 = ponerFoto(document.getElementById('heroImg1'), h.imagen1);
+    var f2 = ponerFoto(document.getElementById('heroImg2'), h.imagen2);
+    var caja = document.getElementById('heroFotos'), hi = $('.hero-inner');
+    if (caja) {
+      caja.hidden = !f1 && !f2;
+      caja.classList.toggle('solo-1', f1 && !f2);
+      caja.classList.toggle('solo-2', !f1 && f2);
+      if (hi) hi.classList.toggle('sin-fotos', caja.hidden);
+    }
     txt($('.hero .eyebrow'), h.etiqueta);
     titulo($('.hero h1'), h.titulo);
     txt($('.hero .lede'), h.descripcion);
@@ -216,6 +235,10 @@
 
   function nosotros(n) {
     if (!n) return;
+    document.querySelectorAll('.nos-foto').forEach(function (fig) {
+      var img = fig.querySelector('img');
+      fig.hidden = !ponerFoto(img, n.imagen);
+    });
     ['vision', 'mision', 'objetivo'].forEach(function (k) {
       var d = n[k], panel = $('.nivel-panel[data-nivel="' + k + '"]');
       if (!d || !panel) return;
@@ -318,12 +341,35 @@
     return 'https://www.facebook.com/plugins/video.php?href=' + encodeURIComponent('https://www.facebook.com/' + c) + '&show_text=false&autoplay=true';
   }
 
+  // Visor: el video se abre en una ventana centrada, con el tamaño que le corresponde (vertical u horizontal)
+  function abrirVisor(v, p, c, origen) {
+    var vert = p === 'instagram' || (p === 'facebook' && c.indexOf('reel/') === 0);
+    var ov = document.createElement('div'); ov.className = 'visor';
+    ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', v.titulo || ('Video de ' + NOMBRES[p]));
+    var caja = document.createElement('div'); caja.className = 'visor-caja' + (vert ? ' vert' : '');
+    var fr = document.createElement('iframe');
+    fr.src = embed(p, c); fr.title = v.titulo || ('Video de ' + NOMBRES[p]);
+    fr.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen'; fr.allowFullscreen = true;
+    var x = document.createElement('button'); x.type = 'button'; x.className = 'visor-x'; x.setAttribute('aria-label', 'Cerrar video'); x.textContent = '×';
+    caja.appendChild(fr); ov.appendChild(caja); ov.appendChild(x);
+    function cerrar() {
+      document.removeEventListener('keydown', tecla);
+      ov.remove(); document.body.classList.remove('visor-abierto');
+      if (origen && origen.focus) origen.focus();
+    }
+    function tecla(e) { if (e.key === 'Escape') cerrar(); }
+    x.addEventListener('click', cerrar);
+    ov.addEventListener('click', function (e) { if (e.target === ov) cerrar(); });
+    document.addEventListener('keydown', tecla);
+    document.body.classList.add('visor-abierto');
+    document.body.appendChild(ov); x.focus();
+  }
+
   function tarjeta(v) {
     var p = v.plataforma, c = v.codigo;
     if (!NOMBRES[p] || !CODIGO_OK[p].test(String(c))) return null;
-    var vert = p !== 'youtube';
     var item = document.createElement('div');
-    item.className = 'vitem' + (vert ? ' vert' : '');
+    item.className = 'vitem';
     var b = document.createElement('button');
     b.type = 'button'; b.className = 'vcard p-' + p;
     b.setAttribute('aria-label', 'Reproducir: ' + (v.titulo || NOMBRES[p]));
@@ -340,13 +386,8 @@
         if (typeof v.url === 'string' && URL_OK.test(v.url)) window.open(v.url, '_blank', 'noopener,noreferrer');
         return;
       }
-      var fr = document.createElement('iframe');
-      fr.src = embed(p, c);
-      fr.title = v.titulo || ('Video de ' + NOMBRES[p]);
-      fr.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
-      fr.allowFullscreen = true;
-      b.textContent = ''; b.appendChild(fr);
-    }, p === 'tiktok' ? undefined : { once: true });
+      abrirVisor(v, p, c, b);
+    });
     item.appendChild(b);
     var meta = document.createElement('div'); meta.className = 'vmeta';
     var ETQ = { testimonios: 'Testimonio', vida: 'Vida escolar' };

@@ -44,3 +44,7 @@ Una dirección corta como `panel.ueconstantino.com` con una regla de redirecció
 - Al elegir una foto (noticias, carrusel, transporte) el panel le pone el escudo del colegio arriba a la derecha. El casillero "Poner el escudo…" viene marcado; si lo desmarcas se vuelve a procesar la foto sin escudo.
 - **Textos del sitio → Requisitos de admisión** (solo ADMIN): un requisito por renglón para "Reserva de cupo" y "Inscripción", y una nota opcional.
 - Los videos de TikTok se abren en TikTok (el reproductor incrustado de TikTok falla); YouTube, Instagram y Facebook se ven en la página.
+
+## Fotos de portada y de Nosotros (14/10)
+- **Textos del sitio → Portada**: dos fotos (principal grande y pequeña superpuesta). **Acerca de nosotros**: una foto que se ve junto a las palabras clave. Se pueden cambiar o quitar; el escudo se estampa si el casillero está marcado.
+- Los videos ahora se abren en una ventana centrada con el tamaño que les corresponde (vertical u horizontal); las tarjetas de la lista son todas iguales.
