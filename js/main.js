@@ -102,6 +102,21 @@
 
   // Siempre se crea texto con textContent (nunca innerHTML) para que
   // un comunicado mal escrito no pueda romper ni alterar la página.
+  function ampliar(src, alt) {
+    var ov = document.createElement('div');
+    ov.className = 'img-zoom';
+    ov.setAttribute('role', 'dialog');
+    ov.setAttribute('aria-label', 'Imagen ampliada');
+    var im = document.createElement('img');
+    im.src = src; im.alt = alt || '';
+    ov.appendChild(im);
+    function cerrar() { ov.remove(); document.removeEventListener('keydown', tecla); }
+    function tecla(e) { if (e.key === 'Escape') cerrar(); }
+    ov.addEventListener('click', cerrar);
+    document.addEventListener('keydown', tecla);
+    document.body.appendChild(ov);
+  }
+
   function tarjeta(n) {
     var art = document.createElement('article');
     art.className = 'noticia-card';
@@ -110,6 +125,11 @@
       img.src = n.imagen;
       img.alt = n.titulo || '';
       img.loading = 'lazy';
+      // Imagen vertical (afiche): la tarjeta pasa a diseño lateral con la imagen entera.
+      var marcar = function () { if (img.naturalHeight > img.naturalWidth * 1.1) art.classList.add('vertical'); };
+      img.addEventListener('load', marcar);
+      if (img.complete && img.naturalWidth) marcar();
+      img.addEventListener('click', function () { ampliar(img.src, img.alt); });
       art.appendChild(img);
     }
     var body = document.createElement('div');
