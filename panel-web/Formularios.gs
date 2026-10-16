@@ -26,12 +26,13 @@
 
 const CONFIG = {
   HOJA_ID: '',                                   // ← ID de la hoja de cálculo del panel
-  AVISO_A: 'ueconstantino@ueconstantino.com',    // a quién le llega el aviso por correo
+  AVISO_A: 'javier.lopez@ueconstantino.com',     // correo de respaldo; el que vale se cambia desde el panel (pestaña “Ajustes” de la hoja)
   MAX_POR_DIA: 150,                              // tope de envíos por día y por formulario
   MIN_MS: 3000,                                  // un formulario no se envía en menos de 3 s
   ZONA: 'America/La_Paz'
 };
 
+const HOJA_AJUSTES = 'Ajustes';
 const HOJA_CONSULTAS = 'Consultas';
 const HOJA_ADMISIONES = 'Admisiones';
 const CAB_CONSULTAS = ['Fecha', 'Código', 'Nombre', 'Teléfono', 'Correo', 'Mensaje', 'Estado', 'Atendido por', 'Atendido el'];
@@ -146,10 +147,10 @@ function procesar_(d) {
 
   try {
     MailApp.sendEmail({
-      to: CONFIG.AVISO_A,
+      to: destinoAviso_(),
       subject: limpiarLinea_(asunto) + ' [' + codigo + ']',
       body: 'Código: ' + codigo + '\n\n' + resumen + '\n\n— Recibido por el sitio web. Se puede atender desde el panel (Consultas y admisiones).',
-      replyTo: replyTo || CONFIG.AVISO_A
+      replyTo: replyTo || destinoAviso_().split(',')[0]
     });
   } catch (x) { console.error('No se pudo enviar el aviso: ' + x); }   // el registro ya quedó guardado
   return { ok: true, codigo: codigo };
@@ -193,6 +194,29 @@ function fecha_(v, nombre) {
   const edad = (hoy.getTime() - f.getTime()) / (365.25 * 24 * 3600 * 1000);
   if (edad < 2 || edad > 19) throw err_('Revisa la fecha de nacimiento.');
   return t;
+}
+
+/* ───────────────────────── Correo de aviso (se cambia desde el panel) ───────────────────────── */
+
+// Una o varias direcciones separadas por coma (máximo 3). Devuelve '' si alguna no es válida.
+function correosAviso_(txt) {
+  const lista = String(txt || '').split(/[,;\s]+/).filter(function (x) { return x; });
+  if (!lista.length || lista.length > 3) return '';
+  for (let i = 0; i < lista.length; i++) { if (!/^[^\s@<>"',;]+@[^\s@<>"',;]+\.[^\s@<>"',;]+$/.test(lista[i]) || lista[i].length > 80) return ''; }
+  return lista.join(', ');
+}
+
+function destinoAviso_() {
+  try {
+    const sh = SpreadsheetApp.openById(CONFIG.HOJA_ID).getSheetByName(HOJA_AJUSTES);
+    if (sh && sh.getLastRow() >= 1) {
+      const v = sh.getRange(1, 1, sh.getLastRow(), 2).getValues();
+      for (let i = 0; i < v.length; i++) {
+        if (String(v[i][0]).trim() === 'aviso_a') { const ok = correosAviso_(v[i][1]); if (ok) return ok; }
+      }
+    }
+  } catch (e) { console.error('No se pudo leer el correo de aviso: ' + e); }
+  return CONFIG.AVISO_A;
 }
 
 /* ───────────────────────── Hoja ───────────────────────── */

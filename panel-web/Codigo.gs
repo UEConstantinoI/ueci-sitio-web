@@ -803,10 +803,55 @@ function buzonLeerTipo_(tipo) {
   return lista;
 }
 
+const HOJA_AJUSTES = 'Ajustes';
+const AVISO_A_DEFECTO = 'javier.lopez@ueconstantino.com';
+
+// Una o varias direcciones separadas por coma (máximo 3), igual que en Formularios.gs.
+function correosAviso_(txt) {
+  const lista = String(txt || '').split(/[,;\s]+/).filter(function (x) { return x; });
+  if (!lista.length) throw new Error('Escribe al menos un correo.');
+  if (lista.length > 3) throw new Error('Máximo 3 correos, separados por coma.');
+  lista.forEach(function (x) { if (!/^[^\s@<>"',;]+@[^\s@<>"',;]+\.[^\s@<>"',;]+$/.test(x) || x.length > 80) throw new Error('“' + x + '” no parece un correo válido.'); });
+  return lista.join(', ');
+}
+
+function avisoCorreoLeer_() {
+  try {
+    const sh = SpreadsheetApp.getActive().getSheetByName(HOJA_AJUSTES);
+    if (sh && sh.getLastRow() >= 1) {
+      const v = sh.getRange(1, 1, sh.getLastRow(), 2).getValues();
+      for (let i = 0; i < v.length; i++) { if (String(v[i][0]).trim() === 'aviso_a') { try { return correosAviso_(v[i][1]); } catch (e) { /* inválido: se usa el de respaldo */ } } }
+    }
+  } catch (e) { /* sin hoja de ajustes */ }
+  return AVISO_A_DEFECTO;
+}
+
 function buzonParaPanel_() {
   try {
-    return { consultas: buzonLeerTipo_('consultas'), admisiones: buzonLeerTipo_('admisiones') };
+    return { consultas: buzonLeerTipo_('consultas'), admisiones: buzonLeerTipo_('admisiones'), avisoA: avisoCorreoLeer_() };
   } catch (e) { return { error: String(e.message || e) }; }
+}
+
+/** Solo ADMIN. Guarda a qué correo(s) llega el aviso de cada formulario enviado desde el sitio. */
+function avisoCorreoGuardar(correos) {
+  const u = exigirAdmin_();
+  const limpio = correosAviso_(correos);
+  const lock = LockService.getScriptLock();
+  lock.waitLock(25000);
+  try {
+    const ss = SpreadsheetApp.getActive();
+    let sh = ss.getSheetByName(HOJA_AJUSTES);
+    if (!sh) { sh = ss.insertSheet(HOJA_AJUSTES); sh.getRange(1, 1, 1, 2).setValues([['Clave', 'Valor']]); sh.getRange(1, 1, 1, 2).setFontWeight('bold'); }
+    const n = sh.getLastRow();
+    let fila = -1;
+    if (n >= 1) { const v = sh.getRange(1, 1, n, 1).getValues(); for (let i = 0; i < v.length; i++) { if (String(v[i][0]).trim() === 'aviso_a') { fila = i + 1; break; } } }
+    if (fila < 0) fila = n + 1;
+    const r = sh.getRange(fila, 1, 1, 2);
+    r.setNumberFormat('@');
+    r.setValues([['aviso_a', limpio]]);
+    registrar_(u, 'Correo de avisos de formularios', limpio);
+  } finally { lock.releaseLock(); }
+  return limpio;
 }
 
 function buzonCargar() { exigir_(); return buzonParaPanel_(); }

@@ -79,6 +79,10 @@
   .acciones button{flex:1;padding:8px 6px;border-radius:9px;border:1px solid var(--line);background:#fff;font-weight:600;color:var(--ink)}
   .acciones button:hover{border-color:var(--verde-2)}
   .acciones .del{flex:0 0 auto;color:var(--rojo)}
+  .bz-correo{display:flex;flex-direction:column;gap:7px}
+  .bz-correo-fila{display:flex;gap:10px;flex-wrap:wrap}
+  .bz-correo-fila input{flex:1;min-width:240px;border:1px solid var(--line);border-radius:10px;padding:10px 13px;font:inherit;background:#fff}
+  .bz-correo small{color:var(--soft)}
   .bz-lista{display:flex;flex-direction:column;gap:12px}
   .bz-item{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--sun);border-radius:12px;box-shadow:var(--shadow);padding:14px 18px}
   .bz-item.atendido{border-left-color:var(--verde-2);opacity:.78}
@@ -279,6 +283,14 @@
           <p>Lo que las familias envían desde los formularios del sitio. Marca cada uno como atendido cuando ya le respondieron. También llega un aviso a ueconstantino@ueconstantino.com y todo queda en la hoja de cálculo.</p>
         </div>
         <button class="btn" id="bzActualizar">↻ Actualizar</button>
+      </div>
+      <div class="aviso bz-correo">
+        <b>Correo que recibe los avisos de los formularios:</b>
+        <div class="bz-correo-fila">
+          <input type="text" id="bzCorreo" maxlength="180" placeholder="correo@ueconstantino.com" aria-label="Correos que reciben los avisos">
+          <button class="btn btn-sun" id="bzCorreoGuardar">Guardar</button>
+        </div>
+        <small id="bzCorreoAyuda">Puedes poner hasta 3 correos separados por coma.</small>
       </div>
       <div class="toolbar">
         <div class="tabs" id="bzTabs">
@@ -1197,11 +1209,21 @@ function parsearVideo_(entrada) {
   }
 
   /* ---------- CONSULTAS Y ADMISIONES ---------- */
-  var BZ={tipo:'consultas',datos:{consultas:[],admisiones:[]},error:''};
+  var BZ={tipo:'consultas',datos:{consultas:[],admisiones:[]},error:'',admin:false};
   function bzPend(l){ return l.filter(function(x){return x.estado!=='Atendido';}).length; }
   function celWa(s){ var m=String(s||'').match(/([67]\d{7})/); return m?'591'+m[1]:''; }
   function bzFila(dl,k,v){ if(!v) return; dl.appendChild(el('dt',{text:k})); dl.appendChild(el('dd',{text:v})); }
+  function renderCorreo(){
+    var i=$('bzCorreo'); if(document.activeElement!==i) i.value=BZ.datos.avisoA||'';
+    i.disabled=!BZ.admin; $('bzCorreoGuardar').hidden=!BZ.admin;
+    $('bzCorreoAyuda').textContent=BZ.admin?'Puedes poner hasta 3 correos separados por coma. El cambio vale desde el próximo envío.':'Solo un administrador puede cambiar este correo.';
+  }
+  $('bzCorreoGuardar').onclick=function(){
+    ocupado(true,'Guardando…');
+    servidor('avisoCorreoGuardar',[$('bzCorreo').value],function(c){ ocupado(false); BZ.datos.avisoA=c; renderCorreo(); toast('Listo: los avisos llegarán a '+c+'.'); });
+  };
   function renderBuzon(){
+    renderCorreo();
     var b=BZ.datos, nc=bzPend(b.consultas), na=bzPend(b.admisiones), tot=nc+na;
     var bd=$('bzBadge'); bd.hidden=!tot; bd.textContent=tot;
     var tabs=$('bzTabs').children; tabs[0].textContent='Consultas'+(nc?' ('+nc+')':''); tabs[1].textContent='Admisiones'+(na?' ('+na+')':'');
@@ -1238,7 +1260,7 @@ function parsearVideo_(entrada) {
   $('bzTabs').addEventListener('click',function(e){ var t=e.target.getAttribute&&e.target.getAttribute('data-t'); if(t){ BZ.tipo=t; renderBuzon(); } });
   $('bzSoloNuevas').onchange=renderBuzon;
   $('bzActualizar').onclick=function(){ ocupado(true,'Actualizando…'); servidor('buzonCargar',[],function(d){ ocupado(false); BZ.datos=d; BZ.error=d.error||''; renderBuzon(); }); };
-  function iniciarBuzon(b){ if(b&&!b.error){ BZ.datos=b; BZ.error=''; } else { BZ.error=(b&&b.error)||'sin datos'; } renderBuzon(); }
+  function iniciarBuzon(b,rol){ BZ.admin=(rol==='ADMIN'); if(b&&!b.error){ BZ.datos=b; BZ.error=''; } else { BZ.error=(b&&b.error)||'sin datos'; } renderBuzon(); }
 
   /* ---------- arranque ---------- */
   servidor('panelCargar',[],function(d){
@@ -1249,7 +1271,7 @@ function parsearVideo_(entrada) {
     u.appendChild(document.createTextNode(d.usuario.email));
     u.appendChild(document.createElement('br'));
     u.appendChild(el('span',{class:'rol',text:d.usuario.rol}));
-    render(); renderFotos(); renderLista(CFG_VIDEOS); if(d.calendario&&d.calendario.datos) renderLista(CFG_CALENDARIO); else { var gc=$('gridCalendario'); gc.textContent=''; gc.appendChild(el('div',{class:'vacio',text:'No se pudo cargar el calendario: '+((d.calendario&&d.calendario.error)||'sin datos')})); } iniciarTextos(d.usuario.rol,d.textos); iniciarAccesos(d.usuario.rol,d.accesos); iniciarRedes(d.usuario.rol,d.redes); iniciarBuzon(d.buzon);
+    render(); renderFotos(); renderLista(CFG_VIDEOS); if(d.calendario&&d.calendario.datos) renderLista(CFG_CALENDARIO); else { var gc=$('gridCalendario'); gc.textContent=''; gc.appendChild(el('div',{class:'vacio',text:'No se pudo cargar el calendario: '+((d.calendario&&d.calendario.error)||'sin datos')})); } iniciarTextos(d.usuario.rol,d.textos); iniciarAccesos(d.usuario.rol,d.accesos); iniciarRedes(d.usuario.rol,d.redes); iniciarBuzon(d.buzon,d.usuario.rol);
   },function(e){ $('grid').textContent=''; $('grid').appendChild(el('div',{class:'vacio',text:'No se pudo cargar el panel: '+mensajeError(e)})); });
 })();
 </script>

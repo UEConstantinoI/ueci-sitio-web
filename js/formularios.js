@@ -126,8 +126,10 @@
       .then(function (r) { return r.json(); })
       .then(function (r) {
         fin();
-        if (r && r.ok && /^[A-Z]{3}-\d{4}$|^OK-0000$/.test(String(r.codigo))) alOk(r.codigo);
+        // Si el servidor dice ok, el envío YA quedó guardado: nunca se muestra como error.
+        if (r && r.ok === true) alOk(/^[A-Z]{3}-\d{4}$/.test(String(r.codigo)) ? String(r.codigo) : '');
         else {
+          try { console.warn('Formularios: respuesta inesperada', r); } catch (e) { /* sin consola */ }
           errBox.textContent = (r && typeof r.error === 'string' && r.error) ? r.error : 'No pudimos enviar el formulario.';
           errBox.appendChild(document.createTextNode(' '));
           errBox.appendChild(h('a', { href: wa, target: '_blank', rel: 'noopener', text: 'Escríbenos por WhatsApp' }));
@@ -148,7 +150,7 @@
       h('div', { class: 'exito-ico', 'aria-hidden': 'true', text: '✓' }),
       h('h3', { text: titulo }),
       h('p', { text: texto }),
-      h('p', { class: 'exito-cod' }, ['Tu código de seguimiento: ', h('b', { text: codigo })]),
+      codigo ? h('p', { class: 'exito-cod' }, ['Tu código de seguimiento: ', h('b', { text: codigo })]) : null,
       h('a', { class: 'btn-wa', href: wa, target: '_blank', rel: 'noopener', text: 'Avisar también por WhatsApp' }),
       h('button', { type: 'button', class: 'btn-sec', text: 'Cerrar' })
     ]));
@@ -183,7 +185,7 @@
       enviar({ tipo: 'contacto', nombre: nombre, telefono: c.telefono.inp.value.trim(), email: c.email.inp.value.trim(), mensaje: c.mensaje.inp.value.trim(), web: f.web.value }, btn, err, function (cod) {
         f.reset();
         exito('¡Recibimos tu mensaje!', 'Te responderemos por teléfono o WhatsApp en nuestro horario de atención.', cod,
-          'Hola, soy ' + nombre + '. Acabo de enviar una consulta desde el sitio web (código ' + cod + ').');
+          'Hola, soy ' + nombre + '. Acabo de enviar una consulta desde el sitio web (' + (cod ? 'código ' + cod : 'sin código') + ').');
         forms.contacto.hecho = true;
       });
     });
@@ -281,7 +283,7 @@
       }, sig, err, function (cod) {
         f.reset(); gradoBox.hidden = true; ir(0);
         exito('¡Recibimos tu solicitud!', 'Gracias por elegirnos. Nos comunicaremos contigo para continuar con el proceso de admisión de ' + estudiante + '.', cod,
-          'Hola, soy ' + tutor + '. Acabo de enviar la solicitud de admisión de ' + estudiante + ' desde el sitio web (código ' + cod + ').');
+          'Hola, soy ' + tutor + '. Acabo de enviar la solicitud de admisión de ' + estudiante + ' desde el sitio web (' + (cod ? 'código ' + cod : 'sin código') + ').');
         forms.admision.hecho = true;
       });
     });

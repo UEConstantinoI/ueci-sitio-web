@@ -82,3 +82,9 @@ Activación (una sola vez):
 
 Protección: campo trampa para robots, tiempo mínimo de llenado, límites de largo, máximo 150 envíos por día y por formulario, no duplica envíos repetidos, las celdas se guardan como texto (no se ejecutan fórmulas) y el panel muestra todo como texto.
 Si se cambia `Formularios.gs`: Implementar → Administrar implementaciones → editar → Nueva versión (la dirección `/exec` no cambia).
+
+
+### Correo que recibe los avisos de los formularios (16/10)
+- Se cambia desde el panel: **Consultas y admisiones → "Correo que recibe los avisos"** (solo ADMIN; EDITOR lo ve). Admite hasta 3 correos separados por coma. Rige desde el próximo envío, sin tocar código.
+- Se guarda en la pestaña **Ajustes** de la hoja de cálculo (se crea sola al guardar la primera vez), fila `aviso_a`. Si esa pestaña no existe o el valor es inválido, se usa el de respaldo (`CONFIG.AVISO_A` en `Formularios.gs`, hoy javier.lopez@ueconstantino.com).
+- Archivos a pegar: `Formularios.gs` (proyecto aparte → Implementar → Administrar implementaciones → editar → Nueva versión; la dirección /exec no cambia), `Codigo.gs` y `Panel.html` (proyecto del panel → nueva versión).
