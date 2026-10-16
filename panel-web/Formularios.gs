@@ -97,7 +97,7 @@ function procesar_(d) {
     const v = {
       estudiante: mayus_(txt_(d.estudiante, 90, 'Nombre del estudiante')),
       nacimiento: fecha_(d.nacimiento, 'Fecha de nacimiento'),
-      colegio: mayus_(txt_(d.colegio, 90, 'Colegio anterior', true)),
+      colegio: mayus_(txt_(d.colegio, 90, 'Colegio anterior', colegioOpcional_(nivel, grado))),
       tutor: mayus_(txt_(d.tutor, 90, 'Nombre del padre, madre o tutor')),
       telefonos: telOpc_(d.telefonos, 'Otro número', 40),
       whatsapp: tel_(d.whatsapp, 'Celular (WhatsApp)'),
@@ -256,3 +256,6 @@ function codigo_(prefijo, num) {
 }
 
 function mayus_(s) { return String(s).toLocaleUpperCase('es'); }
+
+// Colegio anterior: opcional en Inicial (Pre-Kinder ni se pregunta) y en 1.º de primaria; obligatorio desde 2.º.
+function colegioOpcional_(nivel, grado) { return nivel === 'INICIAL' || (nivel === 'PRIMARIA' && grado === 'Primero'); }

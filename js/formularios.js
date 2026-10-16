@@ -207,7 +207,7 @@
     var c = {
       estudiante: campo({ name: 'estudiante', label: 'Nombre completo del estudiante', req: true, max: 90, auto: 'off' }),
       nacimiento: campo({ name: 'nacimiento', label: 'Fecha de nacimiento', req: true, type: 'date', min: iso(new Date(hoy.getFullYear() - 19, hoy.getMonth(), hoy.getDate())), maxv: iso(new Date(hoy.getFullYear() - 2, hoy.getMonth(), hoy.getDate())), cls: 'ff-corto', auto: 'off' }),
-      colegio: campo({ name: 'colegio', label: 'Colegio anterior', max: 90, hint: 'Si viene de otro colegio, escríbelo aquí. En Inicial o 1.º de primaria puedes dejarlo vacío.', auto: 'off' }),
+      colegio: campo({ name: 'colegio', label: 'Colegio anterior', max: 90, hint: 'Escribe el colegio del que viene el estudiante.', auto: 'off' }),
       tutor: campo({ name: 'tutor', label: 'Nombre completo del padre, madre o tutor', req: true, max: 90, auto: 'name' }),
       whatsapp: campo({ name: 'whatsapp', label: 'Celular (WhatsApp)', req: true, max: 25, type: 'tel', auto: 'tel', mode: 'tel' }),
       telefonos: campo({ name: 'telefonos', label: 'Otro número (fijo o celular)', max: 40, type: 'tel', auto: 'off', mode: 'tel' }),
@@ -216,15 +216,29 @@
     };
     var nivelErr = h('div', { class: 'ff-err', role: 'alert' }), gradoErr = h('div', { class: 'ff-err', role: 'alert' });
     var gradoBox = h('div', { class: 'ff ff-grado', hidden: true });
-    var nivelSel = '';
+    var nivelSel = '', gradoSel = '';
+    // Pre-Kinder: no se pide colegio anterior. Kinder y 1.º de primaria: opcional. Resto: obligatorio.
+    function reglaColegio() {
+      var n = radio('nivel'), g = radio('grado');
+      var oculto = n === 'INICIAL' && g === 'Pre-Kinder';
+      var opc = oculto || (n === 'INICIAL' && g === 'Kinder') || (n === 'PRIMARIA' && g === 'Primero');
+      c.colegio.el.hidden = oculto;
+      var l = c.colegio.el.querySelector('label'); l.textContent = '';
+      l.appendChild(document.createTextNode('Colegio anterior'));
+      l.appendChild(h('span', opc ? { class: 'opt', text: ' (opcional)' } : { class: 'req', text: ' *' }));
+      c.colegio.inp.value = oculto ? '' : c.colegio.inp.value;
+      c.colegio.err.textContent = '';
+      return { oculto: oculto, req: !opc };
+    }
     var nivelChips = chips('nivel', NIVELES.map(function (n) { return { v: n.v, t: n.t, s: n.s }; }), function (v) {
       nivelSel = v; nivelErr.textContent = '';
       var n = NIVELES.filter(function (x) { return x.v === v; })[0];
       gradoBox.textContent = '';
       gradoBox.appendChild(h('div', { class: 'lbl', text: n.v === 'INICIAL' ? 'Curso' : 'Curso de ' + n.t.toLowerCase() }, [h('span', { class: 'req', text: ' *' })]));
-      gradoBox.appendChild(chips('grado', n.g.map(function (g) { return { v: g, t: g }; }), function () { gradoErr.textContent = ''; }));
+      gradoBox.appendChild(chips('grado', n.g.map(function (g) { return { v: g, t: g }; }), function () { gradoErr.textContent = ''; reglaColegio(); }));
       gradoBox.appendChild(gradoErr);
       gradoBox.hidden = false;
+      reglaColegio();
     });
 
     var pasos = [
@@ -248,7 +262,7 @@
         ok = marcar(c.estudiante, V.txt(c.estudiante.inp.value, 90, true, 'Nombre del estudiante')) && ok;
         ok = marcar(c.nacimiento, V.fecha(c.nacimiento.inp.value)) && ok;
         if (!radio('nivel')) { nivelErr.textContent = 'Elige el nivel.'; ok = false; } else if (!radio('grado')) { gradoErr.textContent = 'Elige el curso.'; ok = false; }
-        ok = marcar(c.colegio, V.txt(c.colegio.inp.value, 90, false, 'Colegio anterior')) && ok;
+        ok = marcar(c.colegio, V.txt(c.colegio.inp.value, 90, reglaColegio().req, 'Colegio anterior')) && ok;
       } else if (p === 1) {
         ok = marcar(c.tutor, V.txt(c.tutor.inp.value, 90, true, 'Nombre del padre, madre o tutor')) && ok;
         ok = marcar(c.whatsapp, V.tel(c.whatsapp.inp.value, 'Celular (WhatsApp)')) && ok;
@@ -262,7 +276,7 @@
     function resumen() {
       var box = pasos[2].querySelector('.resumen'); box.textContent = '';
       var n = NIVELES.filter(function (x) { return x.v === radio('nivel'); })[0];
-      var filas = [['Estudiante', c.estudiante.inp.value.trim()], ['Nacimiento', c.nacimiento.inp.value], ['Curso', radio('grado') + (n ? ' de ' + n.t.toLowerCase() : '')], ['Colegio anterior', c.colegio.inp.value.trim() || '—'],
+      var filas = [['Estudiante', c.estudiante.inp.value.trim()], ['Nacimiento', c.nacimiento.inp.value], ['Curso', radio('grado') + (n ? ' de ' + n.t.toLowerCase() : '')], ['Colegio anterior', (c.colegio.el.hidden ? 'No aplica' : c.colegio.inp.value.trim() || '—')],
         ['Padre, madre o tutor', c.tutor.inp.value.trim()], ['Celular (WhatsApp)', c.whatsapp.inp.value.trim()], ['Otro número', c.telefonos.inp.value.trim() || '—'], ['Correo', c.email.inp.value.trim() || '—']];
       var dl = h('dl');
       filas.forEach(function (x) { dl.appendChild(h('dt', { text: x[0] })); dl.appendChild(h('dd', { text: x[1] })); });
@@ -289,7 +303,7 @@
         tipo: 'admision', estudiante: estudiante, nacimiento: c.nacimiento.inp.value, nivel: radio('nivel'), grado: radio('grado'), colegio: c.colegio.inp.value.trim(),
         tutor: tutor, telefonos: c.telefonos.inp.value.trim(), whatsapp: c.whatsapp.inp.value.trim(), email: c.email.inp.value.trim(), comentario: c.comentario.inp.value.trim(), web: f.web.value
       }, sig, err, function (cod) {
-        f.reset(); gradoBox.hidden = true; ir(0);
+        f.reset(); gradoBox.hidden = true; c.colegio.el.hidden = false; ir(0);
         exito('¡Recibimos tu solicitud!', 'Gracias por elegirnos. Nos comunicaremos contigo para continuar con el proceso de admisión de ' + estudiante + '.', cod,
           'Hola, soy ' + tutor + '. Acabo de enviar la solicitud de admisión de ' + estudiante + ' desde el sitio web (' + (cod ? 'código ' + cod : 'sin código') + ').');
         forms.admision.hecho = true;
