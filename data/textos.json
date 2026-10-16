@@ -93,11 +93,6 @@
       "icono": "🤝",
       "titulo": "Valores",
       "texto": "Responsabilidad, respeto, honestidad, humildad y gratitud, con comunicación constante con los padres: los valores nacen en casa y se refuerzan en el colegio."
-    },
-    {
-      "icono": "⭐",
-      "titulo": "Producción intelectual escrita",
-      "texto": "Es de prueba"
     }
   ],
   "transporte": {
@@ -137,8 +132,8 @@
     "whatsapp": "59144289388"
   },
   "aviso": {
-    "activo": true,
-    "texto": "INCRIPCIONES ABIERTAS",
+    "activo": false,
+    "texto": "",
     "enlace": ""
   },
   "horarios": {
