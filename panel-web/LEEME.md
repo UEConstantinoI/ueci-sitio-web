@@ -88,3 +88,9 @@ Si se cambia `Formularios.gs`: Implementar → Administrar implementaciones → 
 - Se cambia desde el panel: **Consultas y admisiones → "Correo que recibe los avisos"** (solo ADMIN; EDITOR lo ve). Admite hasta 3 correos separados por coma. Rige desde el próximo envío, sin tocar código.
 - Se guarda en la pestaña **Ajustes** de la hoja de cálculo (se crea sola al guardar la primera vez), fila `aviso_a`. Si esa pestaña no existe o el valor es inválido, se usa el de respaldo (`CONFIG.AVISO_A` en `Formularios.gs`, hoy javier.lopez@ueconstantino.com).
 - Archivos a pegar: `Formularios.gs` (proyecto aparte → Implementar → Administrar implementaciones → editar → Nueva versión; la dirección /exec no cambia), `Codigo.gs` y `Panel.html` (proyecto del panel → nueva versión).
+
+## Cambios de octubre (formularios y panel)
+- Formularios: todo en mayúsculas (menos el correo); no se cierran al tocar fuera; Admisiones pide solo Celular (WhatsApp); "Otro número", correo y colegio anterior son opcionales.
+- Códigos nuevos con formato `ADM-26-7K4Q` / `CON-26-XXXX` (los viejos `ADM-0001` siguen funcionando).
+- Panel: abre en "Consultas y admisiones" (pendientes desmarcado), Textos del sitio comprimidos, Horarios dentro de Contacto. El correo de avisos se cambia arriba en "Consultas y admisiones" (solo ADMIN).
+- Archivos a actualizar en Apps Script: Formularios.gs (proyecto de formularios), Codigo.gs y Panel.html (proyecto del panel).

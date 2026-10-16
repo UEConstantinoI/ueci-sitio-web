@@ -208,12 +208,12 @@
       <img src="https://raw.githubusercontent.com/UEConstantinoI/constantino-recursos/main/escudo.png" alt="">
       <div><b>Panel del sitio</b><small>Constantino I</small></div>
     </div>
-    <button class="nav-item act" data-vista="Noticias">📰&nbsp; Noticias</button>
+    <button class="nav-item act" data-vista="Buzon" id="navBuzon">📥&nbsp; Consultas y admisiones <span class="pronto" id="bzBadge" hidden>0</span></button>
+    <button class="nav-item" data-vista="Noticias">📰&nbsp; Noticias</button>
     <button class="nav-item" data-vista="Fotos">🖼️&nbsp; Fotos del carrusel</button>
     <button class="nav-item" data-vista="Textos" id="navTextos" hidden>✏️&nbsp; Textos del sitio</button>
     <button class="nav-item" data-vista="Videos">🎬&nbsp; Videos</button>
     <button class="nav-item" data-vista="Calendario">📅&nbsp; Calendario escolar</button>
-    <button class="nav-item" data-vista="Buzon" id="navBuzon">📥&nbsp; Consultas y admisiones <span class="pronto" id="bzBadge" hidden>0</span></button>
     <button class="nav-item" data-vista="Accesos" id="navAccesos" hidden>🔗&nbsp; Accesos directos</button>
     <button class="nav-item" data-vista="Redes" id="navRedes" hidden>📣&nbsp; Redes sociales</button>
     <div class="spacer"></div>
@@ -224,7 +224,7 @@
   </aside>
 
   <main>
-    <div class="vista" id="vNoticias">
+    <div class="vista" id="vNoticias" hidden>
     <div class="head">
       <div>
         <h1>Noticias</h1>
@@ -276,11 +276,11 @@
       <div class="grid" id="gridCalendario"><div class="carga">Cargando calendario…</div></div>
     </div>
 
-    <div class="vista" id="vBuzon" hidden>
+    <div class="vista" id="vBuzon">
       <div class="head">
         <div>
           <h1>Consultas y admisiones</h1>
-          <p>Lo que las familias envían desde los formularios del sitio. Marca cada uno como atendido cuando ya le respondieron. También llega un aviso a ueconstantino@ueconstantino.com y todo queda en la hoja de cálculo.</p>
+          <p>Lo que las familias envían desde los formularios del sitio. Marca cada uno como atendido cuando ya le respondieron. También llega un aviso por correo (se cambia en el cuadro de abajo) y todo queda en la hoja de cálculo.</p>
         </div>
         <button class="btn" id="bzActualizar">↻ Actualizar</button>
       </div>
@@ -297,7 +297,7 @@
           <button class="tab act" data-t="consultas">Consultas</button>
           <button class="tab" data-t="admisiones">Admisiones</button>
         </div>
-        <label style="margin-left:auto;display:flex;gap:6px;align-items:center;font-weight:600;color:var(--soft)"><input type="checkbox" id="bzSoloNuevas" checked> Solo pendientes</label>
+        <label style="margin-left:auto;display:flex;gap:6px;align-items:center;font-weight:600;color:var(--soft)"><input type="checkbox" id="bzSoloNuevas"> Solo pendientes</label>
       </div>
       <div class="bz-lista" id="bzLista"><div class="carga">Cargando…</div></div>
     </div>
@@ -918,7 +918,7 @@
       checkT('Mostrar el aviso en el sitio','aviso.activo','Márcalo cuando haya un anuncio urgente y desmárcalo cuando termine. Si está desmarcado, no se ve nada.'),
       campoT('Texto del aviso','aviso.texto',140,'line','Una frase corta. Ejemplo: Inscripciones abiertas para la gestión 2027.'),
       campoT('Enlace (opcional)','aviso.enlace',300,'line','Si lo escribes, aparece un “Más información” que lleva a esa dirección (debe empezar con https://).')
-    ],true));
+    ]));
     f.appendChild(seccion('Portada',[
       campoT('Etiqueta superior','hero.etiqueta',40,'line'),
       campoT('Título principal','hero.titulo',120,'line','Las palabras entre asteriscos salen resaltadas. Ejemplo: Formamos *bachilleres bilingües* con talento.'),
@@ -927,7 +927,7 @@
       fotoTexto('hero1','Foto principal (grande)',function(){return S.t.hero.imagen1;},function(r){S.t.hero.imagen1=r;},'Mejor horizontal, con buena luz. Se ve a la derecha del título.',1400),
       fotoTexto('hero2','Foto pequeña (superpuesta)',function(){return S.t.hero.imagen2;},function(r){S.t.hero.imagen2=r;},'Una foto con personas da más vida. Se ve abajo a la izquierda de la principal.',1000),
       el('div',{class:'sub',text:'Los 4 datos de la franja inferior'})
-    ].concat(datos),true));
+    ].concat(datos)));
     var nos=[];
     [['vision','Visión'],['mision','Misión'],['objetivo','Objetivo']].forEach(function(k){
       var r='nosotros.'+k[0];
@@ -949,16 +949,15 @@
       fotoTransporte(),
       el('div',{class:'cols2'},[ campoT('Transporte público · título','transporte.publico_titulo',40,'line'), campoT('Transporte público · detalle','transporte.publico_texto',100,'line') ])
     ]));
-    f.appendChild(seccion('Horarios (se ven en Contacto)',[
-      campoT('Horario de atención (un renglón por línea)','horarios.atencion',80,'lines','Ejemplo: Lunes a Viernes: 8:00 a 15:30',6),
-      campoT('Horario de clases · turno','horarios.clases_turno',40,'line','Ejemplo: Turno mañana. Si lo dejas vacío y sin renglones, no se muestra.'),
-      campoT('Horario de clases · detalle (opcional, un renglón por línea)','horarios.clases',80,'lines','Ejemplo: Inicial: 8:00 a 12:00',6)
-    ]));
     f.appendChild(seccion('Contacto',[
       campoT('Título','contacto.titulo',90,'line'), campoT('Dirección','contacto.direccion',160,'line'),
       el('div',{class:'cols2'},[ campoT('Teléfono fijo (también WhatsApp)','contacto.telefono',40,'line'), campoT('Celular (también WhatsApp)','contacto.celular',40,'line') ]),
       campoT('Correo de contacto','contacto.email',80,'line','Aparece en la sección Contacto con enlace para escribir. Si lo dejas vacío, no se muestra.'),
-      campoT('Número de WhatsApp (solo dígitos, con código de país)','contacto.whatsapp',15,'line','Es el número al que escriben los botones de WhatsApp del sitio. Ejemplo: 59144289388 (591 = Bolivia, 4 = Cochabamba).')
+      campoT('Número de WhatsApp (solo dígitos, con código de país)','contacto.whatsapp',15,'line','Es el número al que escriben los botones de WhatsApp del sitio. Ejemplo: 59144289388 (591 = Bolivia, 4 = Cochabamba).'),
+      el('div',{class:'sub',text:'Horarios (se ven en Contacto)'}),
+      campoT('Horario de atención (un renglón por línea)','horarios.atencion',80,'lines','Ejemplo: Lunes a Viernes: 8:00 a 15:30',6),
+      campoT('Horario de clases · turno','horarios.clases_turno',40,'line','Ejemplo: Turno mañana. Si lo dejas vacío y sin renglones, no se muestra.'),
+      campoT('Horario de clases · detalle (opcional, un renglón por línea)','horarios.clases',80,'lines','Ejemplo: Inicial: 8:00 a 12:00',6)
     ]));
     [].forEach.call(f.querySelectorAll(':scope > details'),function(d,i){ if(abiertas[i]!==undefined) d.open=abiertas[i]; });
     $('barraTextos').hidden=false;

@@ -78,10 +78,10 @@ function procesar_(d) {
   let fila, cabeceras, hoja, prefijo, resumen, asunto, replyTo;
   if (d.tipo === 'contacto') {
     const v = {
-      nombre: txt_(d.nombre, 80, 'Nombre'),
+      nombre: mayus_(txt_(d.nombre, 80, 'Nombre')),
       telefono: tel_(d.telefono, 'Teléfono'),
       email: correo_(d.email, 'Correo', true),
-      mensaje: txt_(d.mensaje, 600, 'Consulta', true)
+      mensaje: mayus_(txt_(d.mensaje, 600, 'Consulta', true))
     };
     hoja = HOJA_CONSULTAS; cabeceras = CAB_CONSULTAS; prefijo = 'CON';
     fila = function (cod) { return [ahora_(), cod, v.nombre, v.telefono, v.email, v.mensaje, 'Nuevo', '', '']; };
@@ -95,20 +95,20 @@ function procesar_(d) {
     const grado = String(d.grado || '');
     if (GRADOS[nivel].indexOf(grado) < 0) throw err_('Elige el curso al que desea ingresar.');
     const v = {
-      estudiante: txt_(d.estudiante, 90, 'Nombre del estudiante'),
+      estudiante: mayus_(txt_(d.estudiante, 90, 'Nombre del estudiante')),
       nacimiento: fecha_(d.nacimiento, 'Fecha de nacimiento'),
-      colegio: txt_(d.colegio, 90, 'Colegio anterior'),
-      tutor: txt_(d.tutor, 90, 'Nombre del padre, madre o tutor'),
-      telefonos: tel_(d.telefonos, 'Teléfono fijo y celular', 40),
+      colegio: mayus_(txt_(d.colegio, 90, 'Colegio anterior', true)),
+      tutor: mayus_(txt_(d.tutor, 90, 'Nombre del padre, madre o tutor')),
+      telefonos: telOpc_(d.telefonos, 'Otro número', 40),
       whatsapp: tel_(d.whatsapp, 'Celular (WhatsApp)'),
-      email: correo_(d.email, 'Correo electrónico', false),
-      comentario: txt_(d.comentario, 600, 'Comentario', true)
+      email: correo_(d.email, 'Correo electrónico', true),
+      comentario: mayus_(txt_(d.comentario, 600, 'Comentario', true))
     };
     hoja = HOJA_ADMISIONES; cabeceras = CAB_ADMISIONES; prefijo = 'ADM';
     fila = function (cod) { return [ahora_(), cod, v.estudiante, v.nacimiento, nivel, grado, v.colegio, v.tutor, v.telefonos, v.whatsapp, v.email, v.comentario, 'Nuevo', '', '']; };
     asunto = 'Solicitud de admisión: ' + v.estudiante + ' (' + grado + ' ' + nivel.toLowerCase() + ')';
-    resumen = 'ESTUDIANTE\n  Nombre: ' + v.estudiante + '\n  Nacimiento: ' + v.nacimiento + '\n  Curso: ' + grado + ' de ' + nivel.toLowerCase() + '\n  Colegio anterior: ' + v.colegio +
-      '\n\nPADRE, MADRE O TUTOR\n  Nombre: ' + v.tutor + '\n  Teléfonos: ' + v.telefonos + '\n  WhatsApp: ' + v.whatsapp + '\n  Correo: ' + v.email +
+    resumen = 'ESTUDIANTE\n  Nombre: ' + v.estudiante + '\n  Nacimiento: ' + v.nacimiento + '\n  Curso: ' + grado + ' de ' + nivel.toLowerCase() + '\n  Colegio anterior: ' + (v.colegio || '(no indicó)') +
+      '\n\nPADRE, MADRE O TUTOR\n  Nombre: ' + v.tutor + '\n  Celular (WhatsApp): ' + v.whatsapp + '\n  Otro número: ' + (v.telefonos || '(no indicó)') + '\n  Correo: ' + (v.email || '(no indicó)') +
       '\n\nComentario: ' + (v.comentario || '(ninguno)');
     replyTo = v.email;
     var clave = ['a', v.estudiante, v.whatsapp, v.nacimiento].join('|');
@@ -135,7 +135,7 @@ function procesar_(d) {
 
     const sh = hojaDe_(hoja, cabeceras);
     const num = sh.getLastRow();                         // fila 1 = encabezados → el primer registro es 1
-    codigo = prefijo + '-' + ('0000' + num).slice(-4);
+    codigo = codigo_(prefijo, num);
     const datos = fila(codigo);
     const rango = sh.getRange(num + 1, 1, 1, datos.length);
     rango.setNumberFormat('@');                          // todo como texto: nada se interpreta como fórmula
@@ -237,3 +237,22 @@ function hojaDe_(nombre, cabeceras) {
   }
   return sh;
 }
+
+// Teléfono opcional (vacío es válido).
+function telOpc_(v, nombre, max) {
+  const t = txt_(v, max || 25, nombre, true);
+  return t ? tel_(t, nombre, max) : '';
+}
+
+// Código de seguimiento: PREFIJO-AA-XXXX (ej. ADM-26-7K4Q). Los 4 caracteres salen del
+// número de registro mezclado con una operación reversible, así que NUNCA se repiten
+// dentro de una misma hoja, pero tampoco se ven como 0001, 0002…
+function codigo_(prefijo, num) {
+  const ALFA = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';          // 32 símbolos, sin 0/O/1/I
+  let m = (Number(num) * 7919 + 104729) % 1048576;          // 32^4; 7919 es impar → no hay choques
+  let s = '';
+  for (let i = 0; i < 4; i++) { s = ALFA.charAt(m % 32) + s; m = Math.floor(m / 32); }
+  return prefijo + '-' + Utilities.formatDate(new Date(), CONFIG.ZONA, 'yy') + '-' + s;
+}
+
+function mayus_(s) { return String(s).toLocaleUpperCase('es'); }

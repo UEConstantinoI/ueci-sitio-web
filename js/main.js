@@ -425,6 +425,7 @@
 
   function contacto(c) {
     if (!c) return;
+    var an = document.getElementById('ftAnio'); if (an) an.textContent = String(new Date().getFullYear());
     txt(document.getElementById('ctTitulo'), c.titulo);
     fila('ctDir', '📍', 'Dirección', c.direccion);
     fila('ctTel', '☎️', 'Teléfono fijo y WhatsApp', c.telefono);
@@ -439,9 +440,26 @@
         mf.parentNode.hidden = false;
       } else if (typeof c.email === 'string' && !c.email.trim()) { mf.parentNode.hidden = true; }
     }
+    pie(c);
     if (/^\d{8,15}$/.test(String(c.whatsapp || ''))) {
       document.querySelectorAll('a[href^="https://wa.me/"]:not(.noticia-compartir)').forEach(function (a) { a.href = 'https://wa.me/' + c.whatsapp + (a.search || ''); });
       document.querySelectorAll('a[href^="tel:"]').forEach(function (a) { a.href = 'tel:+' + c.whatsapp; });
+    }
+  }
+
+  // Pie de página: repite los datos de contacto (mismos textos que la sección Contacto).
+  function pie(c) {
+    function set(id, ico, t, href) { var e = document.getElementById(id); if (e && typeof t === 'string' && t.trim()) { e.textContent = ico + ' ' + t.trim(); if (href) e.href = href; } }
+    var d = document.getElementById('ftDir'); if (d && typeof c.direccion === 'string' && c.direccion.trim()) d.textContent = c.direccion.trim();
+    set('ftTel', '☎️', c.telefono); set('ftCel', '📱', c.celular);
+    var dig = function (s) { return String(s || '').replace(/\D/g, ''); };
+    var t = document.getElementById('ftTel'), ce = document.getElementById('ftCel');
+    if (t && dig(c.telefono).length >= 7) t.href = 'tel:+' + (dig(c.telefono).length <= 8 ? '5914' + dig(c.telefono).slice(-7) : dig(c.telefono));
+    if (ce && dig(c.celular).length >= 8) ce.href = 'tel:+' + (dig(c.celular).length === 8 ? '591' + dig(c.celular) : dig(c.celular));
+    var m = document.getElementById('ftMail');
+    if (m) {
+      if (typeof c.email === 'string' && /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(c.email) && c.email.length <= 80) { m.textContent = '✉️ ' + c.email; m.href = 'mailto:' + c.email; m.hidden = false; }
+      else if (typeof c.email === 'string' && !c.email.trim()) m.hidden = true;
     }
   }
 

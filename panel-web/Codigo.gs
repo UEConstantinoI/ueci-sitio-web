@@ -861,7 +861,7 @@ function buzonMarcar(tipo, codigo, atendido) {
   const u = exigir_();
   const cfg = BUZON[tipo];
   if (!cfg) throw new Error('Tipo no válido.');
-  if (!new RegExp('^' + cfg.prefijo + '-\\d{4}$').test(String(codigo || ''))) throw new Error('Código no válido.');
+  if (!new RegExp('^' + cfg.prefijo + '-(?:\\d{4}|\\d{2}-[A-Z0-9]{4})$').test(String(codigo || ''))) throw new Error('Código no válido.');
   const lock = LockService.getScriptLock();
   lock.waitLock(25000);
   try {

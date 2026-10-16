@@ -86,7 +86,15 @@
       o.hint ? h('div', { class: 'ff-hint', text: o.hint }) : null,
       err
     ]);
-    inp.addEventListener('input', function () { err.textContent = ''; inp.removeAttribute('aria-invalid'); });
+    var mayus = !o.type || o.type === 'text';
+    if (mayus) inp.classList.add('mayus');
+    inp.addEventListener('input', function () {
+      err.textContent = ''; inp.removeAttribute('aria-invalid');
+      if (mayus) {   // todo en mayúsculas, sin mover el cursor
+        var v = inp.value, u = v.toLocaleUpperCase('es');
+        if (u !== v) { var a = inp.selectionStart, b = inp.selectionEnd; inp.value = u; try { inp.setSelectionRange(a, b); } catch (e) { /* sin cursor */ } }
+      }
+    });
     return { el: wrap, inp: inp, err: err };
   }
 
@@ -127,7 +135,7 @@
       .then(function (r) {
         fin();
         // Si el servidor dice ok, el envío YA quedó guardado: nunca se muestra como error.
-        if (r && r.ok === true) alOk(/^[A-Z]{3}-\d{4}$/.test(String(r.codigo)) ? String(r.codigo) : '');
+        if (r && r.ok === true) alOk(/^[A-Z]{3}-\d{2}-[A-Z0-9]{4}$/.test(String(r.codigo)) ? String(r.codigo) : '');
         else {
           try { console.warn('Formularios: respuesta inesperada', r); } catch (e) { /* sin consola */ }
           errBox.textContent = (r && typeof r.error === 'string' && r.error) ? r.error : 'No pudimos enviar el formulario.';
@@ -199,11 +207,11 @@
     var c = {
       estudiante: campo({ name: 'estudiante', label: 'Nombre completo del estudiante', req: true, max: 90, auto: 'off' }),
       nacimiento: campo({ name: 'nacimiento', label: 'Fecha de nacimiento', req: true, type: 'date', min: iso(new Date(hoy.getFullYear() - 19, hoy.getMonth(), hoy.getDate())), maxv: iso(new Date(hoy.getFullYear() - 2, hoy.getMonth(), hoy.getDate())), cls: 'ff-corto', auto: 'off' }),
-      colegio: campo({ name: 'colegio', label: 'Colegio anterior', req: true, max: 90, hint: 'Si es su primer colegio, escribe “Ninguno”.', auto: 'off' }),
+      colegio: campo({ name: 'colegio', label: 'Colegio anterior', max: 90, hint: 'Si viene de otro colegio, escríbelo aquí. En Inicial o 1.º de primaria puedes dejarlo vacío.', auto: 'off' }),
       tutor: campo({ name: 'tutor', label: 'Nombre completo del padre, madre o tutor', req: true, max: 90, auto: 'name' }),
-      telefonos: campo({ name: 'telefonos', label: 'Teléfono fijo y celular', req: true, max: 40, auto: 'off', mode: 'tel' }),
       whatsapp: campo({ name: 'whatsapp', label: 'Celular (WhatsApp)', req: true, max: 25, type: 'tel', auto: 'tel', mode: 'tel' }),
-      email: campo({ name: 'email', label: 'Correo electrónico', req: true, max: 80, type: 'email', auto: 'email' }),
+      telefonos: campo({ name: 'telefonos', label: 'Otro número (fijo o celular)', max: 40, type: 'tel', auto: 'off', mode: 'tel' }),
+      email: campo({ name: 'email', label: 'Correo electrónico', max: 80, type: 'email', auto: 'email' }),
       comentario: campo({ name: 'comentario', label: 'Algún comentario que desee dejarnos', max: 600, rows: 3 })
     };
     var nivelErr = h('div', { class: 'ff-err', role: 'alert' }), gradoErr = h('div', { class: 'ff-err', role: 'alert' });
@@ -222,7 +230,7 @@
     var pasos = [
       h('fieldset', { class: 'paso' }, [h('legend', { text: 'Datos del estudiante' }), c.estudiante.el, c.nacimiento.el,
         h('div', { class: 'ff' }, [h('div', { class: 'lbl' }, ['Nivel al que desea ingresar', h('span', { class: 'req', text: ' *' })]), nivelChips, nivelErr]), gradoBox, c.colegio.el]),
-      h('fieldset', { class: 'paso', hidden: true }, [h('legend', { text: 'Padre, madre o tutor' }), c.tutor.el, c.telefonos.el, c.whatsapp.el, c.email.el]),
+      h('fieldset', { class: 'paso', hidden: true }, [h('legend', { text: 'Padre, madre o tutor' }), c.tutor.el, c.whatsapp.el, c.telefonos.el, c.email.el]),
       h('fieldset', { class: 'paso', hidden: true }, [h('legend', { text: 'Revisa y envía' }), c.comentario.el, h('div', { class: 'resumen', 'aria-live': 'polite' })])
     ];
     var marcador = h('ol', { class: 'pasos', 'aria-label': 'Pasos' }, ['Estudiante', 'Familia', 'Revisión'].map(function (t, i) {
@@ -240,12 +248,12 @@
         ok = marcar(c.estudiante, V.txt(c.estudiante.inp.value, 90, true, 'Nombre del estudiante')) && ok;
         ok = marcar(c.nacimiento, V.fecha(c.nacimiento.inp.value)) && ok;
         if (!radio('nivel')) { nivelErr.textContent = 'Elige el nivel.'; ok = false; } else if (!radio('grado')) { gradoErr.textContent = 'Elige el curso.'; ok = false; }
-        ok = marcar(c.colegio, V.txt(c.colegio.inp.value, 90, true, 'Colegio anterior')) && ok;
+        ok = marcar(c.colegio, V.txt(c.colegio.inp.value, 90, false, 'Colegio anterior')) && ok;
       } else if (p === 1) {
         ok = marcar(c.tutor, V.txt(c.tutor.inp.value, 90, true, 'Nombre del padre, madre o tutor')) && ok;
-        ok = marcar(c.telefonos, V.tel(c.telefonos.inp.value, 'Teléfono fijo y celular')) && ok;
         ok = marcar(c.whatsapp, V.tel(c.whatsapp.inp.value, 'Celular (WhatsApp)')) && ok;
-        ok = marcar(c.email, V.mail(c.email.inp.value, true)) && ok;
+        ok = marcar(c.telefonos, c.telefonos.inp.value.trim() ? V.tel(c.telefonos.inp.value, 'Otro número') : '') && ok;
+        ok = marcar(c.email, V.mail(c.email.inp.value, false)) && ok;
       } else {
         ok = marcar(c.comentario, V.txt(c.comentario.inp.value, 600, false, 'Comentario')) && ok;
       }
@@ -254,8 +262,8 @@
     function resumen() {
       var box = pasos[2].querySelector('.resumen'); box.textContent = '';
       var n = NIVELES.filter(function (x) { return x.v === radio('nivel'); })[0];
-      var filas = [['Estudiante', c.estudiante.inp.value.trim()], ['Nacimiento', c.nacimiento.inp.value], ['Curso', radio('grado') + (n ? ' de ' + n.t.toLowerCase() : '')], ['Colegio anterior', c.colegio.inp.value.trim()],
-        ['Padre, madre o tutor', c.tutor.inp.value.trim()], ['Teléfonos', c.telefonos.inp.value.trim()], ['WhatsApp', c.whatsapp.inp.value.trim()], ['Correo', c.email.inp.value.trim()]];
+      var filas = [['Estudiante', c.estudiante.inp.value.trim()], ['Nacimiento', c.nacimiento.inp.value], ['Curso', radio('grado') + (n ? ' de ' + n.t.toLowerCase() : '')], ['Colegio anterior', c.colegio.inp.value.trim() || '—'],
+        ['Padre, madre o tutor', c.tutor.inp.value.trim()], ['Celular (WhatsApp)', c.whatsapp.inp.value.trim()], ['Otro número', c.telefonos.inp.value.trim() || '—'], ['Correo', c.email.inp.value.trim() || '—']];
       var dl = h('dl');
       filas.forEach(function (x) { dl.appendChild(h('dt', { text: x[0] })); dl.appendChild(h('dd', { text: x[1] })); });
       box.appendChild(dl);
@@ -313,7 +321,6 @@
       ])
     ]);
     cerrar.addEventListener('click', function () { dlg.close(); });
-    dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
     dlg.addEventListener('close', function () {
       document.documentElement.classList.remove('dlg-abierto');
       // Si ya se envió, la próxima vez se abre limpio.
