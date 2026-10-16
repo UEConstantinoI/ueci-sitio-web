@@ -97,6 +97,7 @@ function panelCargar() {
     galeria: galeriaLeer_().lista,
     videos: listaLeer_(listaVideos_()).lista,
     accesos: u.rol === 'ADMIN' ? accesosParaPanel_() : null,
+    buzon: buzonParaPanel_(),
     redes: u.rol === 'ADMIN' ? redesParaPanel_() : null,
     calendario: calendarioParaPanel_(),
     textos: textosParaPanel_(u),   // los textos solo los ve y edita un ADMIN
@@ -772,6 +773,74 @@ function accesoGuardar(datos) {
 }
 function accesoEliminar(id) { return listaEliminarItem_(listaAccesos_(), exigirAdmin_(), id); }
 function accesoMover(id, dir) { return listaMoverItem_(listaAccesos_(), exigirAdmin_(), id, dir); }
+
+/* ───────────────────────── CONSULTAS Y ADMISIONES (ADMIN y EDITOR) ─────────────────────────
+   Las escribe el formulario público del sitio (Formularios.gs) en dos pestañas de ESTA hoja de cálculo:
+   “Consultas” y “Admisiones”. Aquí solo se leen y se marca si ya fueron atendidas. */
+
+const HOJA_CONSULTAS = 'Consultas';
+const HOJA_ADMISIONES = 'Admisiones';
+const MAX_BUZON = 300;
+const BUZON = {
+  consultas: { hoja: HOJA_CONSULTAS, prefijo: 'CON', claves: { 'Fecha': 'fecha', 'Código': 'codigo', 'Nombre': 'nombre', 'Teléfono': 'telefono', 'Correo': 'email', 'Mensaje': 'mensaje', 'Estado': 'estado', 'Atendido por': 'por', 'Atendido el': 'el' } },
+  admisiones: { hoja: HOJA_ADMISIONES, prefijo: 'ADM', claves: { 'Fecha': 'fecha', 'Código': 'codigo', 'Estudiante': 'estudiante', 'Nacimiento': 'nacimiento', 'Nivel': 'nivel', 'Grado': 'grado', 'Colegio anterior': 'colegio', 'Tutor': 'tutor', 'Teléfonos': 'telefonos', 'WhatsApp': 'whatsapp', 'Correo': 'email', 'Comentario': 'comentario', 'Estado': 'estado', 'Atendido por': 'por', 'Atendido el': 'el' } }
+};
+
+function buzonLeerTipo_(tipo) {
+  const cfg = BUZON[tipo];
+  const sh = SpreadsheetApp.getActive().getSheetByName(cfg.hoja);
+  if (!sh || sh.getLastRow() < 2) return [];
+  const todo = sh.getRange(1, 1, sh.getLastRow(), sh.getLastColumn()).getValues();
+  const cab = todo[0].map(function (c) { return cfg.claves[String(c)] || null; });
+  const lista = [];
+  for (let i = todo.length - 1; i >= 1 && lista.length < MAX_BUZON; i--) {
+    const o = {};
+    cab.forEach(function (k, j) { if (k) o[k] = String(todo[i][j] === undefined || todo[i][j] === null ? '' : todo[i][j]); });
+    if (!o.codigo) continue;
+    o.estado = o.estado === 'Atendido' ? 'Atendido' : 'Nuevo';
+    lista.push(o);
+  }
+  return lista;
+}
+
+function buzonParaPanel_() {
+  try {
+    return { consultas: buzonLeerTipo_('consultas'), admisiones: buzonLeerTipo_('admisiones') };
+  } catch (e) { return { error: String(e.message || e) }; }
+}
+
+function buzonCargar() { exigir_(); return buzonParaPanel_(); }
+
+/** tipo = 'consultas' | 'admisiones'; atendido = true/false. Devuelve la lista actualizada de las dos. */
+function buzonMarcar(tipo, codigo, atendido) {
+  const u = exigir_();
+  const cfg = BUZON[tipo];
+  if (!cfg) throw new Error('Tipo no válido.');
+  if (!new RegExp('^' + cfg.prefijo + '-\\d{4}$').test(String(codigo || ''))) throw new Error('Código no válido.');
+  const lock = LockService.getScriptLock();
+  lock.waitLock(25000);
+  try {
+    const sh = SpreadsheetApp.getActive().getSheetByName(cfg.hoja);
+    if (!sh || sh.getLastRow() < 2) throw new Error('No hay registros.');
+    const todo = sh.getRange(1, 1, sh.getLastRow(), sh.getLastColumn()).getValues();
+    const idx = function (nombre) { return todo[0].indexOf(nombre); };
+    const cCod = idx('Código'), cEst = idx('Estado'), cPor = idx('Atendido por'), cEl = idx('Atendido el');
+    if (cCod < 0 || cEst < 0 || cPor < 0 || cEl < 0) throw new Error('La hoja “' + cfg.hoja + '” no tiene el formato esperado.');
+    let fila = -1;
+    for (let i = 1; i < todo.length; i++) { if (String(todo[i][cCod]) === codigo) { fila = i + 1; break; } }
+    if (fila < 0) throw new Error('No se encontró ese registro.');
+    const ahora = Utilities.formatDate(new Date(), 'America/La_Paz', 'yyyy-MM-dd HH:mm');
+    const r = sh.getRange(fila, 1, 1, todo[0].length);
+    const valores = todo[fila - 1].slice();
+    valores[cEst] = atendido === true ? 'Atendido' : 'Nuevo';
+    valores[cPor] = atendido === true ? u.email : '';
+    valores[cEl] = atendido === true ? ahora : '';
+    r.setNumberFormat('@');
+    r.setValues([valores]);
+    registrar_(u, atendido === true ? 'Marcado como atendido' : 'Reabierto', codigo);
+  } finally { lock.releaseLock(); }
+  return buzonParaPanel_();
+}
 
 /* ───────────────────────── REDES SOCIALES (solo ADMIN) ───────────────────────── */
 

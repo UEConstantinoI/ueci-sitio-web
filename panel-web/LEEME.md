@@ -67,3 +67,18 @@ Hecho: `index.html` es ahora el sitio oficial (sin `noindex`, con verificación 
 - **Correo de contacto**: en Textos del sitio → Contacto → "Correo de contacto". Si se deja vacío, la fila no se muestra.
 - Nota: el dato estructurado para Google (`sameAs` en index.html) y el pie de `construccion.html` no se actualizan solos; si cambia una red de forma permanente, avisar para ajustarlos.
 - Archivo nuevo en el repositorio: `data/redes.json`. Al actualizar el panel: pegar `Codigo.gs` y `Panel.html` en Apps Script y publicar una NUEVA VERSIÓN de la misma implementación.
+
+
+## Formularios propios del sitio (16/10)
+
+Reemplazan a los Google Forms de "Contáctenos" y "Admisiones" con formularios con el diseño del sitio (ventana emergente; admisiones en 3 pasos). Los datos van a la hoja de cálculo del panel (pestañas **Consultas** y **Admisiones**), llega un aviso a ueconstantino@ueconstantino.com y se leen/atienden desde el panel (menú **Consultas y admisiones**, ADMIN y EDITOR).
+
+Activación (una sola vez):
+1. script.google.com → **Nuevo proyecto** → pegar `Formularios.gs` completo.
+2. En `CONFIG`, poner `HOJA_ID` = ID de la hoja de cálculo del panel (el texto largo de su dirección).
+3. **Implementar → Nueva implementación → Aplicación web**: Ejecutar como **Yo**, Acceso **Cualquier persona**. Autorizar permisos (hoja y correo). Copiar la dirección que termina en `/exec`.
+4. Esa dirección se pone en `js/formularios.js` (línea `var FORM_URL = '';`). Mientras esté vacía, los botones siguen abriendo los Google Forms de siempre.
+5. Panel: pegar `Codigo.gs` y `Panel.html` y publicar NUEVA VERSIÓN de la misma implementación.
+
+Protección: campo trampa para robots, tiempo mínimo de llenado, límites de largo, máximo 150 envíos por día y por formulario, no duplica envíos repetidos, las celdas se guardan como texto (no se ejecutan fórmulas) y el panel muestra todo como texto.
+Si se cambia `Formularios.gs`: Implementar → Administrar implementaciones → editar → Nueva versión (la dirección `/exec` no cambia).

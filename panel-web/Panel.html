@@ -79,6 +79,20 @@
   .acciones button{flex:1;padding:8px 6px;border-radius:9px;border:1px solid var(--line);background:#fff;font-weight:600;color:var(--ink)}
   .acciones button:hover{border-color:var(--verde-2)}
   .acciones .del{flex:0 0 auto;color:var(--rojo)}
+  .bz-lista{display:flex;flex-direction:column;gap:12px}
+  .bz-item{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--sun);border-radius:12px;box-shadow:var(--shadow);padding:14px 18px}
+  .bz-item.atendido{border-left-color:var(--verde-2);opacity:.78}
+  .bz-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--soft)}
+  .bz-top b{color:var(--ink);letter-spacing:.04em}
+  .bz-item h3{font-size:17px;margin:6px 0 8px}
+  .bz-item dl{margin:0;display:grid;grid-template-columns:max-content 1fr;gap:3px 14px;font-size:13.5px}
+  .bz-item dt{color:var(--soft)} .bz-item dd{margin:0;overflow-wrap:anywhere;white-space:pre-wrap}
+  .bz-acc{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .bz-acc a,.bz-acc button{padding:7px 13px;border-radius:9px;border:1px solid var(--line);background:#fff;font-weight:600;color:var(--ink);text-decoration:none;font-size:13px;cursor:pointer;font-family:inherit}
+  .bz-acc a:hover,.bz-acc button:hover{border-color:var(--verde-2)}
+  .bz-acc .wa{background:#25D366;border-color:#25D366;color:#04270f}
+  .bz-acc .ok{margin-left:auto;background:var(--verde);border-color:var(--verde);color:#fff}
+  .bz-pie{font-size:12px;color:var(--soft);margin-top:8px}
   .vacio{grid-column:1/-1;text-align:center;padding:50px 20px;color:var(--soft);background:var(--card);border:1px dashed var(--line);border-radius:14px}
 
   /* ---- ventanas ---- */
@@ -195,6 +209,7 @@
     <button class="nav-item" data-vista="Textos" id="navTextos" hidden>✏️&nbsp; Textos del sitio</button>
     <button class="nav-item" data-vista="Videos">🎬&nbsp; Videos</button>
     <button class="nav-item" data-vista="Calendario">📅&nbsp; Calendario escolar</button>
+    <button class="nav-item" data-vista="Buzon" id="navBuzon">📥&nbsp; Consultas y admisiones <span class="pronto" id="bzBadge" hidden>0</span></button>
     <button class="nav-item" data-vista="Accesos" id="navAccesos" hidden>🔗&nbsp; Accesos directos</button>
     <button class="nav-item" data-vista="Redes" id="navRedes" hidden>📣&nbsp; Redes sociales</button>
     <div class="spacer"></div>
@@ -255,6 +270,24 @@
       </div>
       <div class="aviso" id="avisoCalendario"></div>
       <div class="grid" id="gridCalendario"><div class="carga">Cargando calendario…</div></div>
+    </div>
+
+    <div class="vista" id="vBuzon" hidden>
+      <div class="head">
+        <div>
+          <h1>Consultas y admisiones</h1>
+          <p>Lo que las familias envían desde los formularios del sitio. Marca cada uno como atendido cuando ya le respondieron. También llega un aviso a ueconstantino@ueconstantino.com y todo queda en la hoja de cálculo.</p>
+        </div>
+        <button class="btn" id="bzActualizar">↻ Actualizar</button>
+      </div>
+      <div class="toolbar">
+        <div class="tabs" id="bzTabs">
+          <button class="tab act" data-t="consultas">Consultas</button>
+          <button class="tab" data-t="admisiones">Admisiones</button>
+        </div>
+        <label style="margin-left:auto;display:flex;gap:6px;align-items:center;font-weight:600;color:var(--soft)"><input type="checkbox" id="bzSoloNuevas" checked> Solo pendientes</label>
+      </div>
+      <div class="bz-lista" id="bzLista"><div class="carga">Cargando…</div></div>
     </div>
 
     <div class="vista" id="vAccesos" hidden>
@@ -622,7 +655,7 @@
 
   /* ---------- navegación entre vistas ---------- */
   function irA(v){
-    ['Noticias','Fotos','Videos','Calendario','Accesos','Redes','Textos'].forEach(function(n){ $('v'+n).hidden=(n!==v); });
+    ['Noticias','Fotos','Videos','Calendario','Buzon','Accesos','Redes','Textos'].forEach(function(n){ $('v'+n).hidden=(n!==v); });
     document.querySelectorAll('.nav-item[data-vista]').forEach(function(b){ b.classList.toggle('act',b.getAttribute('data-vista')===v); });
     window.scrollTo(0,0);
   }
@@ -1163,6 +1196,50 @@ function parsearVideo_(entrada) {
     else { var g=$('gridAccesos'); g.textContent=''; g.appendChild(el('div',{class:'vacio',text:'No se pudieron cargar los accesos: '+((ac&&ac.error)||'sin datos')})); }
   }
 
+  /* ---------- CONSULTAS Y ADMISIONES ---------- */
+  var BZ={tipo:'consultas',datos:{consultas:[],admisiones:[]},error:''};
+  function bzPend(l){ return l.filter(function(x){return x.estado!=='Atendido';}).length; }
+  function celWa(s){ var m=String(s||'').match(/([67]\d{7})/); return m?'591'+m[1]:''; }
+  function bzFila(dl,k,v){ if(!v) return; dl.appendChild(el('dt',{text:k})); dl.appendChild(el('dd',{text:v})); }
+  function renderBuzon(){
+    var b=BZ.datos, nc=bzPend(b.consultas), na=bzPend(b.admisiones), tot=nc+na;
+    var bd=$('bzBadge'); bd.hidden=!tot; bd.textContent=tot;
+    var tabs=$('bzTabs').children; tabs[0].textContent='Consultas'+(nc?' ('+nc+')':''); tabs[1].textContent='Admisiones'+(na?' ('+na+')':'');
+    Array.prototype.forEach.call(tabs,function(t){ t.classList.toggle('act',t.getAttribute('data-t')===BZ.tipo); });
+    var cont=$('bzLista'); cont.textContent='';
+    if(BZ.error){ cont.appendChild(el('div',{class:'vacio',text:'No se pudo leer: '+BZ.error})); return; }
+    var lista=b[BZ.tipo].filter(function(x){ return !$('bzSoloNuevas').checked || x.estado!=='Atendido'; });
+    if(!lista.length){ cont.appendChild(el('div',{class:'vacio',text:b[BZ.tipo].length?'No hay pendientes. Desmarca “Solo pendientes” para ver los ya atendidos.':'Todavía no hay envíos. Cuando alguien use el formulario del sitio, aparecerá aquí.'})); return; }
+    lista.forEach(function(it){
+      var adm=BZ.tipo==='admisiones', dl=el('dl');
+      if(adm){ bzFila(dl,'Curso',it.grado+' de '+String(it.nivel||'').toLowerCase()); bzFila(dl,'Nacimiento',it.nacimiento); bzFila(dl,'Colegio anterior',it.colegio); bzFila(dl,'Padre, madre o tutor',it.tutor); bzFila(dl,'Teléfonos',it.telefonos); bzFila(dl,'WhatsApp',it.whatsapp); bzFila(dl,'Correo',it.email); bzFila(dl,'Comentario',it.comentario); }
+      else { bzFila(dl,'Teléfono',it.telefono); bzFila(dl,'Correo',it.email); bzFila(dl,'Mensaje',it.mensaje); }
+      var acc=el('div',{class:'bz-acc'});
+      var cel=celWa(adm?it.whatsapp:it.telefono)||celWa(adm?it.telefonos:'');
+      if(cel){
+        var saludo=adm?('Hola, le escribimos del colegio Constantino I sobre la solicitud de admisión de '+it.estudiante+'.'):('Hola '+it.nombre+', le escribimos del colegio Constantino I sobre su consulta.');
+        acc.appendChild(el('a',{class:'wa',href:'https://wa.me/'+cel+'?text='+encodeURIComponent(saludo),target:'_blank',rel:'noopener',text:'WhatsApp'}));
+        acc.appendChild(el('a',{href:'tel:+'+cel,text:'Llamar'}));
+      }
+      if(it.email && /^[^\s@<>"',;]+@[^\s@<>"',;]+\.[^\s@<>"',;]+$/.test(it.email)) acc.appendChild(el('a',{href:'mailto:'+it.email,text:'Correo'}));
+      var ya=it.estado==='Atendido';
+      acc.appendChild(el('button',{class:ya?'':'ok',text:ya?'Reabrir':'✓ Marcar atendido',onclick:function(){
+        ocupado(true,'Guardando…');
+        servidor('buzonMarcar',[BZ.tipo,it.codigo,!ya],function(d){ ocupado(false); BZ.datos=d; BZ.error=d.error||''; renderBuzon(); toast(ya?'Reabierto.':'Marcado como atendido.'); });
+      }}));
+      var item=el('div',{class:'bz-item'+(ya?' atendido':'')},[
+        el('div',{class:'bz-top'},[el('b',{text:it.codigo}),el('span',{text:it.fecha}),el('span',{class:'badge'+(ya?'':' dorado'),text:ya?'Atendido':'Nuevo'})]),
+        el('h3',{text:adm?it.estudiante:it.nombre}), dl, acc
+      ]);
+      if(ya&&it.por) item.appendChild(el('div',{class:'bz-pie',text:'Atendido por '+it.por+(it.el?' el '+it.el:'')}));
+      cont.appendChild(item);
+    });
+  }
+  $('bzTabs').addEventListener('click',function(e){ var t=e.target.getAttribute&&e.target.getAttribute('data-t'); if(t){ BZ.tipo=t; renderBuzon(); } });
+  $('bzSoloNuevas').onchange=renderBuzon;
+  $('bzActualizar').onclick=function(){ ocupado(true,'Actualizando…'); servidor('buzonCargar',[],function(d){ ocupado(false); BZ.datos=d; BZ.error=d.error||''; renderBuzon(); }); };
+  function iniciarBuzon(b){ if(b&&!b.error){ BZ.datos=b; BZ.error=''; } else { BZ.error=(b&&b.error)||'sin datos'; } renderBuzon(); }
+
   /* ---------- arranque ---------- */
   servidor('panelCargar',[],function(d){
     pintarEspacio(d.espacio); S.noticias=d.noticias; S.galeria=d.galeria||[]; S.videos=d.videos||[]; S.calendario=(d.calendario&&d.calendario.datos)||[]; S.imgBase=d.imgBase; S.visibles=d.visibles; S.hoy=d.hoy;
@@ -1172,7 +1249,7 @@ function parsearVideo_(entrada) {
     u.appendChild(document.createTextNode(d.usuario.email));
     u.appendChild(document.createElement('br'));
     u.appendChild(el('span',{class:'rol',text:d.usuario.rol}));
-    render(); renderFotos(); renderLista(CFG_VIDEOS); if(d.calendario&&d.calendario.datos) renderLista(CFG_CALENDARIO); else { var gc=$('gridCalendario'); gc.textContent=''; gc.appendChild(el('div',{class:'vacio',text:'No se pudo cargar el calendario: '+((d.calendario&&d.calendario.error)||'sin datos')})); } iniciarTextos(d.usuario.rol,d.textos); iniciarAccesos(d.usuario.rol,d.accesos); iniciarRedes(d.usuario.rol,d.redes);
+    render(); renderFotos(); renderLista(CFG_VIDEOS); if(d.calendario&&d.calendario.datos) renderLista(CFG_CALENDARIO); else { var gc=$('gridCalendario'); gc.textContent=''; gc.appendChild(el('div',{class:'vacio',text:'No se pudo cargar el calendario: '+((d.calendario&&d.calendario.error)||'sin datos')})); } iniciarTextos(d.usuario.rol,d.textos); iniciarAccesos(d.usuario.rol,d.accesos); iniciarRedes(d.usuario.rol,d.redes); iniciarBuzon(d.buzon);
   },function(e){ $('grid').textContent=''; $('grid').appendChild(el('div',{class:'vacio',text:'No se pudo cargar el panel: '+mensajeError(e)})); });
 })();
 </script>
