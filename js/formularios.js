@@ -9,7 +9,7 @@
   'use strict';
 
   // Dirección de la aplicación web (termina en /exec). Se pone una sola vez.
-  var FORM_URL = '';
+  var FORM_URL = 'https://script.google.com/macros/s/AKfycbwKAwSYwHssGj9T2-nYq3hXLTLwakk3PSkR1jBkBiIEjcPBlSjGtCAHpexUllBUIJ_1/exec';
 
   if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(FORM_URL)) return;
   if (typeof HTMLDialogElement === 'undefined') return;
