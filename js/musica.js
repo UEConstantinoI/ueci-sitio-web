@@ -5,8 +5,9 @@
    Para que NO arranque sola (solo con el botón) poner AUTO = false. */
 (function () {
   'use strict';
-  var AUTO = true, VOL = 0.3, SRC = 'assets/audio/cancion-colegio.mp3';
+  var AUTO = true, VOL = 0.3;
   var btn = document.getElementById('musicaBtn');
+  var SRC = btn ? btn.getAttribute('data-src') : '';   // sin data-src no hay música de fondo (solo el himno)
   var audio = null, silenciada = false, arrancada = false, pausaTemporal = false, anim = 0;
 
   function leer() { try { return localStorage.getItem('ueci_musica') === 'off'; } catch (e) { return false; } }
@@ -43,7 +44,7 @@
   }
   function pausar() { if (audio) { clearInterval(anim); audio.pause(); } }
 
-  if (btn) {
+  if (btn && SRC) {
     btn.hidden = false;
     btn.addEventListener('click', function (e) {
       e.stopPropagation();
@@ -55,7 +56,7 @@
   }
 
   // Arranque con el primer gesto de la persona.
-  if (AUTO && !silenciada) {
+  if (AUTO && !silenciada && SRC) {
     var evs = ['pointerdown', 'keydown', 'touchstart', 'wheel'];
     var primero = function (e) {
       evs.forEach(function (n) { document.removeEventListener(n, primero, true); });
