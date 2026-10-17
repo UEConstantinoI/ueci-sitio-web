@@ -132,8 +132,8 @@
     "whatsapp": "59144289388"
   },
   "aviso": {
-    "activo": false,
-    "texto": "",
+    "activo": true,
+    "texto": "INSCRIPCIONES ABIERTAS",
     "enlace": ""
   },
   "horarios": {
