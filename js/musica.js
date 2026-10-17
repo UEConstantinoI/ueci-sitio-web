@@ -21,6 +21,7 @@
     btn.setAttribute('aria-pressed', suena ? 'true' : 'false');
     btn.setAttribute('aria-label', suena ? 'Pausar la música del colegio' : 'Escuchar la música del colegio');
     btn.title = suena ? 'Pausar música' : 'Escuchar música';
+    var t = btn.querySelector('.mt'); if (t) t.textContent = suena ? 'Música' : 'Activar música';
   }
   function crear() {
     if (audio) return audio;

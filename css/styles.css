@@ -475,3 +475,10 @@ html.dlg-abierto{overflow:hidden;}
 @keyframes mbeat{50%{transform:scale(1.25) rotate(-8deg);}}
 @media (prefers-reduced-motion:reduce){ .musica-btn.suena .mi{animation:none;} }
 @media (max-width:560px){ .musica-btn .mt{display:none;} .musica-btn{width:54px; height:54px; padding:0; justify-content:center;} .musica-btn .mi{width:24px; height:24px;} }
+
+/* Música apagada: gris y con una raya sobre la nota, para que se note que no suena */
+.musica-btn:not(.suena){background:#6b726d; border-color:#b9c0bb; color:#e9ecea;}
+.musica-btn:not(.suena):hover{background:#7a817c;}
+.musica-btn:not(.suena) .mi{position:relative; opacity:.8; filter:grayscale(1) brightness(1.6);}
+.musica-btn:not(.suena) .mi::after{content:""; position:absolute; left:-3px; right:-3px; top:50%; height:2.5px; background:#fff; border-radius:2px; transform:rotate(-45deg); box-shadow:0 0 0 1.5px #6b726d;}
+@media (max-width:560px){ .musica-btn:not(.suena) .mi::after{left:-4px; right:-4px;} }
