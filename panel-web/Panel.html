@@ -48,6 +48,7 @@
   .espacio small{display:block;opacity:.85}
   .user{padding:12px;border-radius:12px;background:rgba(0,0,0,.18);font-size:12.5px;word-break:break-all}
   .user b{display:block;font-size:13.5px;word-break:normal}
+  .ver-nota{margin-top:7px;font-size:10.5px;opacity:.7}
   .user .rol{display:inline-block;margin-top:4px;font-size:10.5px;letter-spacing:.08em;background:var(--sun);color:#1a1200;border-radius:99px;padding:1px 9px;font-weight:700}
   .ver-sitio{display:block;text-align:center;margin-top:8px;color:#fff;text-decoration:none;border:1.5px solid rgba(255,255,255,.35);border-radius:10px;padding:9px;font-weight:600}
   .ver-sitio:hover{background:rgba(255,255,255,.1)}
@@ -1270,6 +1271,7 @@ function parsearVideo_(entrada) {
   function iniciarBuzon(b,rol){ BZ.admin=(rol==='ADMIN'); if(b&&!b.error){ BZ.datos=b; BZ.error=''; } else { BZ.error=(b&&b.error)||'sin datos'; } renderBuzon(); }
 
   /* ---------- arranque ---------- */
+  var VERSION_PANEL='2026.10.16-3';   // se cambia en cada entrega
   servidor('panelCargar',[],function(d){
     pintarEspacio(d.espacio); S.noticias=d.noticias; S.galeria=d.galeria||[]; S.videos=d.videos||[]; S.calendario=(d.calendario&&d.calendario.datos)||[]; S.imgBase=d.imgBase; S.visibles=d.visibles; S.hoy=d.hoy;
     $('nVis').textContent=d.visibles; $('verSitio').href=d.sitioUrl;
@@ -1278,6 +1280,14 @@ function parsearVideo_(entrada) {
     u.appendChild(document.createTextNode(d.usuario.email));
     u.appendChild(document.createElement('br'));
     u.appendChild(el('span',{class:'rol',text:d.usuario.rol}));
+    var okV=(d.version===VERSION_PANEL);
+    u.appendChild(el('div',{class:'ver-nota',text:'Versión '+VERSION_PANEL+(okV?' ✔':'')}));
+    if(!okV){
+      var av=el('div',{class:'aviso',style:'background:#fde8e5;border-color:#ef6b5b;color:#7a1f14;margin-bottom:14px'},[
+        el('b',{text:'Los archivos no están al día. '}),
+        document.createTextNode('Panel.html es la versión '+VERSION_PANEL+' y Codigo.gs es la '+(d.version||'anterior (sin número)')+'. Pega el que esté desactualizado y publica una nueva versión en Implementar → Administrar implementaciones.')]);
+      document.querySelector('main').insertBefore(av,document.querySelector('main').firstChild);
+    }
     render(); renderFotos(); renderLista(CFG_VIDEOS); if(d.calendario&&d.calendario.datos) renderLista(CFG_CALENDARIO); else { var gc=$('gridCalendario'); gc.textContent=''; gc.appendChild(el('div',{class:'vacio',text:'No se pudo cargar el calendario: '+((d.calendario&&d.calendario.error)||'sin datos')})); } iniciarTextos(d.usuario.rol,d.textos); iniciarAccesos(d.usuario.rol,d.accesos); iniciarRedes(d.usuario.rol,d.redes); iniciarBuzon(d.buzon,d.usuario.rol);
   },function(e){ $('grid').textContent=''; $('grid').appendChild(el('div',{class:'vacio',text:'No se pudo cargar el panel: '+mensajeError(e)})); });
 })();

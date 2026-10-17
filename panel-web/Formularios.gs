@@ -24,6 +24,9 @@
  * y desde el panel (menú “Consultas y admisiones”) se leen y se marcan atendidas.
  */
 
+// Versión de este archivo (se ve al abrir la dirección /exec en el navegador).
+const VERSION_FORMULARIOS = '2026.10.16-3';
+
 const CONFIG = {
   HOJA_ID: '',                                   // ← ID de la hoja de cálculo del panel
   AVISO_A: 'javier.lopez@ueconstantino.com',     // correo de respaldo; el que vale se cambia desde el panel (pestaña “Ajustes” de la hoja)
@@ -47,7 +50,7 @@ const GRADOS = {
 /* ───────────────────────── Entrada ───────────────────────── */
 
 function doGet() {
-  return salida_({ ok: true, mensaje: 'Formularios del colegio en línea.' });
+  return salida_({ ok: true, mensaje: 'Formularios del colegio en línea.', version: VERSION_FORMULARIOS });
 }
 
 function doPost(e) {

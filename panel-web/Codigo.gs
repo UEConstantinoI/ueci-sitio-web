@@ -9,6 +9,9 @@
  * Módulos: Noticias, Fotos del carrusel, Videos, Calendario escolar, y (solo ADMIN) Textos del sitio y Accesos directos.
  */
 
+// Versión de este archivo. Se cambia en cada entrega; el panel la muestra para saber si todo está al día.
+const VERSION_CODIGO = '2026.10.16-3';
+
 const CONFIG = {
   OWNER: 'UEConstantinoI',
   REPO: 'ueci-sitio-web',
@@ -93,6 +96,7 @@ function panelCargar() {
   const u = exigir_();
   return {
     usuario: u,
+    version: VERSION_CODIGO,
     noticias: leerNoticias_().lista,
     galeria: galeriaLeer_().lista,
     videos: listaLeer_(listaVideos_()).lista,
