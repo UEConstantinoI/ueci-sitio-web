@@ -482,3 +482,11 @@ html.dlg-abierto{overflow:hidden;}
 .musica-btn:not(.suena) .mi{position:relative; opacity:.8; filter:grayscale(1) brightness(1.6);}
 .musica-btn:not(.suena) .mi::after{content:""; position:absolute; left:-3px; right:-3px; top:50%; height:2.5px; background:#fff; border-radius:2px; transform:rotate(-45deg); box-shadow:0 0 0 1.5px #6b726d;}
 @media (max-width:560px){ .musica-btn:not(.suena) .mi::after{left:-4px; right:-4px;} }
+
+/* Recorrido por las instalaciones */
+.recorrido-wrap{max-width:900px; margin:0 auto; text-align:center;}
+.recorrido-cab p{margin:10px auto 0; color:var(--ink-soft); max-width:56ch;}
+.recorrido-video{display:block; width:100%; margin:26px auto 0;}
+.recorrido-video img{opacity:1;}
+.recorrido-video .play{width:76px; height:76px; font-size:28px; box-shadow:0 8px 24px rgba(0,0,0,.4);}
+.recorrido-video:hover .play{transform:scale(1.07);}

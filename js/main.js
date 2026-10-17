@@ -183,7 +183,7 @@
     b.addEventListener('click', function () {
       var f = document.createElement('iframe');
       f.src = 'https://www.youtube-nocookie.com/embed/' + b.dataset.yt + '?autoplay=1';
-      f.title = 'Testimonio de estudiante';
+      f.title = (b.getAttribute('aria-label') || 'Video del colegio').replace(/^Reproducir el video: /, '');
       f.allow = 'autoplay; encrypted-media; picture-in-picture';
       f.allowFullscreen = true;
       b.textContent = '';
