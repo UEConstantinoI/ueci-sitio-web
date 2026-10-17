@@ -154,20 +154,20 @@
   </section>
 
   <section id="himno">
-    <div class="himno-layout">
-      <div class="himno-letra">
+    <div class="himno-wrap">
+      <div class="himno-cab">
         <span class="eyebrow">Nuestro himno</span>
         <h2 style="margin-top:10px">Himno al Colegio Constantino I</h2>
-        <div class="estrofas">
-          <p>Constantino “I” tu fuiste<br>Digno ejemplo de estudio y virtud<br>Y dejaste una senda trazada<br>Como herencia de verdad y luz.</p>
-          <p>Formador de Talentos te llaman<br>Cuna de nueva generación, a tu<br>Sombra hoy sembramos semillas<br>Las que mañana florecerán.</p>
-          <p>En tu casa el sol resplandece<br>Con vibrante fulgor del saber<br>Donde ciencia y conciencia se plasman<br>Cual cimientos de una nueva nación.</p>
-          <p>Cual bruñido bronce nuestras mentes<br>se abrillantan con luz del saber<br>Ceñirán laureles nuestras frentes<br>Anunciando un nuevo amanecer.</p>
-        </div>
       </div>
-      <div class="himno-audio">
-        <button class="video-thumb" data-yt="7kwUStZI2Ps" aria-label="Escuchar el himno del colegio"><img loading="lazy" src="https://i.ytimg.com/vi/7kwUStZI2Ps/hqdefault.jpg" alt=""><span class="play">▶</span></button>
-        <p>Toca para escuchar el himno</p>
+      <div class="estrofas">
+        <p>Constantino “I” tu fuiste<br>Digno ejemplo de estudio y virtud<br>Y dejaste una senda trazada<br>Como herencia de verdad y luz.</p>
+        <p>Formador de Talentos te llaman<br>Cuna de nueva generación, a tu<br>Sombra hoy sembramos semillas<br>Las que mañana florecerán.</p>
+        <p>En tu casa el sol resplandece<br>Con vibrante fulgor del saber<br>Donde ciencia y conciencia se plasman<br>Cual cimientos de una nueva nación.</p>
+        <p>Cual bruñido bronce nuestras mentes<br>se abrillantan con luz del saber<br>Ceñirán laureles nuestras frentes<br>Anunciando un nuevo amanecer.</p>
+      </div>
+      <div class="himno-player" id="himnoPlayer" hidden>
+        <span>🎼 Escucha el himno</span>
+        <audio id="himnoAudio" controls preload="none"></audio>
       </div>
     </div>
   </section>
@@ -410,7 +410,9 @@
 <a class="wa-float" id="waFloat" href="https://wa.me/59144289388" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp">WhatsApp</a>
 </div>
 
+<button type="button" class="musica-btn" id="musicaBtn" hidden aria-pressed="false" aria-label="Escuchar la música del colegio" title="Escuchar música"><span class="mi" aria-hidden="true"></span><span class="mt">Música</span></button>
 <script src="js/main.js"></script>
 <script src="js/formularios.js"></script>
+<script src="js/musica.js"></script>
 </body>
 </html>

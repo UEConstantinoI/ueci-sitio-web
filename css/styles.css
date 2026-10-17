@@ -456,3 +456,22 @@ html.dlg-abierto{overflow:hidden;}
 @media (max-width:760px){ .foot-grid{grid-template-columns:1fr; gap:22px;} }
 
 .form-btn:hover{background:var(--sun); color:#1a1200;}
+
+/* Himno a todo el ancho */
+.himno-wrap{max-width:1000px; margin:0 auto;}
+.himno-cab{text-align:center;}
+#himno .estrofas{margin-top:30px; gap:10px 56px; max-width:960px; margin-left:auto; margin-right:auto;}
+#himno .estrofas p{font-size:clamp(19px,2.1vw,23px); line-height:1.6; margin:0 0 22px;}
+.himno-player{margin-top:14px; display:flex; gap:14px; align-items:center; justify-content:center; flex-wrap:wrap; color:var(--ink-soft); font-size:14px;}
+.himno-player[hidden]{display:none;}
+.himno-player audio{width:min(420px,100%);}
+@media (max-width:560px){ #himno .estrofas{grid-template-columns:1fr;} }
+/* Botón de música de fondo */
+.musica-btn{position:fixed; left:18px; bottom:18px; z-index:60; display:inline-flex; align-items:center; gap:8px; border:2px solid var(--sun); background:#1f5a31; color:#fff; font:700 13.5px/1 inherit; font-family:inherit; padding:11px 16px 11px 12px; border-radius:999px; cursor:pointer; box-shadow:0 10px 24px -8px rgba(0,0,0,.45);}
+.musica-btn[hidden]{display:none;}
+.musica-btn:hover{background:#26703c;}
+.musica-btn .mi{width:18px; height:18px; display:inline-block; background:no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f0981a'%3E%3Cpath d='M9 18V5l12-2v13a3 3 0 1 1-2-2.8V6.3L11 7.700V18a3 3 0 1 1-2-2.800z'/%3E%3C/svg%3E");}
+.musica-btn.suena .mi{animation:mbeat 1s ease-in-out infinite;}
+@keyframes mbeat{50%{transform:scale(1.25) rotate(-8deg);}}
+@media (prefers-reduced-motion:reduce){ .musica-btn.suena .mi{animation:none;} }
+@media (max-width:560px){ .musica-btn .mt{display:none;} .musica-btn{width:54px; height:54px; padding:0; justify-content:center;} .musica-btn .mi{width:24px; height:24px;} }
