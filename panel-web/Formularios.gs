@@ -25,7 +25,7 @@
  */
 
 // Versión de este archivo (se ve al abrir la dirección /exec en el navegador).
-const VERSION_FORMULARIOS = '2026.10.18-1';
+const VERSION_FORMULARIOS = '2026.10.18-2';
 
 const CONFIG = {
   HOJA_ID: '',                                   // ← ID de la hoja de cálculo del panel
@@ -60,6 +60,7 @@ function doPost(e) {
     let d;
     try { d = JSON.parse(crudo); } catch (x) { return salida_({ ok: false, error: 'El envío no es válido.' }); }
     if (!d || typeof d !== 'object') return salida_({ ok: false, error: 'El envío no es válido.' });
+    if (d.api) return salida_(apiSistema_(d));
     return salida_(procesar_(d));
   } catch (err) {
     if (err && err.esValidacion) return salida_({ ok: false, error: err.message });
@@ -262,3 +263,71 @@ function mayus_(s) { return String(s).toLocaleUpperCase('es'); }
 
 // Colegio anterior: opcional en Inicial (Pre-Kinder ni se pregunta) y en 1.º de primaria; obligatorio desde 2.º.
 function colegioOpcional_(nivel, grado) { return nivel === 'INICIAL' || (nivel === 'PRIMARIA' && grado === 'Primero'); }
+
+
+/* ───────────────────────── API PARA EL SISTEMA DEL COLEGIO ─────────────────────────
+ * Permite que el sistema (otra planilla) vea las consultas/admisiones y las marque como atendidas.
+ * Se protege con una clave secreta guardada en Propiedades del script: CLAVE_SISTEMA
+ * (Configuración del proyecto → Propiedades del script → Agregar). Nunca va en el código.
+ * Pedido: POST JSON { api:'buzon', clave:'...', accion:'resumen'|'listar'|'marcar', ... }
+ */
+function apiSistema_(d) {
+  const clave = PropertiesService.getScriptProperties().getProperty('CLAVE_SISTEMA') || '';
+  const dada = String(d.clave || '');
+  let dif = clave.length < 16 || dada.length !== clave.length ? 1 : 0;
+  for (let i = 0; i < clave.length && i < dada.length; i++) dif |= clave.charCodeAt(i) ^ dada.charCodeAt(i);
+  if (dif) return { ok: false, error: 'No autorizado.' };
+  const ss = SpreadsheetApp.openById(CONFIG.HOJA_ID);
+  const TIPOS = { consultas: { hoja: 'Consultas', pref: 'CON' }, admisiones: { hoja: 'Admisiones', pref: 'ADM' } };
+  const leer = function (tipo) {
+    const sh = ss.getSheetByName(TIPOS[tipo].hoja);
+    if (!sh || sh.getLastRow() < 2) return { cab: [], filas: [] };
+    const v = sh.getRange(1, 1, sh.getLastRow(), sh.getLastColumn()).getValues();
+    return { cab: v[0].map(String), filas: v.slice(1), sh: sh };
+  };
+  if (d.accion === 'resumen') {
+    const r = { ok: true };
+    Object.keys(TIPOS).forEach(function (t) {
+      const x = leer(t), c = x.cab.indexOf('Estado'), k = x.cab.indexOf('Código');
+      r[t] = x.filas.filter(function (f) { return f[k] && String(f[c]) !== 'Atendido'; }).length;
+    });
+    r.nuevos = r.consultas + r.admisiones;
+    return r;
+  }
+  if (d.accion === 'listar') {
+    const r = { ok: true };
+    Object.keys(TIPOS).forEach(function (t) {
+      const x = leer(t), k = x.cab.indexOf('Código');
+      r[t] = x.filas.filter(function (f) { return f[k]; }).reverse().slice(0, 300).map(function (f) {
+        const o = {}; x.cab.forEach(function (c, j) { o[c] = String(f[j] === null || f[j] === undefined ? '' : f[j]); });
+        o['Estado'] = o['Estado'] === 'Atendido' ? 'Atendido' : 'Nuevo';
+        return o;
+      });
+    });
+    return r;
+  }
+  if (d.accion === 'marcar') {
+    const t = TIPOS[d.tipo];
+    if (!t) return { ok: false, error: 'Tipo no válido.' };
+    const cod = String(d.codigo || '');
+    if (!new RegExp('^' + t.pref + '-(?:\\d{4}|\\d{2}-[A-Z0-9]{4})$').test(cod)) return { ok: false, error: 'Código no válido.' };
+    const por = String(d.por || '').replace(/[\u0000-\u001f]+/g, ' ').trim().slice(0, 80);
+    if (!por) return { ok: false, error: 'Falta quién atiende.' };
+    const lock = LockService.getScriptLock();
+    lock.waitLock(25000);
+    try {
+      const x = leer(d.tipo);
+      const cK = x.cab.indexOf('Código'), cE = x.cab.indexOf('Estado'), cP = x.cab.indexOf('Atendido por'), cL = x.cab.indexOf('Atendido el');
+      if (cK < 0 || cE < 0 || cP < 0 || cL < 0) return { ok: false, error: 'La hoja no tiene el formato esperado.' };
+      let fila = -1;
+      for (let i = 0; i < x.filas.length; i++) { if (String(x.filas[i][cK]) === cod) { fila = i; break; } }
+      if (fila < 0) return { ok: false, error: 'No se encontró ese registro.' };
+      const at = d.atendido === true, v = x.filas[fila].slice();
+      v[cE] = at ? 'Atendido' : 'Nuevo'; v[cP] = at ? 'Sistema: ' + por : ''; v[cL] = at ? ahora_() : '';
+      const rg = x.sh.getRange(fila + 2, 1, 1, v.length);
+      rg.setNumberFormat('@'); rg.setValues([v]);
+    } finally { lock.releaseLock(); }
+    return { ok: true };
+  }
+  return { ok: false, error: 'Acción no válida.' };
+}
