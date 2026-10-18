@@ -1271,7 +1271,7 @@ function parsearVideo_(entrada) {
   function iniciarBuzon(b,rol){ BZ.admin=(rol==='ADMIN'); if(b&&!b.error){ BZ.datos=b; BZ.error=''; } else { BZ.error=(b&&b.error)||'sin datos'; } renderBuzon(); }
 
   /* ---------- arranque ---------- */
-  var VERSION_PANEL='2026.10.16-3';   // se cambia en cada entrega
+  var VERSION_PANEL='2026.10.18-1';   // se cambia en cada entrega
   servidor('panelCargar',[],function(d){
     pintarEspacio(d.espacio); S.noticias=d.noticias; S.galeria=d.galeria||[]; S.videos=d.videos||[]; S.calendario=(d.calendario&&d.calendario.datos)||[]; S.imgBase=d.imgBase; S.visibles=d.visibles; S.hoy=d.hoy;
     $('nVis').textContent=d.visibles; $('verSitio').href=d.sitioUrl;

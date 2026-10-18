@@ -25,7 +25,7 @@
  */
 
 // Versión de este archivo (se ve al abrir la dirección /exec en el navegador).
-const VERSION_FORMULARIOS = '2026.10.16-3';
+const VERSION_FORMULARIOS = '2026.10.18-1';
 
 const CONFIG = {
   HOJA_ID: '',                                   // ← ID de la hoja de cálculo del panel

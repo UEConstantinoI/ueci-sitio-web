@@ -10,13 +10,13 @@
  */
 
 // Versión de este archivo. Se cambia en cada entrega; el panel la muestra para saber si todo está al día.
-const VERSION_CODIGO = '2026.10.16-3';
+const VERSION_CODIGO = '2026.10.18-1';
 
 const CONFIG = {
   OWNER: 'UEConstantinoI',
   REPO: 'ueci-sitio-web',
   BRANCH: 'main',
-  SITIO_URL: 'https://ueconstantinoi.github.io/ueci-sitio-web/',
+  SITIO_URL: 'https://www.ueconstantino.com/',
   PAGINA_SITIO: '',                      // el sitio oficial es la portada del repositorio
   ARCHIVO_NOTICIAS: 'data/noticias.json',
   CARPETA_IMG: 'assets/noticias',
