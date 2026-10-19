@@ -54,15 +54,6 @@
     "id": "v20261014-00005"
   },
   {
-    "titulo": "Testimonio 6",
-    "url": "https://www.youtube.com/watch?v=6XpRUBAB_Mc",
-    "plataforma": "youtube",
-    "codigo": "6XpRUBAB_Mc",
-    "categoria": "testimonios",
-    "publicar": true,
-    "id": "v20261014-00006"
-  },
-  {
     "titulo": "Presentación U.E. Constantino I, en el teatro Adela Zamudio",
     "url": "https://www.instagram.com/p/DepN4rMRrfj/",
     "plataforma": "instagram",
@@ -70,5 +61,14 @@
     "categoria": "vida",
     "publicar": true,
     "id": "v20261019-1004f"
+  },
+  {
+    "titulo": "Testimonio 6",
+    "url": "https://www.youtube.com/watch?v=6XpRUBAB_Mc",
+    "plataforma": "youtube",
+    "codigo": "6XpRUBAB_Mc",
+    "categoria": "testimonios",
+    "publicar": true,
+    "id": "v20261014-00006"
   }
 ]
