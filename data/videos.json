@@ -16,7 +16,17 @@
     "codigo": "p/DepN4rMRrfj",
     "categoria": "vida",
     "publicar": true,
-    "id": "v20261019-1004f",
-    "portada": "assets/videos/20261019-ddaa0ab8.jpg"
+    "portada": "assets/videos/20261019-ddaa0ab8.jpg",
+    "id": "v20261019-1004f"
+  },
+  {
+    "titulo": "Entrevista a Kira Rioja, exalumna de la U.E. Constantino I",
+    "url": "https://www.facebook.com/reel/956716987094723",
+    "plataforma": "facebook",
+    "codigo": "reel/956716987094723",
+    "categoria": "testimonios",
+    "publicar": true,
+    "id": "v20261019-8d50d",
+    "portada": "assets/videos/20261019-5027230b.jpg"
   }
 ]
