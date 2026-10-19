@@ -144,5 +144,12 @@
     ],
     "clases_turno": "Turno mañana",
     "clases": []
+  },
+  "recorrido": {
+    "etiqueta": "Conoce el colegio",
+    "titulo": "Un recorrido por nuestras instalaciones",
+    "texto": "Mira cómo son los espacios donde nuestros estudiantes aprenden cada día.",
+    "enlace": "https://www.youtube.com/watch?v=MK_N9eHd9Yk",
+    "codigo": "MK_N9eHd9Yk"
   }
 }

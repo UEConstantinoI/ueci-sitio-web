@@ -922,6 +922,7 @@
     if(!S.t.requisitos) S.t.requisitos={reserva:[],inscripcion:[],nota:''};
     if(!S.t.aviso) S.t.aviso={activo:false,texto:'',enlace:''};
     if(!S.t.horarios) S.t.horarios={atencion:[],clases_turno:'',clases:[]};
+    if(!S.t.recorrido) S.t.recorrido={etiqueta:'',titulo:'',texto:'',enlace:'',codigo:''};
     var datos=[0,1,2,3].map(function(i){
       return el('div',{class:'grupo'},[ el('div',{class:'sub',text:'Dato destacado '+(i+1)}),
         el('div',{class:'cols2'},[ campoT('Titular','hero.datos.'+i+'.valor',32,'line'), campoT('Detalle','hero.datos.'+i+'.texto',60,'line') ]) ]);
@@ -949,6 +950,12 @@
         campoT('Palabras clave (separadas por coma)',r+'.claves',30,'tags',null,6) ]));
     });
     nos.unshift(fotoTexto('nosotros','Foto de esta sección',function(){return S.t.nosotros.imagen;},function(r){S.t.nosotros.imagen=r;},'Se ve junto a las palabras clave, en visión, misión y objetivo. Mejor horizontal.',1000));
+    f.appendChild(seccion('Recorrido por el colegio (video destacado)',[
+      campoT('Etiqueta superior','recorrido.etiqueta',40,'line','Ejemplo: Conoce el colegio.'),
+      campoT('Título','recorrido.titulo',90,'line'),
+      campoT('Texto (opcional)','recorrido.texto',200,'area'),
+      campoT('Enlace del video de YouTube','recorrido.enlace',300,'line','Pega el enlace de YouTube (botón Compartir → Copiar). Si lo dejas vacío, el sitio conserva el video que tiene. El video debe estar publicado o “no listado” en YouTube.')
+    ]));
     f.appendChild(seccion('Acerca de nosotros: visión, misión y objetivo',nos));
     f.appendChild(seccion('Pilares institucionales',[pilaresEd()]));
     f.appendChild(seccion('Requisitos de admisión',[
@@ -1323,7 +1330,7 @@ function parsearVideo_(entrada) {
   function iniciarBuzon(b,rol){ BZ.admin=(rol==='ADMIN'); if(b&&!b.error){ BZ.datos=b; BZ.error=''; } else { BZ.error=(b&&b.error)||'sin datos'; } renderBuzon(); }
 
   /* ---------- arranque ---------- */
-  var VERSION_PANEL='2026.10.19-1';   // se cambia en cada entrega
+  var VERSION_PANEL='2026.10.19-2';   // se cambia en cada entrega
   servidor('panelCargar',[],function(d){
     pintarEspacio(d.espacio); S.noticias=d.noticias; S.galeria=d.galeria||[]; S.videos=d.videos||[]; S.calendario=(d.calendario&&d.calendario.datos)||[]; S.imgBase=d.imgBase; S.visibles=d.visibles; S.hoy=d.hoy;
     $('nVis').textContent=d.visibles; $('verSitio').href=d.sitioUrl;

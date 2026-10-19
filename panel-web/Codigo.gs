@@ -10,7 +10,7 @@
  */
 
 // Versión de este archivo. Se cambia en cada entrega; el panel la muestra para saber si todo está al día.
-const VERSION_CODIGO = '2026.10.19-1';
+const VERSION_CODIGO = '2026.10.19-2';
 
 const CONFIG = {
   OWNER: 'UEConstantinoI',
@@ -492,7 +492,16 @@ function validarTextos_(d) {
     clases_turno: cad_(hr.clases_turno, 40, 'Horario de clases · turno', true),
     clases: lista_(hr.clases || [], 0, 6, 'Horario de clases').map(function (x, i) { return cad_(x, 80, 'Horario de clases · renglón ' + (i + 1)); })
   };
-  return { hero: hero, nosotros: nosotros, pilares: pilares, transporte: transporte, requisitos: requisitos, contacto: contacto, aviso: aviso, horarios: horarios };
+  const rc = d.recorrido || {};
+  const rcEnlace = cad_(rc.enlace, 300, 'Recorrido · enlace del video', true);
+  let rcCodigo = '';
+  if (rcEnlace) {
+    const pv = parsearVideo_(rcEnlace);
+    if (pv.plataforma !== 'youtube') throw new Error('Recorrido: el video de esta sección debe ser un enlace de YouTube.');
+    rcCodigo = pv.codigo;
+  }
+  const recorrido = { etiqueta: cad_(rc.etiqueta, 40, 'Recorrido · etiqueta', true), titulo: cad_(rc.titulo, 90, 'Recorrido · título'), texto: cad_(rc.texto, 200, 'Recorrido · texto', true), enlace: rcEnlace, codigo: rcCodigo };
+  return { hero: hero, nosotros: nosotros, pilares: pilares, transporte: transporte, requisitos: requisitos, contacto: contacto, aviso: aviso, horarios: horarios, recorrido: recorrido };
 }
 
 const FOTOS_TEXTOS = {

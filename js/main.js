@@ -488,9 +488,23 @@
     }
   }
 
+  // Video destacado "Recorrido": textos y enlace de YouTube editables
+  function recorrido(r) {
+    if (!r) return;
+    txt($('#recorrido .eyebrow'), r.etiqueta);
+    txt($('#recorrido h2'), r.titulo);
+    var p = $('#recorrido .recorrido-cab p');
+    if (p && typeof r.texto === 'string') { p.textContent = r.texto; p.hidden = !r.texto; }
+    var b = $('#recorrido .recorrido-video');
+    if (b && typeof r.codigo === 'string' && /^[\w-]{11}$/.test(r.codigo)) {
+      b.dataset.yt = r.codigo;
+      var im = b.querySelector('img'); if (im) im.src = 'https://i.ytimg.com/vi/' + r.codigo + '/hqdefault.jpg';
+    }
+  }
+
   fetch('data/textos.json', { cache: 'no-cache' })
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(function (t) { hero(t.hero); nosotros(t.nosotros); pilares(t.pilares); transporte(t.transporte); requisitos(t.requisitos); contacto(t.contacto); aviso(t.aviso); horarios(t.horarios); })
+    .then(function (t) { hero(t.hero); nosotros(t.nosotros); pilares(t.pilares); transporte(t.transporte); requisitos(t.requisitos); contacto(t.contacto); aviso(t.aviso); horarios(t.horarios); recorrido(t.recorrido); })
     .catch(function () { /* se queda el texto que ya trae la página */ });
 })();
 
