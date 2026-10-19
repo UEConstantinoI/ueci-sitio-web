@@ -25,14 +25,5 @@
     "categoria": "testimonios",
     "publicar": true,
     "id": "v20261014-00004"
-  },
-  {
-    "titulo": "Testimonio 5",
-    "url": "https://www.youtube.com/watch?v=PQl8Uyggv4o",
-    "plataforma": "youtube",
-    "codigo": "PQl8Uyggv4o",
-    "categoria": "testimonios",
-    "publicar": true,
-    "id": "v20261014-00005"
   }
 ]
