@@ -43,14 +43,5 @@
     "categoria": "testimonios",
     "publicar": true,
     "id": "v20261014-00005"
-  },
-  {
-    "titulo": "Testimonio 6",
-    "url": "https://www.youtube.com/watch?v=6XpRUBAB_Mc",
-    "plataforma": "youtube",
-    "codigo": "6XpRUBAB_Mc",
-    "categoria": "testimonios",
-    "publicar": true,
-    "id": "v20261014-00006"
   }
 ]
