@@ -25,7 +25,7 @@
  */
 
 // Versión de este archivo (se ve al abrir la dirección /exec en el navegador).
-const VERSION_FORMULARIOS = '2026.10.18-2';
+const VERSION_FORMULARIOS = '2026.10.19-1';
 
 const CONFIG = {
   HOJA_ID: '',                                   // ← ID de la hoja de cálculo del panel
@@ -85,7 +85,7 @@ function procesar_(d) {
       nombre: mayus_(txt_(d.nombre, 80, 'Nombre')),
       telefono: tel_(d.telefono, 'Teléfono'),
       email: correo_(d.email, 'Correo', true),
-      mensaje: mayus_(txt_(d.mensaje, 600, 'Consulta', true))
+      mensaje: mayus_(txt_(d.mensaje, 600, 'Consulta', false))
     };
     hoja = HOJA_CONSULTAS; cabeceras = CAB_CONSULTAS; prefijo = 'CON';
     fila = function (cod) { return [ahora_(), cod, v.nombre, v.telefono, v.email, v.mensaje, 'Nuevo', '', '']; };

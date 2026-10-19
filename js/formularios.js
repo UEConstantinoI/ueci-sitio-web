@@ -173,7 +173,7 @@
       nombre: campo({ name: 'nombre', label: 'Tu nombre', req: true, max: 80, auto: 'name' }),
       telefono: campo({ name: 'telefono', label: 'Teléfono o WhatsApp', req: true, max: 25, type: 'tel', auto: 'tel', mode: 'tel' }),
       email: campo({ name: 'email', label: 'Correo electrónico', max: 80, type: 'email', auto: 'email' }),
-      mensaje: campo({ name: 'mensaje', label: '¿En qué podemos ayudarte?', max: 600, rows: 4, ph: 'Cuéntanos qué necesitas saber.' })
+      mensaje: campo({ name: 'mensaje', label: '¿En qué podemos ayudarte?', req: true, max: 600, rows: 4, ph: 'Cuéntanos qué necesitas saber.' })
     };
     var err = h('div', { class: 'ff-envio-err', role: 'alert' });
     var btn = h('button', { type: 'submit', class: 'btn-env', text: 'Enviar consulta' });
@@ -187,7 +187,7 @@
       ok = marcar(c.nombre, V.txt(c.nombre.inp.value, 80, true, 'Nombre')) && ok;
       ok = marcar(c.telefono, V.tel(c.telefono.inp.value, 'Teléfono')) && ok;
       ok = marcar(c.email, V.mail(c.email.inp.value, false)) && ok;
-      ok = marcar(c.mensaje, V.txt(c.mensaje.inp.value, 600, false, 'Consulta')) && ok;
+      ok = marcar(c.mensaje, V.txt(c.mensaje.inp.value, 600, true, 'Consulta')) && ok;
       if (!ok) { var p = f.querySelector('[aria-invalid="true"]'); if (p) p.focus(); return; }
       var nombre = c.nombre.inp.value.trim();
       enviar({ tipo: 'contacto', nombre: nombre, telefono: c.telefono.inp.value.trim(), email: c.email.inp.value.trim(), mensaje: c.mensaje.inp.value.trim(), web: f.web.value }, btn, err, function (cod) {
