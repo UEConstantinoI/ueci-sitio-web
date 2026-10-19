@@ -6,8 +6,8 @@
     "codigo": "reel/DerhpeEx1en",
     "categoria": "vida",
     "publicar": true,
-    "id": "v20261014-02830",
-    "portada": "assets/videos/20261019-871a8186.jpg"
+    "portada": "assets/videos/20261019-871a8186.jpg",
+    "id": "v20261014-02830"
   },
   {
     "titulo": "Presentación U.E. Constantino I, en el teatro Adela Zamudio",
@@ -16,7 +16,7 @@
     "codigo": "p/DepN4rMRrfj",
     "categoria": "vida",
     "publicar": true,
-    "portada": "",
-    "id": "v20261019-1004f"
+    "id": "v20261019-1004f",
+    "portada": "assets/videos/20261019-ddaa0ab8.jpg"
   }
 ]
