@@ -176,6 +176,9 @@
   .barra-guardar .estado.sucio{color:var(--sun-deep);font-weight:700}
 
   /* ---- videos y accesos ---- */
+  .g-portada{width:110px;aspect-ratio:9/16;max-height:196px;border-radius:10px;overflow:hidden;background:#e8ede9;display:flex;align-items:center;justify-content:center;color:#5b6b60;font-size:12px;margin:4px 0 8px}
+  .g-portada img{width:100%;height:100%;object-fit:cover;display:block}
+  .g-portada-btn{display:flex;gap:8px;flex-wrap:wrap}
   .vtop{height:78px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;color:#fff;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:13px}
   .vtop.p-youtube{background:linear-gradient(135deg,#e62117,#a30f08)}
   .vtop.p-tiktok{background:linear-gradient(135deg,#111,#2b2b2b 60%,#fe2c55)}
@@ -1030,20 +1033,21 @@ function parsearVideo_(entrada) {
 }
 
   var NOMBRES_P={youtube:'YouTube',tiktok:'TikTok',instagram:'Instagram',facebook:'Facebook'};
-  var gCfg=null, gItem=null;
+  var gCfg=null, gItem=null, gImg={accion:'mantener'}, gPrevia='';
 
   function cerrarG(){ $('veloG').classList.remove('on'); gCfg=null; gItem=null; }
   function errorG(m){ var e=$('gError'); e.textContent=m; e.classList.add('on'); }
   $('gbtnX').onclick=cerrarG; $('gBtnCancelar').onclick=cerrarG;
 
   function abrirG(cfg,item){
-    gCfg=cfg; gItem=item||null;
+    gCfg=cfg; gItem=item||null; gImg={accion:'mantener'}; gPrevia=(item&&item.portada)||'';
     var v=item||cfg.defecto();
     $('gmTitulo').textContent=(item?'Editar ':'Nuevo ')+cfg.nombre;
     $('gError').classList.remove('on');
     var cont=$('gmCampos'); cont.textContent='';
     cfg.campos.forEach(function(c){
       var id='g_'+c.k, w;
+      if(c.t==='imagen'){ cont.appendChild(campoImagenG(c)); return; }
       if(c.t==='check'){
         w=el('div',{class:'sw'},[ el('input',{type:'checkbox',id:id}), el('label',{for:id,style:'cursor:pointer'},[ el('b',{text:c.rot}), el('span',{text:c.ayuda||''}) ]) ]);
         w.querySelector('input').checked=!!v[c.k];
@@ -1068,11 +1072,57 @@ function parsearVideo_(entrada) {
     var primero=cont.querySelector('input,select'); if(primero) primero.focus();
   }
 
+  // Campo de imagen (portada vertical u horizontal): se reduce en el navegador antes de enviarla
+  function reducirLado(file,maxLado,cb){
+    var rd=new FileReader();
+    rd.onerror=function(){cb('No se pudo leer el archivo.')};
+    rd.onload=function(){
+      var im=new Image();
+      im.onerror=function(){cb('No se pudo abrir la imagen. Prueba con otra.')};
+      im.onload=function(){
+        var w=im.naturalWidth,h=im.naturalHeight,m=Math.max(w,h);
+        if(m>maxLado){ w=Math.round(w*maxLado/m); h=Math.round(h*maxLado/m); }
+        var c=document.createElement('canvas'); c.width=w; c.height=h;
+        var x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,w,h); x.drawImage(im,0,0,w,h);
+        var q=0.85, url=c.toDataURL('image/jpeg',q);
+        while(url.length*0.75>600000 && q>0.4){ q-=0.1; url=c.toDataURL('image/jpeg',q); }
+        if(url.length*0.75>1400000){ cb('La imagen sigue muy pesada. Prueba con otra.'); return; }
+        cb(null,{dataUrl:url,base64:url.split(',')[1]});
+      };
+      im.src=rd.result;
+    };
+    rd.readAsDataURL(file);
+  }
+  function campoImagenG(c){
+    var vista=el('div',{class:'g-portada'}), arch=el('input',{type:'file',accept:'image/jpeg,image/png,image/webp',hidden:'hidden'});
+    var bElegir=el('button',{type:'button',class:'btn btn-ghost',text:'Elegir imagen'}), bQuitar=el('button',{type:'button',class:'btn btn-ghost',text:'Quitar'});
+    function pintar(){
+      vista.textContent='';
+      var src=gImg.accion==='nueva'?gImg.dataUrl:(gImg.accion==='quitar'?'':urlImg(gPrevia));
+      vista.appendChild(src?el('img',{src:src,alt:'Portada del video'}):el('span',{text:'Sin portada'}));
+      bQuitar.hidden=!src;
+    }
+    bElegir.onclick=function(){ arch.click(); };
+    bQuitar.onclick=function(){ gImg=gPrevia?{accion:'quitar'}:{accion:'mantener'}; pintar(); };
+    arch.onchange=function(){
+      var f=arch.files&&arch.files[0]; if(!f) return;
+      if(!/^image\/(jpeg|png|webp)$/.test(f.type)){ errorG('Elige una imagen JPG, PNG o WebP.'); return; }
+      reducirLado(f,1000,function(err,res){
+        if(err){ errorG(err); return; }
+        $('gError').classList.remove('on'); gImg={accion:'nueva',base64:res.base64,mime:'image/jpeg',dataUrl:res.dataUrl}; pintar();
+      });
+      arch.value='';
+    };
+    pintar();
+    return el('div',{class:'campo'},[ el('label',{class:'l',text:c.rot}), vista, el('div',{class:'g-portada-btn'},[bElegir,bQuitar,arch]), c.ayuda?el('small',{text:c.ayuda}):null ]);
+  }
+
   $('gBtnGuardar').onclick=function(){
     if(!gCfg) return;
     var cfg=gCfg, d={};
     if(gItem) d.id=gItem.id;
     cfg.campos.forEach(function(c){
+      if(c.t==='imagen'){ d.imagen=gImg; return; }
       var e=$('g_'+c.k);
       if(c.t==='check') d[c.k]=e.checked; else d[c.k]=e.value;
       if(c.max && c.t!=='check' && c.t!=='select' && c.t!=='date' && d[c.k].length>c.max){ d.__mal=c.rot+' es muy largo (máximo '+c.max+' letras).'; }
@@ -1134,11 +1184,13 @@ function parsearVideo_(entrada) {
       {k:'url',rot:'Enlace del video',max:300,detecta:function(v){ if(!v.trim()) return {ok:false,texto:'Pega aquí el enlace (botón “Compartir” → “Copiar enlace”).'}; try{ var r=parsearVideo_(v); return {ok:true,texto:'✔ '+NOMBRES_P[r.plataforma]+' reconocido'}; }catch(e){ return {ok:false,texto:mensajeError(e)}; } }},
       {k:'titulo',rot:'Título',max:80,ayuda:'Se muestra debajo del video.'},
       {k:'categoria',rot:'Etiqueta del video',t:'select',opciones:[['vida','Vida escolar (actividades, actos, TikTok…)'],['testimonios','Testimonio']]},
+      {k:'portada',rot:'Imagen de portada (opcional)',t:'imagen',ayuda:'Para Instagram, TikTok y Facebook: sube una captura o foto del video, vertical u horizontal. En el sitio se ve completa, sin recortes. Si no subes nada, se ve un fondo de color. En YouTube no hace falta.'},
       {k:'publicar',rot:'Mostrar en el sitio',t:'check',ayuda:'Si lo desmarcas, queda guardado pero oculto.'}
     ],
     validar:function(d){ if(!d.titulo.trim()) return 'Escribe un título.'; try{ parsearVideo_(d.url); }catch(e){ return mensajeError(e); } return ''; },
     tope:function(it){ return el('div',{class:'vtop p-'+it.plataforma},[ el('span',{text:NOMBRES_P[it.plataforma]||it.plataforma}), el('small',{text:it.categoria==='testimonios'?'Testimonio':'Vida escolar'}) ]); },
-    cuerpo:function(it){ return [ el('h3',{text:it.titulo||'(sin título)'}), el('div',{class:'url-corta',text:it.url}) ]; }
+    cuerpo:function(it){ return [ el('h3',{text:it.titulo||'(sin título)'}), el('div',{class:'url-corta',text:it.url}) ]; },
+    badges:function(it){ return it.portada?[el('span',{class:'badge',text:'🖼 Con portada'})]:[]; }
   };
 
   var COLORES_UI=[['rojo','Rojo'],['verde','Verde'],['sol','Naranja'],['azul','Azul'],['royal','Azul oscuro'],['gris','Gris']];
@@ -1271,7 +1323,7 @@ function parsearVideo_(entrada) {
   function iniciarBuzon(b,rol){ BZ.admin=(rol==='ADMIN'); if(b&&!b.error){ BZ.datos=b; BZ.error=''; } else { BZ.error=(b&&b.error)||'sin datos'; } renderBuzon(); }
 
   /* ---------- arranque ---------- */
-  var VERSION_PANEL='2026.10.18-1';   // se cambia en cada entrega
+  var VERSION_PANEL='2026.10.19-1';   // se cambia en cada entrega
   servidor('panelCargar',[],function(d){
     pintarEspacio(d.espacio); S.noticias=d.noticias; S.galeria=d.galeria||[]; S.videos=d.videos||[]; S.calendario=(d.calendario&&d.calendario.datos)||[]; S.imgBase=d.imgBase; S.visibles=d.visibles; S.hoy=d.hoy;
     $('nVis').textContent=d.visibles; $('verSitio').href=d.sitioUrl;

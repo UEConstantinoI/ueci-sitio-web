@@ -10,7 +10,7 @@
  */
 
 // Versión de este archivo. Se cambia en cada entrega; el panel la muestra para saber si todo está al día.
-const VERSION_CODIGO = '2026.10.18-1';
+const VERSION_CODIGO = '2026.10.19-1';
 
 const CONFIG = {
   OWNER: 'UEConstantinoI',
@@ -31,6 +31,7 @@ const CONFIG = {
   MAX_ACCESOS: 12,
   ARCHIVO_GALERIA: 'data/galeria.json',
   CARPETA_GAL: 'assets/galeria',
+  CARPETA_VID: 'assets/videos',          // portadas de videos de Instagram/TikTok/Facebook
   CARPETA_SITIO: 'assets/sitio',         // fotos de los textos del sitio (ej. transporte)
   MAX_GALERIA: 20,
   MAX_IMG_BYTES: 1500000,                // tope de seguridad por imagen (ya reducida en el navegador)
@@ -257,7 +258,7 @@ function validarImagen_(im) {
 function borrarImagen_(ruta, email) {
   try {
     const r0 = String(ruta);
-    if (r0.indexOf(CONFIG.CARPETA_IMG + '/') !== 0 && r0.indexOf(CONFIG.CARPETA_GAL + '/') !== 0 && r0.indexOf(CONFIG.CARPETA_SITIO + '/') !== 0) return;
+    if (r0.indexOf(CONFIG.CARPETA_IMG + '/') !== 0 && r0.indexOf(CONFIG.CARPETA_GAL + '/') !== 0 && r0.indexOf(CONFIG.CARPETA_SITIO + '/') !== 0 && r0.indexOf(CONFIG.CARPETA_VID + '/') !== 0) return;
     if (r0.indexOf('..') >= 0) return;
     const r = ghLeer_(ruta);
     if (r) ghBorrar_(ruta, r.sha, 'Noticias: se retira imagen sin uso (' + email + ')');
@@ -575,7 +576,26 @@ function listaVideos_() {
     archivo: CONFIG.ARCHIVO_VIDEOS, idRe: ID_V_RE, pref: 'v', max: CONFIG.MAX_VIDEOS, nombre: 'video', plural: 'videos',
     leer: function (x) {
       return { titulo: String(x.titulo || ''), url: String(x.url || ''), plataforma: String(x.plataforma || ''), codigo: String(x.codigo || ''),
-               categoria: CATEGORIAS_VIDEO.indexOf(x.categoria) >= 0 ? x.categoria : 'vida', publicar: x.publicar !== false };
+               categoria: CATEGORIAS_VIDEO.indexOf(x.categoria) >= 0 ? x.categoria : 'vida', publicar: x.publicar !== false,
+               portada: /^assets\/videos\/[\w.\-]+\.(jpg|png|webp)$/.test(String(x.portada || '')) ? String(x.portada) : '' };
+    },
+    // Portada opcional: datos.imagen = { accion:'mantener'|'nueva'|'quitar', base64?, mime? }
+    fusionar: function (item, previo, datos, u) {
+      const im = (datos && datos.imagen) || { accion: 'mantener' };
+      const antes = previo ? previo.portada : '';
+      if (im.accion === 'nueva') {
+        const bytes = validarImagen_(im);
+        const ruta = CONFIG.CARPETA_VID + '/' + Utilities.formatDate(new Date(), 'America/La_Paz', 'yyyyMMdd') + '-' + Utilities.getUuid().replace(/-/g, '').slice(0, 8) + '.' + extension_(im.mime);
+        ghPonerBytes_(ruta, bytes, 'Videos: portada de "' + item.titulo + '" (' + u.email + ')');
+        item.portada = ruta;
+      } else if (im.accion === 'quitar') {
+        item.portada = '';
+      } else {
+        item.portada = antes || '';
+      }
+    },
+    limpiar: function (previo, item, u) {
+      if (previo && previo.portada && (!item || item.portada !== previo.portada)) borrarImagen_(previo.portada, u.email);
     },
     rotulo: function (x) { return x.titulo; }
   };
@@ -653,10 +673,13 @@ function listaGuardarItem_(cfg, u, datos, item) {
     const nuevo = idx < 0;
     if (nuevo && act.lista.length >= cfg.max) throw new Error('Ya hay ' + cfg.max + ' ' + cfg.plural + '. Elimina alguno antes de agregar otro.');
     item.id = nuevo ? nuevoIdLista_(cfg.pref) : act.lista[idx].id;
+    const previo = nuevo ? null : act.lista[idx];
+    if (cfg.fusionar) cfg.fusionar(item, previo, datos, u);
     if (nuevo) act.lista.push(item); else act.lista[idx] = item;
     if (cfg.ordenar) act.lista.sort(cfg.ordenar);
     listaEscribir_(cfg, act.lista, act.sha, cfg.nombre[0].toUpperCase() + cfg.nombre.slice(1) + ': ' + (nuevo ? 'nuevo' : 'editado') + ' "' + cfg.rotulo(item) + '" (' + u.email + ')');
     registrar_(u, cfg.nombre[0].toUpperCase() + cfg.nombre.slice(1) + (nuevo ? ' agregado' : ' editado'), cfg.rotulo(item) + (item.publicar ? ' [visible]' : ' [oculto]'));
+    if (cfg.limpiar) cfg.limpiar(previo, item, u);
     return act.lista;
   } finally { lock.releaseLock(); }
 }
@@ -672,6 +695,7 @@ function listaEliminarItem_(cfg, u, id) {
     const q = act.lista.splice(idx, 1)[0];
     listaEscribir_(cfg, act.lista, act.sha, cfg.nombre[0].toUpperCase() + cfg.nombre.slice(1) + ': eliminado "' + cfg.rotulo(q) + '" (' + u.email + ')');
     registrar_(u, cfg.nombre[0].toUpperCase() + cfg.nombre.slice(1) + ' eliminado', cfg.rotulo(q));
+    if (cfg.limpiar) cfg.limpiar(q, null, u);
     return act.lista;
   } finally { lock.releaseLock(); }
 }

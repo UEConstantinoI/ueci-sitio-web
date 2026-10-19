@@ -545,7 +545,15 @@
     b.setAttribute('aria-label', 'Reproducir: ' + (v.titulo || NOMBRES[p]));
     if (p === 'youtube') {
       var img = document.createElement('img');
+      img.src = 'https://i.ytimg.com/vi/' + c + '/hqdefault.jpg'; img.alt = ''; img.loading = 'lazy';
       b.appendChild(img);
+    } else if (typeof v.portada === 'string' && /^assets\/videos\/[\w.\-]+\.(jpg|png|webp)$/.test(v.portada)) {
+      // Portada propia: fondo desenfocado + imagen completa al centro (sirve vertical u horizontal)
+      var pf = document.createElement('div'); pf.className = 'vportada';
+      var bg = document.createElement('img'); bg.src = v.portada; bg.alt = ''; bg.setAttribute('aria-hidden', 'true'); bg.className = 'vp-fondo'; bg.loading = 'lazy';
+      var fg = document.createElement('img'); fg.src = v.portada; fg.alt = ''; fg.className = 'vp-frente'; fg.loading = 'lazy';
+      pf.appendChild(bg); pf.appendChild(fg); b.appendChild(pf);
+      var et = document.createElement('span'); et.className = 'vplat'; et.textContent = NOMBRES[p]; b.appendChild(et);
     } else {
       var f = document.createElement('div'); f.className = 'vfondo'; f.textContent = p === 'tiktok' ? 'Ver en TikTok' : NOMBRES[p]; b.appendChild(f);
     }

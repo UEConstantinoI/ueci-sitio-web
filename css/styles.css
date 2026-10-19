@@ -490,3 +490,10 @@ html.dlg-abierto{overflow:hidden;}
 .recorrido-video img{opacity:1;}
 .recorrido-video .play{width:76px; height:76px; font-size:28px; box-shadow:0 8px 24px rgba(0,0,0,.4);}
 .recorrido-video:hover .play{transform:scale(1.07);}
+
+/* Portada propia de un video (Instagram, TikTok, Facebook): fondo desenfocado + imagen completa */
+.vcard .vportada{position:absolute; inset:0; overflow:hidden; background:#000;}
+.vcard .vp-fondo{position:absolute; inset:-12%; width:124%; height:124%; object-fit:cover; filter:blur(18px) brightness(.7); opacity:1;}
+.vcard .vp-frente{position:absolute; inset:0; width:100%; height:100%; object-fit:contain; opacity:1;}
+.vcard .vplat{position:absolute; top:10px; left:10px; z-index:2; padding:4px 10px; border-radius:999px; background:rgba(0,0,0,.55); color:#fff; font-weight:700; font-size:11px; letter-spacing:.08em; text-transform:uppercase;}
+.vcard .play{z-index:2;}
