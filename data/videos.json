@@ -16,14 +16,5 @@
     "categoria": "vida",
     "publicar": true,
     "id": "v20261019-1004f"
-  },
-  {
-    "titulo": "Testimonio 4",
-    "url": "https://www.youtube.com/watch?v=fE70iQQqKQI",
-    "plataforma": "youtube",
-    "codigo": "fE70iQQqKQI",
-    "categoria": "testimonios",
-    "publicar": true,
-    "id": "v20261014-00004"
   }
 ]
