@@ -25,7 +25,7 @@
  */
 
 // Versión de este archivo (se ve al abrir la dirección /exec en el navegador).
-const VERSION_FORMULARIOS = '2026.10.19-1';
+const VERSION_FORMULARIOS = '2026.10.23-1';
 
 const CONFIG = {
   HOJA_ID: '',                                   // ← ID de la hoja de cálculo del panel
@@ -292,6 +292,12 @@ function apiSistema_(d) {
       r[t] = x.filas.filter(function (f) { return f[k] && String(f[c]) !== 'Atendido'; }).length;
     });
     r.nuevos = r.consultas + r.admisiones;
+    const hoy = ahora_().slice(0, 10); r.seguimiento = 0;
+    Object.keys(TIPOS).forEach(function (t) {
+      const x = leer(t), cE = x.cab.indexOf('Estado'), cV = x.cab.indexOf('Volver a contactar');
+      if (cV < 0) return;
+      r.seguimiento += x.filas.filter(function (f) { return String(f[cV] || '') && String(f[cV]) <= hoy && String(f[cE]) !== 'Atendido'; }).length;
+    });
     return r;
   }
   if (d.accion === 'listar') {
@@ -306,28 +312,85 @@ function apiSistema_(d) {
     });
     return r;
   }
-  if (d.accion === 'marcar') {
-    const t = TIPOS[d.tipo];
-    if (!t) return { ok: false, error: 'Tipo no válido.' };
-    const cod = String(d.codigo || '');
-    if (!new RegExp('^' + t.pref + '-(?:\\d{4}|\\d{2}-[A-Z0-9]{4})$').test(cod)) return { ok: false, error: 'Código no válido.' };
-    const por = String(d.por || '').replace(/[\u0000-\u001f]+/g, ' ').trim().slice(0, 80);
-    if (!por) return { ok: false, error: 'Falta quién atiende.' };
-    const lock = LockService.getScriptLock();
-    lock.waitLock(25000);
+  if (d.accion === 'marcar' || d.accion === 'nota') {
     try {
-      const x = leer(d.tipo);
-      const cK = x.cab.indexOf('Código'), cE = x.cab.indexOf('Estado'), cP = x.cab.indexOf('Atendido por'), cL = x.cab.indexOf('Atendido el');
-      if (cK < 0 || cE < 0 || cP < 0 || cL < 0) return { ok: false, error: 'La hoja no tiene el formato esperado.' };
-      let fila = -1;
-      for (let i = 0; i < x.filas.length; i++) { if (String(x.filas[i][cK]) === cod) { fila = i; break; } }
-      if (fila < 0) return { ok: false, error: 'No se encontró ese registro.' };
-      const at = d.atendido === true, v = x.filas[fila].slice();
-      v[cE] = at ? 'Atendido' : 'Nuevo'; v[cP] = at ? 'Sistema: ' + por : ''; v[cL] = at ? ahora_() : '';
-      const rg = x.sh.getRange(fila + 2, 1, 1, v.length);
-      rg.setNumberFormat('@'); rg.setValues([v]);
-    } finally { lock.releaseLock(); }
-    return { ok: true };
+      const op = { por: d.por, nota: d.nota };
+      if (d.accion === 'marcar') op.atendido = d.atendido === true;
+      if (d.volver !== undefined && d.volver !== null) op.volver = d.volver;
+      bzAplicar_(ss, d.tipo, String(d.codigo || ''), op, ahora_(), 'Sistema: ' + String(d.por || '').slice(0, 60));
+      return { ok: true };
+    } catch (e) { return { ok: false, error: String(e.message || e) }; }
   }
   return { ok: false, error: 'Acción no válida.' };
+}
+
+/* ───────────────────────── NOTAS DE SEGUIMIENTO (misma lógica en Codigo.gs y Formularios.gs) ─────────────────────────
+ * Cada mensaje tiene "Notas" (historial: una línea por nota, con fecha, hora y quién) y "Volver a contactar" (fecha).
+ * Marcar como atendido exige una nota. Las notas solo se agregan: no se editan ni se borran. */
+const NOTA_MAX = 500, NOTAS_TOTAL_MAX = 20000;
+const COL_NOTAS = 'Notas', COL_VOLVER = 'Volver a contactar';
+
+function bzColumnas_(sh) {
+  const cab = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
+  [COL_NOTAS, COL_VOLVER].forEach(function (c) {
+    if (cab.indexOf(c) < 0) { const r = sh.getRange(1, cab.length + 1); r.setNumberFormat('@'); r.setValue(c); r.setFontWeight('bold'); cab.push(c); }
+  });
+  return cab;
+}
+
+// op = { por, nota?, volver? ('' = quitar), atendido? (true|false) }; ahora = 'yyyy-MM-dd HH:mm' (hora de La Paz)
+function bzAplicar_(ss, tipo, codigo, op, ahora, quienAtiende) {
+  const T = { consultas: { hoja: 'Consultas', pref: 'CON' }, admisiones: { hoja: 'Admisiones', pref: 'ADM' } }[tipo];
+  if (!T) throw new Error('Tipo no válido.');
+  if (!new RegExp('^' + T.pref + '-(?:\\d{4}|\\d{2}-[A-Z0-9]{4})$').test(String(codigo || ''))) throw new Error('Código no válido.');
+  const por = String(op.por || '').replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 60);
+  if (!por) throw new Error('Falta saber quién escribe la nota.');
+  const nota = String(op.nota || '').replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim();
+  if (nota.length > NOTA_MAX) throw new Error('La nota es muy larga (máximo ' + NOTA_MAX + ' letras).');
+  if (op.atendido === true && !nota) throw new Error('Para marcar como atendido escribe una nota: qué pasó con este mensaje.');
+  let volver;
+  if (op.volver !== undefined && op.volver !== null) {
+    volver = String(op.volver).trim();
+    if (volver) {
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(volver), f = m ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])) : null;
+      if (!f || f.getUTCMonth() !== +m[2] - 1 || f.getUTCDate() !== +m[3]) throw new Error('La fecha para volver a contactar no es válida.');
+      if (volver < ahora.slice(0, 10)) throw new Error('La fecha para volver a contactar no puede estar en el pasado.');
+    }
+  }
+  if (op.atendido === undefined && !nota && volver === undefined) throw new Error('Escribe una nota.');
+
+  const lineas = [];
+  const pre = ahora + ' · ' + por + ': ';
+  if (nota) lineas.push(pre + (op.atendido === true ? '✓ Atendido. ' : '') + nota + (volver ? ' (volver a contactar el ' + volver + ')' : ''));
+  else if (op.atendido === true) lineas.push(pre + '✓ Atendido');
+  else if (volver !== undefined) lineas.push(pre + (volver ? 'Volver a contactar el ' + volver : 'Se quitó la fecha para volver a contactar'));
+  if (op.atendido === false) lineas.push(pre + '↺ Reabierto');
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(25000);
+  try {
+    const sh = ss.getSheetByName(T.hoja);
+    if (!sh || sh.getLastRow() < 2) throw new Error('No hay registros.');
+    const cab = bzColumnas_(sh);
+    const todo = sh.getRange(1, 1, sh.getLastRow(), cab.length).getValues();
+    const c = function (n) { return cab.indexOf(n); };
+    const cK = c('Código'), cE = c('Estado'), cP = c('Atendido por'), cL = c('Atendido el'), cN = c(COL_NOTAS), cV = c(COL_VOLVER);
+    if (cK < 0 || cE < 0 || cP < 0 || cL < 0) throw new Error('La hoja “' + T.hoja + '” no tiene el formato esperado.');
+    let fila = -1;
+    for (let i = 1; i < todo.length; i++) { if (String(todo[i][cK]) === codigo) { fila = i; break; } }
+    if (fila < 0) throw new Error('No se encontró ese registro.');
+    const v = todo[fila].slice();
+    while (v.length < cab.length) v.push('');
+    const previas = String(v[cN] || '');
+    const nuevas = (previas ? previas + '\n' : '') + lineas.join('\n');
+    if (lineas.length) {
+      if (nuevas.length > NOTAS_TOTAL_MAX) throw new Error('Este mensaje ya tiene demasiadas notas.');
+      v[cN] = nuevas;
+    }
+    if (volver !== undefined) v[cV] = volver;
+    if (op.atendido === true) { v[cE] = 'Atendido'; v[cP] = quienAtiende || por; v[cL] = ahora; v[cV] = ''; }
+    else if (op.atendido === false) { v[cE] = 'Nuevo'; v[cP] = ''; v[cL] = ''; }
+    const r = sh.getRange(fila + 1, 1, 1, v.length);
+    r.setNumberFormat('@'); r.setValues([v]);
+  } finally { lock.releaseLock(); }
 }

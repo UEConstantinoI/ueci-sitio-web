@@ -10,7 +10,7 @@
  */
 
 // Versión de este archivo. Se cambia en cada entrega; el panel la muestra para saber si todo está al día.
-const VERSION_CODIGO = '2026.10.19-2';
+const VERSION_CODIGO = '2026.10.23-1';
 
 const CONFIG = {
   OWNER: 'UEConstantinoI',
@@ -819,8 +819,8 @@ const HOJA_CONSULTAS = 'Consultas';
 const HOJA_ADMISIONES = 'Admisiones';
 const MAX_BUZON = 300;
 const BUZON = {
-  consultas: { hoja: HOJA_CONSULTAS, prefijo: 'CON', claves: { 'Fecha': 'fecha', 'Código': 'codigo', 'Nombre': 'nombre', 'Teléfono': 'telefono', 'Correo': 'email', 'Mensaje': 'mensaje', 'Estado': 'estado', 'Atendido por': 'por', 'Atendido el': 'el' } },
-  admisiones: { hoja: HOJA_ADMISIONES, prefijo: 'ADM', claves: { 'Fecha': 'fecha', 'Código': 'codigo', 'Estudiante': 'estudiante', 'Nacimiento': 'nacimiento', 'Nivel': 'nivel', 'Grado': 'grado', 'Colegio anterior': 'colegio', 'Tutor': 'tutor', 'Teléfonos': 'telefonos', 'WhatsApp': 'whatsapp', 'Correo': 'email', 'Comentario': 'comentario', 'Estado': 'estado', 'Atendido por': 'por', 'Atendido el': 'el' } }
+  consultas: { hoja: HOJA_CONSULTAS, prefijo: 'CON', claves: { 'Fecha': 'fecha', 'Código': 'codigo', 'Nombre': 'nombre', 'Teléfono': 'telefono', 'Correo': 'email', 'Mensaje': 'mensaje', 'Estado': 'estado', 'Atendido por': 'por', 'Atendido el': 'el', 'Notas': 'notas', 'Volver a contactar': 'volver' } },
+  admisiones: { hoja: HOJA_ADMISIONES, prefijo: 'ADM', claves: { 'Fecha': 'fecha', 'Código': 'codigo', 'Estudiante': 'estudiante', 'Nacimiento': 'nacimiento', 'Nivel': 'nivel', 'Grado': 'grado', 'Colegio anterior': 'colegio', 'Tutor': 'tutor', 'Teléfonos': 'telefonos', 'WhatsApp': 'whatsapp', 'Correo': 'email', 'Comentario': 'comentario', 'Estado': 'estado', 'Atendido por': 'por', 'Atendido el': 'el', 'Notas': 'notas', 'Volver a contactar': 'volver' } }
 };
 
 function buzonLeerTipo_(tipo) {
@@ -893,34 +893,97 @@ function avisoCorreoGuardar(correos) {
 
 function buzonCargar() { exigir_(); return buzonParaPanel_(); }
 
-/** tipo = 'consultas' | 'admisiones'; atendido = true/false. Devuelve la lista actualizada de las dos. */
-function buzonMarcar(tipo, codigo, atendido) {
-  const u = exigir_();
-  const cfg = BUZON[tipo];
-  if (!cfg) throw new Error('Tipo no válido.');
-  if (!new RegExp('^' + cfg.prefijo + '-(?:\\d{4}|\\d{2}-[A-Z0-9]{4})$').test(String(codigo || ''))) throw new Error('Código no válido.');
+
+/* ───────────────────────── NOTAS DE SEGUIMIENTO (misma lógica en Codigo.gs y Formularios.gs) ─────────────────────────
+ * Cada mensaje tiene "Notas" (historial: una línea por nota, con fecha, hora y quién) y "Volver a contactar" (fecha).
+ * Marcar como atendido exige una nota. Las notas solo se agregan: no se editan ni se borran. */
+const NOTA_MAX = 500, NOTAS_TOTAL_MAX = 20000;
+const COL_NOTAS = 'Notas', COL_VOLVER = 'Volver a contactar';
+
+function bzColumnas_(sh) {
+  const cab = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
+  [COL_NOTAS, COL_VOLVER].forEach(function (c) {
+    if (cab.indexOf(c) < 0) { const r = sh.getRange(1, cab.length + 1); r.setNumberFormat('@'); r.setValue(c); r.setFontWeight('bold'); cab.push(c); }
+  });
+  return cab;
+}
+
+// op = { por, nota?, volver? ('' = quitar), atendido? (true|false) }; ahora = 'yyyy-MM-dd HH:mm' (hora de La Paz)
+function bzAplicar_(ss, tipo, codigo, op, ahora, quienAtiende) {
+  const T = { consultas: { hoja: 'Consultas', pref: 'CON' }, admisiones: { hoja: 'Admisiones', pref: 'ADM' } }[tipo];
+  if (!T) throw new Error('Tipo no válido.');
+  if (!new RegExp('^' + T.pref + '-(?:\\d{4}|\\d{2}-[A-Z0-9]{4})$').test(String(codigo || ''))) throw new Error('Código no válido.');
+  const por = String(op.por || '').replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 60);
+  if (!por) throw new Error('Falta saber quién escribe la nota.');
+  const nota = String(op.nota || '').replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim();
+  if (nota.length > NOTA_MAX) throw new Error('La nota es muy larga (máximo ' + NOTA_MAX + ' letras).');
+  if (op.atendido === true && !nota) throw new Error('Para marcar como atendido escribe una nota: qué pasó con este mensaje.');
+  let volver;
+  if (op.volver !== undefined && op.volver !== null) {
+    volver = String(op.volver).trim();
+    if (volver) {
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(volver), f = m ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])) : null;
+      if (!f || f.getUTCMonth() !== +m[2] - 1 || f.getUTCDate() !== +m[3]) throw new Error('La fecha para volver a contactar no es válida.');
+      if (volver < ahora.slice(0, 10)) throw new Error('La fecha para volver a contactar no puede estar en el pasado.');
+    }
+  }
+  if (op.atendido === undefined && !nota && volver === undefined) throw new Error('Escribe una nota.');
+
+  const lineas = [];
+  const pre = ahora + ' · ' + por + ': ';
+  if (nota) lineas.push(pre + (op.atendido === true ? '✓ Atendido. ' : '') + nota + (volver ? ' (volver a contactar el ' + volver + ')' : ''));
+  else if (op.atendido === true) lineas.push(pre + '✓ Atendido');
+  else if (volver !== undefined) lineas.push(pre + (volver ? 'Volver a contactar el ' + volver : 'Se quitó la fecha para volver a contactar'));
+  if (op.atendido === false) lineas.push(pre + '↺ Reabierto');
+
   const lock = LockService.getScriptLock();
   lock.waitLock(25000);
   try {
-    const sh = SpreadsheetApp.getActive().getSheetByName(cfg.hoja);
+    const sh = ss.getSheetByName(T.hoja);
     if (!sh || sh.getLastRow() < 2) throw new Error('No hay registros.');
-    const todo = sh.getRange(1, 1, sh.getLastRow(), sh.getLastColumn()).getValues();
-    const idx = function (nombre) { return todo[0].indexOf(nombre); };
-    const cCod = idx('Código'), cEst = idx('Estado'), cPor = idx('Atendido por'), cEl = idx('Atendido el');
-    if (cCod < 0 || cEst < 0 || cPor < 0 || cEl < 0) throw new Error('La hoja “' + cfg.hoja + '” no tiene el formato esperado.');
+    const cab = bzColumnas_(sh);
+    const todo = sh.getRange(1, 1, sh.getLastRow(), cab.length).getValues();
+    const c = function (n) { return cab.indexOf(n); };
+    const cK = c('Código'), cE = c('Estado'), cP = c('Atendido por'), cL = c('Atendido el'), cN = c(COL_NOTAS), cV = c(COL_VOLVER);
+    if (cK < 0 || cE < 0 || cP < 0 || cL < 0) throw new Error('La hoja “' + T.hoja + '” no tiene el formato esperado.');
     let fila = -1;
-    for (let i = 1; i < todo.length; i++) { if (String(todo[i][cCod]) === codigo) { fila = i + 1; break; } }
+    for (let i = 1; i < todo.length; i++) { if (String(todo[i][cK]) === codigo) { fila = i; break; } }
     if (fila < 0) throw new Error('No se encontró ese registro.');
-    const ahora = Utilities.formatDate(new Date(), 'America/La_Paz', 'yyyy-MM-dd HH:mm');
-    const r = sh.getRange(fila, 1, 1, todo[0].length);
-    const valores = todo[fila - 1].slice();
-    valores[cEst] = atendido === true ? 'Atendido' : 'Nuevo';
-    valores[cPor] = atendido === true ? u.email : '';
-    valores[cEl] = atendido === true ? ahora : '';
-    r.setNumberFormat('@');
-    r.setValues([valores]);
-    registrar_(u, atendido === true ? 'Marcado como atendido' : 'Reabierto', codigo);
+    const v = todo[fila].slice();
+    while (v.length < cab.length) v.push('');
+    const previas = String(v[cN] || '');
+    const nuevas = (previas ? previas + '\n' : '') + lineas.join('\n');
+    if (lineas.length) {
+      if (nuevas.length > NOTAS_TOTAL_MAX) throw new Error('Este mensaje ya tiene demasiadas notas.');
+      v[cN] = nuevas;
+    }
+    if (volver !== undefined) v[cV] = volver;
+    if (op.atendido === true) { v[cE] = 'Atendido'; v[cP] = quienAtiende || por; v[cL] = ahora; v[cV] = ''; }
+    else if (op.atendido === false) { v[cE] = 'Nuevo'; v[cP] = ''; v[cL] = ''; }
+    const r = sh.getRange(fila + 1, 1, 1, v.length);
+    r.setNumberFormat('@'); r.setValues([v]);
   } finally { lock.releaseLock(); }
+}
+
+function ahoraLaPaz_() { return Utilities.formatDate(new Date(), 'America/La_Paz', 'yyyy-MM-dd HH:mm'); }
+
+/** tipo = 'consultas' | 'admisiones'; atendido = true/false. Al marcar como atendido la nota es obligatoria.
+ *  Devuelve la lista actualizada de las dos. */
+function buzonMarcar(tipo, codigo, atendido, nota) {
+  const u = exigir_();
+  const por = u.nombre || u.email;
+  bzAplicar_(SpreadsheetApp.getActive(), tipo, codigo, { por: por, nota: nota, atendido: atendido === true }, ahoraLaPaz_(), u.email);
+  registrar_(u, atendido === true ? 'Marcado como atendido' : 'Reabierto', codigo);
+  return buzonParaPanel_();
+}
+
+/** Agrega una nota (y/o fecha para volver a contactar) sin cambiar el estado. volver: 'AAAA-MM-DD', '' = quitar, null = no tocar. */
+function buzonNota(tipo, codigo, nota, volver) {
+  const u = exigir_();
+  const op = { por: u.nombre || u.email, nota: nota };
+  if (volver !== null && volver !== undefined) op.volver = volver;
+  bzAplicar_(SpreadsheetApp.getActive(), tipo, codigo, op, ahoraLaPaz_(), u.email);
+  registrar_(u, 'Nota agregada', codigo);
   return buzonParaPanel_();
 }
 

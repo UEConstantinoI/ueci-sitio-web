@@ -106,6 +106,17 @@
   .bz-acc .wa{background:#25D366;border-color:#25D366;color:#04270f}
   .bz-acc .ok{margin-left:auto;background:var(--verde);border-color:var(--verde);color:#fff}
   .bz-pie{font-size:12px;color:var(--soft);margin-top:8px}
+  .bz-notas{margin-top:10px;background:#faf6e8;border:1px solid #eadfb4;border-radius:10px;padding:9px 12px;font-size:13px}
+  .bz-notas b{display:block;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#8a6a10;margin-bottom:4px}
+  .bz-notas div{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.45}
+  .bz-volver{display:inline-block;margin-top:8px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;background:#e8f1ea;color:#1f5631}
+  .bz-volver.vence{background:#fde8e5;color:#9a2a1c}
+  .bz-form{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff;display:flex;flex-direction:column;gap:8px}
+  .bz-form label{font-weight:700;font-size:13px}
+  .bz-form textarea,.bz-form input[type=date]{border:1px solid var(--line);border-radius:9px;padding:9px 11px;font:inherit;background:#fff}
+  .bz-form textarea{min-height:76px;resize:vertical}
+  .bz-form .fila{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .bz-form .err{color:#9a2a1c;font-size:13px}
   .vacio{grid-column:1/-1;text-align:center;padding:50px 20px;color:var(--soft);background:var(--card);border:1px dashed var(--line);border-radius:14px}
 
   /* ---- ventanas ---- */
@@ -309,7 +320,8 @@
           <button class="tab act" data-t="consultas">Consultas</button>
           <button class="tab" data-t="admisiones">Admisiones</button>
         </div>
-        <label style="margin-left:auto;display:flex;gap:6px;align-items:center;font-weight:600;color:var(--soft)"><input type="checkbox" id="bzSoloNuevas"> Solo pendientes</label>
+        <label style="margin-left:auto;display:flex;gap:6px;align-items:center;font-weight:600;color:var(--soft)"><input type="checkbox" id="bzSeguim"> Con seguimiento pendiente</label>
+        <label style="display:flex;gap:6px;align-items:center;font-weight:600;color:var(--soft)"><input type="checkbox" id="bzSoloNuevas"> Solo pendientes</label>
       </div>
       <div class="bz-lista" id="bzLista"><div class="carga">Cargando…</div></div>
     </div>
@@ -1276,7 +1288,8 @@ function parsearVideo_(entrada) {
   }
 
   /* ---------- CONSULTAS Y ADMISIONES ---------- */
-  var BZ={tipo:'consultas',datos:{consultas:[],admisiones:[]},error:'',admin:false};
+  var BZ={tipo:'consultas',datos:{consultas:[],admisiones:[]},error:'',admin:false,form:null};
+  function hoyBo(){ return new Date(Date.now()-4*3600*1000).toISOString().slice(0,10); }
   function bzPend(l){ return l.filter(function(x){return x.estado!=='Atendido';}).length; }
   function celWa(s){ var m=String(s||'').match(/([67]\d{7})/); return m?'591'+m[1]:''; }
   function bzFila(dl,k,v){ if(!v) return; dl.appendChild(el('dt',{text:k})); dl.appendChild(el('dd',{text:v})); }
@@ -1289,6 +1302,27 @@ function parsearVideo_(entrada) {
     ocupado(true,'Guardando…');
     servidor('avisoCorreoGuardar',[$('bzCorreo').value],function(c){ ocupado(false); BZ.datos.avisoA=c; renderCorreo(); toast('Listo: los avisos llegarán a '+c+'.'); });
   };
+  function bzFormulario(it,modo){
+    var ta=el('textarea',{maxlength:'500',placeholder:modo==='atender'?'Ejemplo: Se llamó y se le informó los requisitos. Quedó en traer documentos.':'Ejemplo: Se llamó, no contestó. Reintentar mañana.'});
+    var fecha=el('input',{type:'date',min:hoyBo()}); if(it.volver) fecha.value=it.volver;
+    var err=el('div',{class:'err'});
+    var titulo=modo==='atender'?'¿Qué pasó con este mensaje? (obligatorio, aunque sea algo simple)':(modo==='reabrir'?'Motivo de reabrir (opcional)':'Nota de seguimiento');
+    var filaF=el('div',{class:'fila'},[el('label',{text:'Volver a contactar el:'}),fecha]);
+    if(modo!=='nota') filaF.hidden=true;
+    var guardar=el('button',{class:'btn btn-sun',type:'button',text:modo==='atender'?'✓ Guardar y marcar atendido':(modo==='reabrir'?'Reabrir':'Guardar nota'),onclick:function(){
+      var t=ta.value.trim(); err.textContent='';
+      if(modo==='atender'&&!t){ err.textContent='Escribe una nota: qué pasó con este mensaje.'; ta.focus(); return; }
+      if(modo==='nota'&&!t&&fecha.value===(it.volver||'')){ err.textContent='Escribe una nota o elige una fecha.'; return; }
+      var ok=function(d){ ocupado(false); BZ.datos=d; BZ.error=d.error||''; BZ.form=null; renderBuzon(); toast(modo==='atender'?'Marcado como atendido.':(modo==='reabrir'?'Reabierto.':'Nota guardada.')); };
+      var mal=function(e){ ocupado(false); err.textContent=mensajeError(e); };
+      ocupado(true,'Guardando…');
+      if(modo==='nota') servidor('buzonNota',[BZ.tipo,it.codigo,t,fecha.value===(it.volver||'')?null:fecha.value],ok,mal);
+      else servidor('buzonMarcar',[BZ.tipo,it.codigo,modo==='atender',t],ok,mal);
+    }});
+    var cancelar=el('button',{class:'btn btn-ghost',type:'button',text:'Cancelar',onclick:function(){ BZ.form=null; renderBuzon(); }});
+    setTimeout(function(){ ta.focus(); },30);
+    return el('div',{class:'bz-form'},[el('label',{text:titulo}),ta,filaF,err,el('div',{class:'fila'},[guardar,cancelar])]);
+  }
   function renderBuzon(){
     renderCorreo();
     var b=BZ.datos, nc=bzPend(b.consultas), na=bzPend(b.admisiones), tot=nc+na;
@@ -1297,7 +1331,8 @@ function parsearVideo_(entrada) {
     Array.prototype.forEach.call(tabs,function(t){ t.classList.toggle('act',t.getAttribute('data-t')===BZ.tipo); });
     var cont=$('bzLista'); cont.textContent='';
     if(BZ.error){ cont.appendChild(el('div',{class:'vacio',text:'No se pudo leer: '+BZ.error})); return; }
-    var lista=b[BZ.tipo].filter(function(x){ return !$('bzSoloNuevas').checked || x.estado!=='Atendido'; });
+    var hoy=hoyBo();
+    var lista=b[BZ.tipo].filter(function(x){ return (!$('bzSoloNuevas').checked || x.estado!=='Atendido') && (!$('bzSeguim').checked || (x.volver && x.volver<=hoy && x.estado!=='Atendido')); });
     if(!lista.length){ cont.appendChild(el('div',{class:'vacio',text:b[BZ.tipo].length?'No hay pendientes. Desmarca “Solo pendientes” para ver los ya atendidos.':'Todavía no hay envíos. Cuando alguien use el formulario del sitio, aparecerá aquí.'})); return; }
     lista.forEach(function(it){
       var adm=BZ.tipo==='admisiones', dl=el('dl');
@@ -1312,25 +1347,27 @@ function parsearVideo_(entrada) {
       }
       if(it.email && /^[^\s@<>"',;]+@[^\s@<>"',;]+\.[^\s@<>"',;]+$/.test(it.email)) acc.appendChild(el('a',{href:'mailto:'+it.email,text:'Correo'}));
       var ya=it.estado==='Atendido';
-      acc.appendChild(el('button',{class:ya?'':'ok',text:ya?'Reabrir':'✓ Marcar atendido',onclick:function(){
-        ocupado(true,'Guardando…');
-        servidor('buzonMarcar',[BZ.tipo,it.codigo,!ya],function(d){ ocupado(false); BZ.datos=d; BZ.error=d.error||''; renderBuzon(); toast(ya?'Reabierto.':'Marcado como atendido.'); });
-      }}));
+      acc.appendChild(el('button',{text:'📝 Agregar nota',onclick:function(){ BZ.form={cod:it.codigo,modo:'nota'}; renderBuzon(); }}));
+      acc.appendChild(el('button',{class:ya?'':'ok',text:ya?'Reabrir':'✓ Marcar atendido',onclick:function(){ BZ.form={cod:it.codigo,modo:ya?'reabrir':'atender'}; renderBuzon(); }}));
       var item=el('div',{class:'bz-item'+(ya?' atendido':'')},[
         el('div',{class:'bz-top'},[el('b',{text:it.codigo}),el('span',{text:it.fecha}),el('span',{class:'badge'+(ya?'':' dorado'),text:ya?'Atendido':'Nuevo'})]),
         el('h3',{text:adm?it.estudiante:it.nombre}), dl, acc
       ]);
+      if(it.volver && !ya){ var vence=it.volver<=hoy; item.insertBefore(el('span',{class:'bz-volver'+(vence?' vence':''),text:(vence?'⏰ Volver a contactar: hoy o vencido ('+it.volver+')':'📅 Volver a contactar el '+it.volver)}),acc); }
+      if(it.notas){ item.insertBefore(el('div',{class:'bz-notas'},[el('b',{text:'Notas de seguimiento'}),el('div',{text:it.notas})]),acc); }
       if(ya&&it.por) item.appendChild(el('div',{class:'bz-pie',text:'Atendido por '+it.por+(it.el?' el '+it.el:'')}));
+      if(BZ.form&&BZ.form.cod===it.codigo) item.appendChild(bzFormulario(it,BZ.form.modo));
       cont.appendChild(item);
     });
   }
   $('bzTabs').addEventListener('click',function(e){ var t=e.target.getAttribute&&e.target.getAttribute('data-t'); if(t){ BZ.tipo=t; renderBuzon(); } });
   $('bzSoloNuevas').onchange=renderBuzon;
+  $('bzSeguim').onchange=renderBuzon;
   $('bzActualizar').onclick=function(){ ocupado(true,'Actualizando…'); servidor('buzonCargar',[],function(d){ ocupado(false); BZ.datos=d; BZ.error=d.error||''; renderBuzon(); }); };
   function iniciarBuzon(b,rol){ BZ.admin=(rol==='ADMIN'); if(b&&!b.error){ BZ.datos=b; BZ.error=''; } else { BZ.error=(b&&b.error)||'sin datos'; } renderBuzon(); }
 
   /* ---------- arranque ---------- */
-  var VERSION_PANEL='2026.10.19-2';   // se cambia en cada entrega
+  var VERSION_PANEL='2026.10.23-1';   // se cambia en cada entrega
   servidor('panelCargar',[],function(d){
     pintarEspacio(d.espacio); S.noticias=d.noticias; S.galeria=d.galeria||[]; S.videos=d.videos||[]; S.calendario=(d.calendario&&d.calendario.datos)||[]; S.imgBase=d.imgBase; S.visibles=d.visibles; S.hoy=d.hoy;
     $('nVis').textContent=d.visibles; $('verSitio').href=d.sitioUrl;
