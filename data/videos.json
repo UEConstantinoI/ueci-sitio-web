@@ -20,16 +20,6 @@
     "id": "v20261019-1004f"
   },
   {
-    "titulo": "Entrevista a Kira Rioja, exalumna de la U.E. Constantino I",
-    "url": "https://www.facebook.com/reel/956716987094723",
-    "plataforma": "facebook",
-    "codigo": "reel/956716987094723",
-    "categoria": "testimonios",
-    "publicar": true,
-    "portada": "assets/videos/20261019-5027230b.jpg",
-    "id": "v20261019-8d50d"
-  },
-  {
     "titulo": "Convenio con Elevate Academy - Examen Cambridge B2 First",
     "url": "https://www.instagram.com/reel/De5Xuj8h4S7/?srtk=ZmF6anB6Z3oycHhr",
     "plataforma": "instagram",
@@ -38,6 +28,16 @@
     "publicar": true,
     "portada": "assets/videos/20261025-b5393ba8.jpg",
     "id": "v20261025-010a0"
+  },
+  {
+    "titulo": "Entrevista a Kira Rioja, exalumna de la U.E. Constantino I",
+    "url": "https://www.facebook.com/reel/956716987094723",
+    "plataforma": "facebook",
+    "codigo": "reel/956716987094723",
+    "categoria": "testimonios",
+    "publicar": true,
+    "portada": "assets/videos/20261019-5027230b.jpg",
+    "id": "v20261019-8d50d"
   },
   {
     "titulo": "Entrevista a Valeria Sierra, exalumna de la U.E. Constantino I",
