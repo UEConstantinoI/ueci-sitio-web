@@ -10,7 +10,7 @@
  */
 
 // Versión de este archivo. Se cambia en cada entrega; el panel la muestra para saber si todo está al día.
-const VERSION_CODIGO = '2026.10.23-1';
+const VERSION_CODIGO = '2026.10.25-1';
 
 const CONFIG = {
   OWNER: 'UEConstantinoI',
@@ -582,7 +582,7 @@ const COLORES_ACCESO = ['rojo', 'verde', 'sol', 'azul', 'royal', 'gris'];
 
 function listaVideos_() {
   return {
-    archivo: CONFIG.ARCHIVO_VIDEOS, idRe: ID_V_RE, pref: 'v', max: CONFIG.MAX_VIDEOS, nombre: 'video', plural: 'videos',
+    archivo: CONFIG.ARCHIVO_VIDEOS, idRe: ID_V_RE, pref: 'v', max: CONFIG.MAX_VIDEOS, nombre: 'video', plural: 'videos', nuevosPrimero: true,   // el video nuevo aparece primero en el sitio
     leer: function (x) {
       return { titulo: String(x.titulo || ''), url: String(x.url || ''), plataforma: String(x.plataforma || ''), codigo: String(x.codigo || ''),
                categoria: CATEGORIAS_VIDEO.indexOf(x.categoria) >= 0 ? x.categoria : 'vida', publicar: x.publicar !== false,
@@ -684,7 +684,7 @@ function listaGuardarItem_(cfg, u, datos, item) {
     item.id = nuevo ? nuevoIdLista_(cfg.pref) : act.lista[idx].id;
     const previo = nuevo ? null : act.lista[idx];
     if (cfg.fusionar) cfg.fusionar(item, previo, datos, u);
-    if (nuevo) act.lista.push(item); else act.lista[idx] = item;
+    if (nuevo) { if (cfg.nuevosPrimero) act.lista.unshift(item); else act.lista.push(item); } else act.lista[idx] = item;
     if (cfg.ordenar) act.lista.sort(cfg.ordenar);
     listaEscribir_(cfg, act.lista, act.sha, cfg.nombre[0].toUpperCase() + cfg.nombre.slice(1) + ': ' + (nuevo ? 'nuevo' : 'editado') + ' "' + cfg.rotulo(item) + '" (' + u.email + ')');
     registrar_(u, cfg.nombre[0].toUpperCase() + cfg.nombre.slice(1) + (nuevo ? ' agregado' : ' editado'), cfg.rotulo(item) + (item.publicar ? ' [visible]' : ' [oculto]'));

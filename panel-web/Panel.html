@@ -1197,7 +1197,7 @@ function parsearVideo_(entrada) {
     nombre:'video', grid:'gridVideos', aviso:'avisoVideos', get:function(){return S.videos;}, set:function(l){S.videos=l;},
     srv:{guardar:'videoGuardar',eliminar:'videoEliminar',mover:'videoMover'},
     vacio:'Todavía no hay videos. Agrega el primero con “+ Nuevo video”.',
-    avisoTxt:function(n,v){ return n?('Hay '+n+' video(s); '+v+' visible(s). El orden de esta lista es el orden en el sitio. Máximo 24. Los videos de TikTok, Instagram y Facebook deben ser públicos para verse.'):'Todavía no hay videos.'; },
+    avisoTxt:function(n,v){ return n?('Hay '+n+' video(s); '+v+' visible(s). El orden de esta lista es el orden en el sitio; los videos nuevos se agregan al inicio y puedes moverlos con las flechas. Máximo 24. Los videos de TikTok, Instagram y Facebook deben ser públicos para verse.'):'Todavía no hay videos.'; },
     defecto:function(){ return {titulo:'',url:'',categoria:'vida',publicar:true}; },
     campos:[
       {k:'url',rot:'Enlace del video',max:300,detecta:function(v){ if(!v.trim()) return {ok:false,texto:'Pega aquí el enlace (botón “Compartir” → “Copiar enlace”).'}; try{ var r=parsearVideo_(v); return {ok:true,texto:'✔ '+NOMBRES_P[r.plataforma]+' reconocido'}; }catch(e){ return {ok:false,texto:mensajeError(e)}; } }},
@@ -1367,7 +1367,7 @@ function parsearVideo_(entrada) {
   function iniciarBuzon(b,rol){ BZ.admin=(rol==='ADMIN'); if(b&&!b.error){ BZ.datos=b; BZ.error=''; } else { BZ.error=(b&&b.error)||'sin datos'; } renderBuzon(); }
 
   /* ---------- arranque ---------- */
-  var VERSION_PANEL='2026.10.23-1';   // se cambia en cada entrega
+  var VERSION_PANEL='2026.10.25-1';   // se cambia en cada entrega
   servidor('panelCargar',[],function(d){
     pintarEspacio(d.espacio); S.noticias=d.noticias; S.galeria=d.galeria||[]; S.videos=d.videos||[]; S.calendario=(d.calendario&&d.calendario.datos)||[]; S.imgBase=d.imgBase; S.visibles=d.visibles; S.hoy=d.hoy;
     $('nVis').textContent=d.visibles; $('verSitio').href=d.sitioUrl;
