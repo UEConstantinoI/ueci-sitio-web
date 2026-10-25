@@ -40,16 +40,6 @@
     "id": "v20261019-8d50d"
   },
   {
-    "titulo": "Entrevista a Valeria Sierra, exalumna de la U.E. Constantino I",
-    "url": "https://www.facebook.com/reel/944086998532550",
-    "plataforma": "facebook",
-    "codigo": "reel/944086998532550",
-    "categoria": "testimonios",
-    "publicar": true,
-    "portada": "assets/videos/20261019-f20fb13b.jpg",
-    "id": "v20261019-000a6"
-  },
-  {
     "titulo": "¿Tu hijo lee por obligación o porque realmente disfruta leer?",
     "url": "https://www.tiktok.com/@u.e.constantinoi/video/7648749947298303240?lang=es",
     "plataforma": "tiktok",
@@ -58,5 +48,15 @@
     "publicar": true,
     "portada": "assets/videos/20261019-35f2accc.jpg",
     "id": "v20261019-651ba"
+  },
+  {
+    "titulo": "Entrevista a Valeria Sierra, exalumna de la U.E. Constantino I",
+    "url": "https://www.facebook.com/reel/944086998532550",
+    "plataforma": "facebook",
+    "codigo": "reel/944086998532550",
+    "categoria": "testimonios",
+    "publicar": true,
+    "portada": "assets/videos/20261019-f20fb13b.jpg",
+    "id": "v20261019-000a6"
   }
 ]
