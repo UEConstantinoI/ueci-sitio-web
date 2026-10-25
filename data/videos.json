@@ -30,16 +30,6 @@
     "id": "v20261014-02830"
   },
   {
-    "titulo": "Entrevista a Kira Rioja, exalumna de la U.E. Constantino I",
-    "url": "https://www.facebook.com/reel/956716987094723",
-    "plataforma": "facebook",
-    "codigo": "reel/956716987094723",
-    "categoria": "testimonios",
-    "publicar": true,
-    "portada": "assets/videos/20261019-5027230b.jpg",
-    "id": "v20261019-8d50d"
-  },
-  {
     "titulo": "¿Tu hijo lee por obligación o porque realmente disfruta leer?",
     "url": "https://www.tiktok.com/@u.e.constantinoi/video/7648749947298303240?lang=es",
     "plataforma": "tiktok",
@@ -48,6 +38,16 @@
     "publicar": true,
     "portada": "assets/videos/20261019-35f2accc.jpg",
     "id": "v20261019-651ba"
+  },
+  {
+    "titulo": "Entrevista a Kira Rioja, exalumna de la U.E. Constantino I",
+    "url": "https://www.facebook.com/reel/956716987094723",
+    "plataforma": "facebook",
+    "codigo": "reel/956716987094723",
+    "categoria": "testimonios",
+    "publicar": true,
+    "portada": "assets/videos/20261019-5027230b.jpg",
+    "id": "v20261019-8d50d"
   },
   {
     "titulo": "Entrevista a Valeria Sierra, exalumna de la U.E. Constantino I",
