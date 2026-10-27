@@ -26,11 +26,11 @@
     "url": "https://www.facebook.com/reel/980898264491608",
     "plataforma": "facebook",
     "codigo": "reel/980898264491608",
-    "seccion": "+300 OBRAS / VIDA ESCOLAR",
     "categoria": "vida",
     "publicar": true,
-    "id": "v20261027-bb815",
-    "portada": "assets/videos/20261027-5fc701d1.jpg"
+    "seccion": "+300 OBRAS / VIDA ESCOLAR",
+    "portada": "assets/videos/20261027-5fc701d1.jpg",
+    "id": "v20261027-bb815"
   },
   {
     "titulo": "Festival Cuenta Cuentos - La Abejita que aprendió a compartir",
@@ -53,17 +53,6 @@
     "seccion": "+300 OBRAS / VIDA ESCOLAR",
     "portada": "assets/videos/20261027-0c3fe01c.jpg",
     "id": "v20261027-a24cf"
-  },
-  {
-    "titulo": "Festival Cuenta Cuentos",
-    "url": "https://www.instagram.com/reel/DerhpeEx1en/?utm_source=ig_web_copy_link&dlrf=MzRlODBiNWFlZA==&srtk=MzRlODBiNWFlZA==",
-    "plataforma": "instagram",
-    "codigo": "reel/DerhpeEx1en",
-    "categoria": "vida",
-    "publicar": true,
-    "seccion": "+300 OBRAS / VIDA ESCOLAR",
-    "portada": "assets/videos/20261019-871a8186.jpg",
-    "id": "v20261014-02830"
   },
   {
     "titulo": "¿Tu hijo lee por obligación o porque realmente disfruta leer?",
