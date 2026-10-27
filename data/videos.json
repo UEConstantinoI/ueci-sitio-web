@@ -15,22 +15,22 @@
     "url": "https://www.instagram.com/p/DepN4rMRrfj/",
     "plataforma": "instagram",
     "codigo": "p/DepN4rMRrfj",
+    "seccion": "+300 OBRAS / VIDA ESCOLAR",
     "categoria": "vida",
     "publicar": true,
-    "seccion": "Vida escolar",
-    "portada": "assets/videos/20261019-ddaa0ab8.jpg",
-    "id": "v20261019-1004f"
+    "id": "v20261019-1004f",
+    "portada": "assets/videos/20261019-ddaa0ab8.jpg"
   },
   {
     "titulo": "Festival Cuenta Cuentos",
     "url": "https://www.instagram.com/reel/DerhpeEx1en/?utm_source=ig_web_copy_link&dlrf=MzRlODBiNWFlZA==&srtk=MzRlODBiNWFlZA==",
     "plataforma": "instagram",
     "codigo": "reel/DerhpeEx1en",
-    "seccion": "+300 OBRAS / VIDA ESCOLAR",
     "categoria": "vida",
     "publicar": true,
-    "id": "v20261014-02830",
-    "portada": "assets/videos/20261019-871a8186.jpg"
+    "seccion": "+300 OBRAS / VIDA ESCOLAR",
+    "portada": "assets/videos/20261019-871a8186.jpg",
+    "id": "v20261014-02830"
   },
   {
     "titulo": "¿Tu hijo lee por obligación o porque realmente disfruta leer?",
