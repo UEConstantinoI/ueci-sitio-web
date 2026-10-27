@@ -4,11 +4,11 @@
     "url": "https://www.instagram.com/reel/De5Xuj8h4S7/?srtk=ZmF6anB6Z3oycHhr",
     "plataforma": "instagram",
     "codigo": "reel/De5Xuj8h4S7",
-    "seccion": "BILINGÜE / CAMBRIDGE",
     "categoria": "vida",
     "publicar": true,
-    "id": "v20261025-010a0",
-    "portada": "assets/videos/20261025-b5393ba8.jpg"
+    "seccion": "BILINGÜE / CAMBRIDGE",
+    "portada": "assets/videos/20261025-b5393ba8.jpg",
+    "id": "v20261025-010a0"
   },
   {
     "titulo": "Presentación U.E. Constantino I, en el teatro Adela Zamudio",
@@ -37,11 +37,11 @@
     "url": "https://www.tiktok.com/@u.e.constantinoi/video/7648749947298303240?lang=es",
     "plataforma": "tiktok",
     "codigo": "7648749947298303240",
+    "seccion": "+300 OBRAS / VIDA ESCOLAR",
     "categoria": "vida",
     "publicar": true,
-    "seccion": "Vida escolar",
-    "portada": "assets/videos/20261019-35f2accc.jpg",
-    "id": "v20261019-651ba"
+    "id": "v20261019-651ba",
+    "portada": "assets/videos/20261019-35f2accc.jpg"
   },
   {
     "titulo": "Entrevista a Kira Rioja, exalumna de la U.E. Constantino I",
