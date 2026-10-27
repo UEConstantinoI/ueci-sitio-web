@@ -15,11 +15,11 @@
     "url": "https://www.instagram.com/p/DepN4rMRrfj/",
     "plataforma": "instagram",
     "codigo": "p/DepN4rMRrfj",
-    "seccion": "+300 OBRAS / VIDA ESCOLAR",
     "categoria": "vida",
     "publicar": true,
-    "id": "v20261019-1004f",
-    "portada": "assets/videos/20261019-ddaa0ab8.jpg"
+    "seccion": "+300 OBRAS / VIDA ESCOLAR",
+    "portada": "assets/videos/20261019-ddaa0ab8.jpg",
+    "id": "v20261019-1004f"
   },
   {
     "titulo": "Festival Cuenta Cuentos",
@@ -59,10 +59,10 @@
     "url": "https://www.facebook.com/reel/944086998532550",
     "plataforma": "facebook",
     "codigo": "reel/944086998532550",
+    "seccion": "Testimonios",
     "categoria": "testimonios",
     "publicar": true,
-    "seccion": "Testimonios",
-    "portada": "assets/videos/20261019-f20fb13b.jpg",
-    "id": "v20261019-000a6"
+    "id": "v20261019-000a6",
+    "portada": "assets/videos/20261019-f20fb13b.jpg"
   }
 ]
