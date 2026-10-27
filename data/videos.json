@@ -26,22 +26,22 @@
     "url": "https://www.instagram.com/reel/DerhpeEx1en/?utm_source=ig_web_copy_link&dlrf=MzRlODBiNWFlZA==&srtk=MzRlODBiNWFlZA==",
     "plataforma": "instagram",
     "codigo": "reel/DerhpeEx1en",
+    "seccion": "+300 OBRAS / VIDA ESCOLAR",
     "categoria": "vida",
     "publicar": true,
-    "seccion": "Vida escolar",
-    "portada": "assets/videos/20261019-871a8186.jpg",
-    "id": "v20261014-02830"
+    "id": "v20261014-02830",
+    "portada": "assets/videos/20261019-871a8186.jpg"
   },
   {
     "titulo": "¿Tu hijo lee por obligación o porque realmente disfruta leer?",
     "url": "https://www.tiktok.com/@u.e.constantinoi/video/7648749947298303240?lang=es",
     "plataforma": "tiktok",
     "codigo": "7648749947298303240",
-    "seccion": "+300 OBRAS / VIDA ESCOLAR",
     "categoria": "vida",
     "publicar": true,
-    "id": "v20261019-651ba",
-    "portada": "assets/videos/20261019-35f2accc.jpg"
+    "seccion": "+300 OBRAS / VIDA ESCOLAR",
+    "portada": "assets/videos/20261019-35f2accc.jpg",
+    "id": "v20261019-651ba"
   },
   {
     "titulo": "Entrevista a Kira Rioja, exalumna de la U.E. Constantino I",
