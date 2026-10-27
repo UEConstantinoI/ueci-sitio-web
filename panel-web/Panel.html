@@ -1077,6 +1077,7 @@ function parsearVideo_(entrada) {
         inp=el('select',{id:id}); c.opciones.forEach(function(o){ var op=el('option',{value:o[0],text:o[1]}); inp.appendChild(op); }); inp.value=v[c.k]||c.opciones[0][0];
       } else {
         inp=el('input',{type:(c.t==='date'?'date':'text'),id:id}); inp.value=v[c.k]||'';
+        if(c.sugerencias){ var dl=el('datalist',{id:id+'_l'}); c.sugerencias().forEach(function(x){ dl.appendChild(el('option',{value:x})); }); inp.setAttribute('list',id+'_l'); inp.setAttribute('autocomplete','off'); extra=dl; }
         if(c.t!=='date'){ var medir=function(){ cuenta.textContent=inp.value.length+'/'+c.max; cuenta.classList.toggle('mal',inp.value.length>c.max); };
         inp.addEventListener('input',medir); medir(); }
       }
@@ -1198,16 +1199,16 @@ function parsearVideo_(entrada) {
     srv:{guardar:'videoGuardar',eliminar:'videoEliminar',mover:'videoMover'},
     vacio:'Todavía no hay videos. Agrega el primero con “+ Nuevo video”.',
     avisoTxt:function(n,v){ return n?('Hay '+n+' video(s); '+v+' visible(s). El orden de esta lista es el orden en el sitio; los videos nuevos se agregan al inicio y puedes moverlos con las flechas. Máximo 24. Los videos de TikTok, Instagram y Facebook deben ser públicos para verse.'):'Todavía no hay videos.'; },
-    defecto:function(){ return {titulo:'',url:'',categoria:'vida',publicar:true}; },
+    defecto:function(){ return {titulo:'',url:'',seccion:'',publicar:true}; },
     campos:[
       {k:'url',rot:'Enlace del video',max:300,detecta:function(v){ if(!v.trim()) return {ok:false,texto:'Pega aquí el enlace (botón “Compartir” → “Copiar enlace”).'}; try{ var r=parsearVideo_(v); return {ok:true,texto:'✔ '+NOMBRES_P[r.plataforma]+' reconocido'}; }catch(e){ return {ok:false,texto:mensajeError(e)}; } }},
       {k:'titulo',rot:'Título',max:80,ayuda:'Se muestra debajo del video.'},
-      {k:'categoria',rot:'Etiqueta del video',t:'select',opciones:[['vida','Vida escolar (actividades, actos, TikTok…)'],['testimonios','Testimonio']]},
+      {k:'seccion',rot:'Sección',max:30,ayuda:'Agrupa los videos en el sitio. Elige una de la lista o escribe una nueva (ej.: Testimonios, Actos y festivales, Deportes).',sugerencias:function(){ var o=[]; S.videos.forEach(function(x){ if(x.seccion&&o.indexOf(x.seccion)<0) o.push(x.seccion); }); return o; }},
       {k:'portada',rot:'Imagen de portada (opcional)',t:'imagen',ayuda:'Para Instagram, TikTok y Facebook: sube una captura o foto del video, vertical u horizontal. En el sitio se ve completa, sin recortes. Si no subes nada, se ve un fondo de color. En YouTube no hace falta.'},
       {k:'publicar',rot:'Mostrar en el sitio',t:'check',ayuda:'Si lo desmarcas, queda guardado pero oculto.'}
     ],
-    validar:function(d){ if(!d.titulo.trim()) return 'Escribe un título.'; try{ parsearVideo_(d.url); }catch(e){ return mensajeError(e); } return ''; },
-    tope:function(it){ return el('div',{class:'vtop p-'+it.plataforma},[ el('span',{text:NOMBRES_P[it.plataforma]||it.plataforma}), el('small',{text:it.categoria==='testimonios'?'Testimonio':'Vida escolar'}) ]); },
+    validar:function(d){ if(!d.titulo.trim()) return 'Escribe un título.'; if(!String(d.seccion||'').trim()) return 'Escribe o elige la sección del video.'; try{ parsearVideo_(d.url); }catch(e){ return mensajeError(e); } return ''; },
+    tope:function(it){ return el('div',{class:'vtop p-'+it.plataforma},[ el('span',{text:NOMBRES_P[it.plataforma]||it.plataforma}), el('small',{text:it.seccion||(it.categoria==='testimonios'?'Testimonios':'Vida escolar')}) ]); },
     cuerpo:function(it){ return [ el('h3',{text:it.titulo||'(sin título)'}), el('div',{class:'url-corta',text:it.url}) ]; },
     badges:function(it){ return it.portada?[el('span',{class:'badge',text:'🖼 Con portada'})]:[]; }
   };
@@ -1367,7 +1368,7 @@ function parsearVideo_(entrada) {
   function iniciarBuzon(b,rol){ BZ.admin=(rol==='ADMIN'); if(b&&!b.error){ BZ.datos=b; BZ.error=''; } else { BZ.error=(b&&b.error)||'sin datos'; } renderBuzon(); }
 
   /* ---------- arranque ---------- */
-  var VERSION_PANEL='2026.10.25-1';   // se cambia en cada entrega
+  var VERSION_PANEL='2026.10.27-1';   // se cambia en cada entrega
   servidor('panelCargar',[],function(d){
     pintarEspacio(d.espacio); S.noticias=d.noticias; S.galeria=d.galeria||[]; S.videos=d.videos||[]; S.calendario=(d.calendario&&d.calendario.datos)||[]; S.imgBase=d.imgBase; S.visibles=d.visibles; S.hoy=d.hoy;
     $('nVis').textContent=d.visibles; $('verSitio').href=d.sitioUrl;

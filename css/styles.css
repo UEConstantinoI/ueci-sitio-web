@@ -497,3 +497,13 @@ html.dlg-abierto{overflow:hidden;}
 .vcard .vp-frente{position:absolute; inset:0; width:100%; height:100%; object-fit:contain; opacity:1;}
 .vcard .vplat{position:absolute; top:10px; left:10px; z-index:2; padding:4px 10px; border-radius:999px; background:rgba(0,0,0,.55); color:#fff; font-weight:700; font-size:11px; letter-spacing:.08em; text-transform:uppercase;}
 .vcard .play{z-index:2;}
+
+/* Videos agrupados por sección */
+.vsecs{display:block;}
+.vsec + .vsec{margin-top:36px;}
+.vsec-t{font-family:var(--font-display, inherit); font-size:1.25rem; margin:0 0 14px; padding-left:12px; border-left:4px solid var(--gold, var(--primary, #444));}
+.vsec[hidden]{display:none;}
+.vfiltros{display:flex; flex-wrap:wrap; gap:8px; margin:0 0 24px;}
+.vfiltro{border:1px solid var(--line, #ccc); background:#fff; color:inherit; padding:8px 16px; border-radius:999px; font:inherit; font-size:.92rem; cursor:pointer;}
+.vfiltro[aria-pressed="true"]{background:var(--primary, #1d3a6b); color:#fff; border-color:transparent;}
+.vfiltro:focus-visible{outline:3px solid var(--gold, #c9a227); outline-offset:2px;}

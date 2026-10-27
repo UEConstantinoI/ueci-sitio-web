@@ -581,8 +581,6 @@
     });
     item.appendChild(b);
     var meta = document.createElement('div'); meta.className = 'vmeta';
-    var ETQ = { testimonios: 'Testimonio', vida: 'Vida escolar' };
-    if (ETQ[v.categoria]) { var e = document.createElement('small'); e.className = 'vetq'; e.textContent = ETQ[v.categoria]; meta.appendChild(e); }
     if (v.titulo) { var t = document.createElement('b'); t.textContent = v.titulo; meta.appendChild(t); }
     if (typeof v.url === 'string' && URL_OK.test(v.url)) {
       var a = document.createElement('a'); a.href = v.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = 'Abrir en ' + NOMBRES[p] + ' ↗';
@@ -592,10 +590,45 @@
     return item;
   }
 
+  // Agrupa por sección (en el orden en que aparecen en la lista). Con más de 4 secciones agrega botones para filtrar.
+  function seccionDe(v) {
+    var s = typeof v.seccion === 'string' ? v.seccion.replace(/\s+/g, ' ').trim().slice(0, 30) : '';
+    return s || (v.categoria === 'testimonios' ? 'Testimonios' : 'Vida escolar');
+  }
   function llenar(cont, lista) {
     cont.textContent = '';
-    var n = 0;
-    lista.forEach(function (v) { var t = tarjeta(v); if (t) { cont.appendChild(t); n++; } });
+    var grupos = [], idx = {}, n = 0;
+    lista.forEach(function (v) {
+      var t = tarjeta(v); if (!t) return;
+      n++;
+      var k = seccionDe(v).toLocaleLowerCase('es');
+      if (!(k in idx)) { idx[k] = grupos.length; grupos.push({ nombre: seccionDe(v), items: [] }); }
+      grupos[idx[k]].items.push(t);
+    });
+    if (!n) return 0;
+    var cajas = [];
+    grupos.forEach(function (g) {
+      var sec = document.createElement('div'); sec.className = 'vsec';
+      if (grupos.length > 1) { var h = document.createElement('h3'); h.className = 'vsec-t'; h.textContent = g.nombre; sec.appendChild(h); }
+      var gr = document.createElement('div'); gr.className = 'vgrid';
+      g.items.forEach(function (t) { gr.appendChild(t); });
+      sec.appendChild(gr); cajas.push(sec);
+    });
+    if (grupos.length > 4) {
+      var barra = document.createElement('div'); barra.className = 'vfiltros'; barra.setAttribute('role', 'group'); barra.setAttribute('aria-label', 'Filtrar videos por sección');
+      var botones = [];
+      var elegir = function (i) {
+        botones.forEach(function (b, j) { b.setAttribute('aria-pressed', String(j === i)); });
+        cajas.forEach(function (c, j) { c.hidden = !(i === 0 || j === i - 1); });
+      };
+      ['Todos'].concat(grupos.map(function (g) { return g.nombre; })).forEach(function (nom, i) {
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'vfiltro'; b.textContent = nom;
+        b.addEventListener('click', function () { elegir(i); });
+        botones.push(b); barra.appendChild(b);
+      });
+      cont.appendChild(barra); elegir(0);
+    }
+    cajas.forEach(function (c) { cont.appendChild(c); });
     return n;
   }
 
@@ -608,7 +641,7 @@
     var vis = todos.filter(function (v) { return v && v.publicar !== false; });
     var vid = document.getElementById('gridVideos');
     if (vid) {
-      vid.className = 'vgrid';
+      vid.className = 'vsecs';
       var m = llenar(vid, vis);
       if (!m) document.getElementById('videos').hidden = true;
     }

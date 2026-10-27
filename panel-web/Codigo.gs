@@ -10,7 +10,7 @@
  */
 
 // Versión de este archivo. Se cambia en cada entrega; el panel la muestra para saber si todo está al día.
-const VERSION_CODIGO = '2026.10.25-1';
+const VERSION_CODIGO = '2026.10.27-1';
 
 const CONFIG = {
   OWNER: 'UEConstantinoI',
@@ -580,12 +580,20 @@ const CATEGORIAS_VIDEO = ['testimonios', 'vida'];
 const ID_C_RE = /^c\d{8}-[0-9a-f]{5}$/;
 const COLORES_ACCESO = ['rojo', 'verde', 'sol', 'azul', 'royal', 'gris'];
 
+// Sección del video: la que se escribió, o (videos antiguos) la que sale de su etiqueta anterior.
+function seccionVideo_(x) {
+  const s = String(x.seccion || '').replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 30);
+  return s || (x.categoria === 'testimonios' ? 'Testimonios' : 'Vida escolar');
+}
+function sinAcentos_(t) { return String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim(); }
+
 function listaVideos_() {
   return {
     archivo: CONFIG.ARCHIVO_VIDEOS, idRe: ID_V_RE, pref: 'v', max: CONFIG.MAX_VIDEOS, nombre: 'video', plural: 'videos', nuevosPrimero: true,   // el video nuevo aparece primero en el sitio
     leer: function (x) {
       return { titulo: String(x.titulo || ''), url: String(x.url || ''), plataforma: String(x.plataforma || ''), codigo: String(x.codigo || ''),
                categoria: CATEGORIAS_VIDEO.indexOf(x.categoria) >= 0 ? x.categoria : 'vida', publicar: x.publicar !== false,
+               seccion: seccionVideo_(x),
                portada: /^assets\/videos\/[\w.\-]+\.(jpg|png|webp)$/.test(String(x.portada || '')) ? String(x.portada) : '' };
     },
     // Portada opcional: datos.imagen = { accion:'mantener'|'nueva'|'quitar', base64?, mime? }
@@ -770,15 +778,18 @@ function parsearVideo_(entrada) {
   throw new Error('No reconozco ese enlace como un video. Copia el enlace desde el botón “Compartir” del video.');
 }
 
-/** datos = { id?, titulo, url, categoria:'testimonios'|'vida', publicar:bool } */
+/** datos = { id?, titulo, url, seccion (texto libre, máx. 30), publicar:bool, imagen? }
+ *  Si la sección ya existe (sin importar mayúsculas ni acentos) se usa su escritura original, para no duplicarla. */
 function videoGuardar(datos) {
   const u = exigir_();
   if (!datos || typeof datos !== 'object') throw new Error('Datos vacíos.');
   const titulo = cad_(datos.titulo, 80, 'Título');
   const v = parsearVideo_(datos.url);
-  if (CATEGORIAS_VIDEO.indexOf(datos.categoria) < 0) throw new Error('Elige la etiqueta del video.');
+  let seccion = cad_(datos.seccion, 30, 'Sección');
+  const existentes = listaLeer_(listaVideos_()).lista.map(function (x) { return x.seccion; });
+  for (let i = 0; i < existentes.length; i++) { if (sinAcentos_(existentes[i]) === sinAcentos_(seccion)) { seccion = existentes[i]; break; } }
   let url = String(datos.url).trim(); if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
-  return listaGuardarItem_(listaVideos_(), u, datos, { titulo: titulo, url: url, plataforma: v.plataforma, codigo: v.codigo, categoria: datos.categoria, publicar: datos.publicar === true });
+  return listaGuardarItem_(listaVideos_(), u, datos, { titulo: titulo, url: url, plataforma: v.plataforma, codigo: v.codigo, seccion: seccion, categoria: sinAcentos_(seccion) === 'testimonios' ? 'testimonios' : 'vida', publicar: datos.publicar === true });
 }
 function videoEliminar(id) { return listaEliminarItem_(listaVideos_(), exigir_(), id); }
 function videoMover(id, dir) { return listaMoverItem_(listaVideos_(), exigir_(), id, dir); }
