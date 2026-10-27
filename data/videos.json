@@ -48,21 +48,21 @@
     "url": "https://www.facebook.com/reel/956716987094723",
     "plataforma": "facebook",
     "codigo": "reel/956716987094723",
-    "seccion": "TESTIMONIO",
     "categoria": "vida",
     "publicar": true,
-    "id": "v20261019-8d50d",
-    "portada": "assets/videos/20261019-5027230b.jpg"
+    "seccion": "TESTIMONIO",
+    "portada": "assets/videos/20261019-5027230b.jpg",
+    "id": "v20261019-8d50d"
   },
   {
     "titulo": "Entrevista a Valeria Sierra, exalumna de la U.E. Constantino I",
     "url": "https://www.facebook.com/reel/944086998532550",
     "plataforma": "facebook",
     "codigo": "reel/944086998532550",
-    "categoria": "testimonios",
+    "seccion": "TESTIMONIO",
+    "categoria": "vida",
     "publicar": true,
-    "seccion": "Testimonios",
-    "portada": "assets/videos/20261019-f20fb13b.jpg",
-    "id": "v20261019-000a6"
+    "id": "v20261019-000a6",
+    "portada": "assets/videos/20261019-f20fb13b.jpg"
   }
 ]
