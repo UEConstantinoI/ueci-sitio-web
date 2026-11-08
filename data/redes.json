@@ -24,19 +24,19 @@
     "id": "r20261015-00003"
   },
   {
-    "red": "youtube",
-    "nombre": "",
-    "usuario": "@ConstantinoI.oficial",
-    "url": "https://www.youtube.com/@ConstantinoI.oficial",
-    "publicar": true,
-    "id": "r20261107-ee4e2"
-  },
-  {
     "red": "threads",
     "nombre": "",
     "usuario": "@ConstantinoI.oficial",
     "url": "https://www.threads.com/@ConstantinoI.oficial",
     "publicar": true,
     "id": "r20261108-ca73f"
+  },
+  {
+    "red": "youtube",
+    "nombre": "",
+    "usuario": "@ConstantinoI.oficial",
+    "url": "https://www.youtube.com/@ConstantinoI.oficial",
+    "publicar": true,
+    "id": "r20261107-ee4e2"
   }
 ]
