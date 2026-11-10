@@ -1,5 +1,16 @@
 [
   {
+    "titulo": "Jornadas de Reflexión Crítica 2026 | Constantino I",
+    "url": "https://youtube.com/shorts/7t9THdQUFb4?feature=share",
+    "plataforma": "youtube",
+    "codigo": "7t9THdQUFb4",
+    "seccion": "+300 OBRAS / VIDA ESCOLAR",
+    "categoria": "vida",
+    "publicar": true,
+    "id": "v20261110-32ea6",
+    "portada": ""
+  },
+  {
     "titulo": "Convenio con Elevate Academy - Examen Cambridge B2 First",
     "url": "https://www.facebook.com/reel/2551073612059925",
     "plataforma": "facebook",
@@ -59,11 +70,11 @@
     "url": "https://www.tiktok.com/@constantinoi.oficial/video/7648749947298303240?lang=es",
     "plataforma": "tiktok",
     "codigo": "7648749947298303240",
-    "seccion": "+300 OBRAS / VIDA ESCOLAR",
     "categoria": "vida",
     "publicar": true,
-    "id": "v20261019-651ba",
-    "portada": "assets/videos/20261019-35f2accc.jpg"
+    "seccion": "+300 OBRAS / VIDA ESCOLAR",
+    "portada": "assets/videos/20261019-35f2accc.jpg",
+    "id": "v20261019-651ba"
   },
   {
     "titulo": "Entrevista a Kira Rioja, exalumna de la U.E. Constantino I",
